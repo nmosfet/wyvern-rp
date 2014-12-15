@@ -1,0 +1,86 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// librptr_chat_parse
+// =====================
+// iteratively parses a string of commands
+// reserved special cases are for "var", "alias", and "template"
+const int LIBRPTR_CHAT_PARSER_RECURSION_LIMIT = 10;
+
+void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_depth) {
+	string current = msg;
+	string current_alias_subbed;
+	int semicolon_index;
+	
+	while ( msg != "" ) {
+		// update player's chat_msg current cache
+		librptr_player[player].chat_msg = msg;
+		
+		// get a chunk of the msg by finding ";" separater
+		semicolon_index = StringFind(msg, ";", c_stringNoCase);
+		//librptr_print_success("[INDEX]:" + IntToString(semicolon_index));
+		if (semicolon_index) {
+			current = librptr_string_trim( StringSub(msg, 1, semicolon_index - 1) );
+			msg = StringSub( msg, semicolon_index + 1, StringLength(msg) );
+		}
+		else {
+			current = msg;
+			msg = "";
+		}
+		
+		// check if performing reserved keyword command (alias, template, var)
+		if ( StringEqual( StringWord(current, 1), "alias", c_stringNoCase) ) {
+			// returns true if using "alias create":
+			// in this case, the rest of msg is used up AS IS, so parsing considered finished
+			if( librptr_alias_command_redirect(current, player) ) { 
+				break;
+			}
+			continue; // skip OOC printing
+		}
+		else if ( StringEqual( StringWord(current, 1), "template", c_stringNoCase) ) {
+			// TODO: ADD TEMPLATING SYSTEM
+		}
+		else if ( StringEqual( StringWord(current, 1), "var", c_stringNoCase) ) {
+			// TODO: ADD VARIABLE SYSTEM
+		}
+		
+		// replace aliases (returns true if aliases):
+		// if aliases subbed, affix to front of msg and reparse 
+		current_alias_subbed = librptr_alias_sub(current, player, 0);
+		if( current_alias_subbed != current ) {
+			msg = current_alias_subbed + ";" + msg;
+			continue;
+		}
+		
+		// perform template replacement
+		// if( StringWord(current, 1) IS A TEMPLATE ) {
+			// CREATE NEW INSTANCE OF PARSING FOR TEMPLATE.
+			// continue;
+		// }
+		
+		
+		// TODO: replace variables
+
+		
+		// TODO: command running
+		// check if command exists
+			// if does, run wrapper function to run a command (does permissions checks etc)
+		
+		// if nothing done, print to OOC
+		librptr_chat_print_OOC( current, player);
+	}
+
+}
+
+void librptr_chat_variable() {
+
+}
+void librptr_chat_run_command(string cmd, int triggering_player, unitgroup target) {
+	
+	
+}

@@ -1,0 +1,14 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// default image path used for ui dialogs (for consistency)
+const string LIBRPTR_UI_DIALOG_BACKGROUND = "Assets\\Textures\\ui_battlenet_settings_windowframe_sub01.dds";
+const string LIBRPTR_UI_DIALOG_BORDER = "Assets\\Textures\\ui_battle_frame_summary_metal_protoss.dds";
+const string LIBRPTR_UI_DIALOG_BUTTON = "Assets\\Textures\\ui_battle_frame_summary_metal_protoss.dds"; // for normal and hover
+const string LIBRPTR_UI_PORTRAIT_FRAME = "Assets\\Textures\\ui_battlenet_challenge_frame_achievement.dds"; // for normal and hover
+

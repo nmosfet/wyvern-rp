@@ -1,0 +1,62 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+
+// LOAD ENGINE DEPENDENCIES:
+
+// scripts
+// =============
+// Contains various utility functions used throughout engine
+include "raptor/engine/utility/scripts.galaxy"
+
+// player
+// =============
+// Contains any important player specific variables during 
+// runtime of the engine (e.g. player mouse position, chat lines,...)
+include "raptor/engine/player.galaxy"
+
+// player
+// =============
+// Contains ingame global settings
+include "raptor/engine/settings.galaxy"
+
+// chat
+// =============
+// All chat/commands related framework. Includes command parser
+// and functions for printing to the custom chatbox.
+// Also includes frameworks for variables, aliases, and templates.
+include "raptor/engine/chat/chat.galaxy"
+
+// events
+// =============
+// Events that run and trigger responses (e.g. Player types command,
+// or moves mouse)
+include "raptor/engine/events/events.galaxy"
+
+// debug
+// =============
+// tools for debugging
+include "raptor/engine/debug.galaxy"
+
+
+void librptr_initialize_engine() {
+	int player = 1;
+	
+	// intialize engine
+	librptr_settings_initialize();
+	
+	// initialize players
+	while ( player < LIBRPTR_MAX_PLAYERS ) {
+		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive) {
+			librptr_player_initialize(player);
+			librptr_chat_initialize_player(player);
+		}
+		player += 1;
+	}
+	
+}

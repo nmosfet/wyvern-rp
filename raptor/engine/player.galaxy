@@ -1,0 +1,100 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+const int LIBRPTR_MAX_PLAYERS = 16; // max players supported is 16 (0 - neutral, 15 - hostile)
+const string LIBRPTR_PLAYER_BANK_NAME = "raptor_bank";
+
+// librptr_player_struct
+// =======================
+// contains all player properties
+struct librptr_player_properties {
+
+	// mouse_position
+	// =================
+	// Location of player mouse.
+	point mouse_position;
+	
+	// chat_msg
+	// ================
+	// player current chat message
+	string chat_msg;
+	
+	// permission_level
+	// =================
+	// Permission level of a player (default - 0, mod - 1, admin - 2)
+	int permission_level;
+	
+	// permission_allow
+	// =================
+	// String that contains single game instance of commands, 
+	// delineated by spaces, of commands player CAN use
+	// For a single game instance, these will transfer even if admin changes
+	string permissions_allow;
+	
+	// permission_block
+	// =================
+	// String that contains single game instance of commands, 
+	// delineated by spaces, of commands player CANNOT use
+	// For a single game instance, these will transfer even if admin changes
+	string permissions_block;
+	
+	// general permissions flags
+	// ==================
+	bool disabled;			// can player use any commands
+	bool muted;				// can player chat (only applies to OOC)
+	bool can_use_alias;		// can player use aliases system
+	bool can_use_templates;	// can player use template system
+
+	// context
+	// ================
+	// unit target for applying commands
+	unitgroup context;
+	
+	// bank_storage
+	// ================
+	// player's bank containing things that persist between games
+	// (aliases, templates, setups, etc...)
+	bank bank_storage;
+	
+	
+	// map_revealer
+	// ===============
+	// map revealer for entire map (revealers player specific)
+	revealer map_revealer;
+	
+};
+
+// librptr_player[LIBRPTR_MAX_PLAYERS]
+// ====================================
+// global array for players with index corresponding to player index
+librptr_player_properties[LIBRPTR_MAX_PLAYERS] librptr_player;
+
+
+// librptr_initialize_player
+// ==============================
+// initialize players (initialize settings, pan camera to center of map)
+void librptr_player_initialize(int player) {
+	librptr_player[player].bank_storage = BankLoad( LIBRPTR_PLAYER_BANK_NAME, player );
+	librptr_player[player].map_revealer = VisRevealerCreate(player, RegionEntireMap());
+	
+	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
+}
+
+
+int librptr_color_to_player(string colour) {
+	// special color keywords
+	if( colour == "hostile" ) {
+		return 15;// some hostile color
+	} else if( colour == "neutral" ) {
+		return 0; // generalize later
+	} else if( colour == "me" ) {
+		return EventPlayer();
+	}
+	
+	return -1;
+}
