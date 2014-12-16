@@ -6,7 +6,6 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-include "raptor/engine/chat/output.galaxy"
 include "raptor/engine/chat/alias.galaxy"
 include "raptor/engine/chat/templates.galaxy"
 include "raptor/engine/chat/variables.galaxy"

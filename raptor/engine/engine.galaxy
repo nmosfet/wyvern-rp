@@ -8,6 +8,7 @@
 
 
 // LOAD ENGINE DEPENDENCIES:
+// (dependency order matters)
 
 // scripts
 // =============
@@ -20,15 +21,24 @@ include "raptor/engine/utility/scripts.galaxy"
 // runtime of the engine (e.g. player mouse position, chat lines,...)
 include "raptor/engine/player.galaxy"
 
+// output
+// =============
+// All functions for output to the custom chat frame
+include "raptor/engine/output.galaxy"
+
 // player
 // =============
 // Contains ingame global settings
 include "raptor/engine/settings.galaxy"
 
+// bank
+// =============
+// Contains custom functions for writing to player banks
+include "raptor/engine/bank.galaxy"
+
 // chat
 // =============
-// All chat/commands related framework. Includes command parser
-// and functions for printing to the custom chatbox.
+// All player chat/commands events framework and parsing
 // Also includes frameworks for variables, aliases, and templates.
 include "raptor/engine/chat/chat.galaxy"
 

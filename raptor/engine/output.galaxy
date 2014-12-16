@@ -31,7 +31,6 @@ void librptr_print_output(string msg, int player) {
 	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, StringToText("> " + msg) );
 }
 
-
 // librptr_print_success
 // ===========================
 // prints an success message to the chat
@@ -78,9 +77,4 @@ void librptr_chat_print_OOC(string msg, int player) {
 	output = StringToText("[OOC] ") + librptr_player_name_colored(player) + StringToText(": ") + StringToText(msg);
 	UIDisplayMessage( PlayerGroupAll(), c_messageAreaDebug, output );
 }
-
-// librptr_player_name_colored
-// =============================
-// returns the colored name of a player
-
 
