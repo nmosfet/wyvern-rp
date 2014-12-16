@@ -19,7 +19,6 @@ bool librptr_alias_command_redirect(string command, int player) {
 	
 	if( StringEqual(subcommand, "create", c_stringNoCase) ) { 
 		alias = StringWord(command, 3);
-		librptr_print_output("current chat message: " + librptr_player[player].chat_msg, player);
 		content = librptr_string_trim( StringSub(librptr_player[player].chat_msg, StringLength("alias create " + alias) + 1, StringLength(librptr_player[player].chat_msg)) );
 		if( content != "" ) {
 			librptr_bank_create(LIBRPTR_BANK_SECTION_ALIAS, alias, content, player);
