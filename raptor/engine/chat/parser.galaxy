@@ -11,10 +11,19 @@
 // iteratively parses a string of commands
 // reserved special cases are for "var", "alias", and "template"
 const int LIBRPTR_CHAT_PARSER_RECURSION_LIMIT = 10;
+const string LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX = "librptr_command_";
 
-void librptr_chat_run_command(string cmd, int triggering_player, unitgroup target) {
-	
-	//TriggerExecute( t, false, false)
+void librptr_chat_command_create(string command, string function) {
+	trigger t = TriggerCreate(function);
+	if (t == null) {
+		librptr_print("FAILED TO LOAD COMMAND: " + command, PlayerGroupAll());
+	} else {
+		DataTableSetTrigger(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + command, t);
+		
+		librptr_print("REGISTERED COMMAND: " + command, PlayerGroupAll() );
+		
+		librptr_settings.commands = librptr_settings.commands + command + ", ";
+	}
 }
 
 void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_depth) {
@@ -77,13 +86,20 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 		// TODO: replace variables
 
 		
-		// TODO: command running
-		// check if command exists
+		// run command (if exists and permissions for player valid)
+		if( DataTableValueExists(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringWord(current, 1) ) ) {
+			
 			// if does, run wrapper function to run a command (does permissions checks etc)
+			librptr_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
+			
+			librptr_player[player].chat_msg = current;
+			TriggerExecute( DataTableGetTrigger(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringWord(current, 1) ), false, true);
+		}
+		else if ( !librptr_player[player].muted ) {
+			librptr_chat_print_OOC( current, player );
+		}
 		
-		// if nothing done, print to OOC
-		librptr_chat_print_OOC( current, player);
+		Wait(0.0, c_timeGame); // speeds up loop processing
 	}
-
 }
 

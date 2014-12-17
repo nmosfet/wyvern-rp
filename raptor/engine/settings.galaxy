@@ -8,10 +8,12 @@
 
 // librptr_settings_definition
 // ============================
-// contains ingame setting parameters that are adjustable
+// contains a games parameters
 struct librptr_settings_definition {
 	int flags;
 	bool map_revealed;
+	string commands;
+	
 };
 
 
@@ -20,4 +22,5 @@ librptr_settings_definition librptr_settings;
 // initializes default settings
 void librptr_settings_initialize() {
 	librptr_settings.map_revealed = true;
+	librptr_settings.commands = "alias, template, var,";
 }

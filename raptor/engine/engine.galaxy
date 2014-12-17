@@ -6,7 +6,6 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-
 // LOAD ENGINE DEPENDENCIES:
 // (dependency order matters)
 
@@ -26,7 +25,13 @@ include "raptor/engine/player.galaxy"
 // All functions for output to the custom chat frame
 include "raptor/engine/output.galaxy"
 
-// player
+// data
+// =============
+// defines SCII data catalog constants used for certain commands,
+// and include data catalog search and catalog alias functions
+include "raptor/engine/data/data.galaxy"
+
+// settings
 // =============
 // Contains ingame global settings
 include "raptor/engine/settings.galaxy"
@@ -42,10 +47,15 @@ include "raptor/engine/bank.galaxy"
 // Also includes frameworks for variables, aliases, and templates.
 include "raptor/engine/chat/chat.galaxy"
 
+// unit
+// =============
+// Unit spawn related functions
+include "raptor/engine/unit.galaxy"
+
 // events
 // =============
-// Events that run and trigger responses (e.g. Player types command,
-// or moves mouse)
+// Events that require triggers to run and update things
+// e.g. player moves mouse, unit enters region
 include "raptor/engine/events/events.galaxy"
 
 // debug
@@ -54,11 +64,12 @@ include "raptor/engine/events/events.galaxy"
 include "raptor/engine/debug.galaxy"
 
 
-void librptr_initialize_engine() {
+void librptr_engine_initialize() {
 	int player = 1;
 	
 	// intialize engine
 	librptr_settings_initialize();
+	librtpr_events_initialize();
 	
 	// initialize players
 	while ( player < LIBRPTR_MAX_PLAYERS ) {

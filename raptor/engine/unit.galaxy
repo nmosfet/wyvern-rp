@@ -1,0 +1,51 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+const int LIBRPTR_UNIT_INDEX_ID = 0;
+
+// global data table, unit set names stored as: [ID]_name
+const string LIBRPTR_UNIT_NAME_DATA_TABLE_IDENTIFIER = "_name";
+
+// global data table, unit set names color as: [ID]_name_color
+const string LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER = "_name_color";
+
+// Each unit given a unique id. Each time unit created, counter increments
+int librptr_unit_id_counter = 0;
+
+// librptr_unit_set_id
+// =====================
+// sets the unit's id via the custom value stored for unit
+void librptr_unit_set_id(unit u) {
+	UnitSetCustomValue( u, LIBRPTR_UNIT_INDEX_ID, IntToFixed(librptr_unit_id_counter));
+	librptr_unit_id_counter += 1;
+}
+
+void librptr_unit_create(string type, int player, point p, fixed facing) {
+	UnitCreate(1, type, c_unitCreateIgnorePlacement, player, p, facing);
+	librptr_unit_set_id(UnitLastCreated());
+	UnitGroupAdd(librptr_player[EventPlayer()].context, UnitLastCreated());
+}
+
+void librptr_spawn_create_splat(string type, int player) {
+	if(librptr_player[player].spawn_splat != null) {
+		UnitRemove(librptr_player[player].spawn_splat);
+	}
+	
+	UnitCreate(1, type, 0, player, librptr_player[player].mouse_position, 270.0);
+	librptr_player[player].spawn_splat = UnitLastCreated();
+	
+	// set visuals
+    UnitSetState(librptr_player[player].spawn_splat, c_unitStateInvulnerable, true);
+    UnitSetState(librptr_player[player].spawn_splat, c_unitStatePaused, true);
+    UnitSetState(librptr_player[player].spawn_splat, c_unitStateSelectable, false);
+    UnitSetState(librptr_player[player].spawn_splat, c_unitStateTargetable, false);
+    UnitSetState(librptr_player[player].spawn_splat, c_unitStateMoveSuppressed, true);
+    UnitSetState(librptr_player[player].spawn_splat, c_unitStateRadarable, false);
+	ActorSend(libNtve_gf_MainActorofUnit(librptr_player[player].spawn_splat), "SetOpacity .5");
+	UnitBehaviorAdd(librptr_player[player].spawn_splat, LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION, librptr_player[player].spawn_splat, 1);
+}

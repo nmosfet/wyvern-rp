@@ -1,0 +1,43 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+bool librptr_mouse_moved(bool testConds, bool runActions) {
+	librptr_player[EventPlayer()].mouse_position = Point(EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld());
+	
+	// update spawn splat
+	if( librptr_player[EventPlayer()].is_placing_unit  ) {
+		UnitSetPosition(librptr_player[EventPlayer()].spawn_splat, librptr_player[EventPlayer()].mouse_position, false);
+	}
+	// TODO: update doodad splat
+	else if( librptr_player[EventPlayer()].is_placing_doodad ) {
+	
+	}
+	
+	return true;
+}
+
+bool librtpr_mouse_left_clicked_down(bool testConds, bool runActions) {
+	librptr_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+
+	if( librptr_player[EventPlayer()].is_placing_unit ) {
+		librptr_unit_create( UnitGetType(librptr_player[EventPlayer()].spawn_splat), EventPlayer(), librptr_player[EventPlayer()].mouse_position, 270.0);
+	}
+	
+	return true;
+}
+
+bool librtpr_mouse_right_clicked_down(bool testConds, bool runActions) {
+	librptr_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+
+	if( librptr_player[EventPlayer()].is_placing_unit ) {
+		librptr_player[EventPlayer()].is_placing_unit = false;
+		UnitRemove(librptr_player[EventPlayer()].spawn_splat);
+	}
+	
+	return true;
+}

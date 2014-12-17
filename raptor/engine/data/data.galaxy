@@ -1,0 +1,44 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// special data entries used for certain commands
+// (TODO: replace with custom abilities in a mod file)
+const string LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION = "SuppressCollision";
+
+// librtpr_catalog_get
+// ====================
+// takes the given word and finds it in the catalog.
+// if it is not in the catalog, returns null.
+string librtpr_catalog_get(int catalog, string word) {
+	int i;
+	string test;
+
+	if(CatalogEntryIsValid(catalog, word)) {
+		return word;
+	}
+	
+	i = CatalogEntryCount(catalog);
+	while(i > 0) {
+		test = CatalogEntryGet(catalog, i);
+		if(StringEqual(test, word, c_stringNoCase)) {
+			return test;
+		}
+		i -= 1;
+	}
+
+	i = CatalogEntryCount(catalog);
+	while(i > 0) {
+		test = CatalogEntryGet(catalog, i);
+		if(StringContains(test, word, c_stringBegin, c_stringNoCase)) {
+			return test;
+		}
+		i -= 1;
+	}
+
+	return null;
+}

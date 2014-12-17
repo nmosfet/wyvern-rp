@@ -7,6 +7,7 @@
 //=========================================================
 
 include "raptor/engine/engine.galaxy"
+include "raptor/commands/commands.galaxy"
 
 // engine version
 const int librptr_build_version = 0;
@@ -18,9 +19,9 @@ const string librptr_build_version_modifier = "-alpha";
 const string librptr_splash_message = "Welcome to Raptor Roleplay Engine";
 
 void librptr_initialize() {	
-	librptr_initialize_engine();
+	librptr_engine_initialize();
+	librptr_commands_initialize();
 	
 	librptr_print("Raptor Engine: v" + IntToString(librptr_build_version) + "." + IntToString(librptr_build_sub_version) + librptr_build_version_modifier, PlayerGroupAll());
 	librptr_print(librptr_splash_message, PlayerGroupAll());
-	
 }

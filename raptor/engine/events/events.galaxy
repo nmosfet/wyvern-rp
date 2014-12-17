@@ -1,0 +1,15 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+include "raptor/engine/events/mouse.galaxy"
+
+void librtpr_events_initialize() {
+	TriggerAddEventMouseMoved( TriggerCreate("librptr_mouse_moved"), c_playerAny );
+	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_left_clicked_down"), c_playerAny, c_mouseButtonLeft, true );
+	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_right_clicked_down"), c_playerAny, c_mouseButtonRight, true );
+}

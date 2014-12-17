@@ -1,0 +1,17 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+include "raptor/commands/spawn_commands.galaxy"
+include "raptor/commands/chat_commands.galaxy"
+
+void librptr_commands_initialize() {
+
+	librptr_chat_command_create("@spawn", "librptr_command_spawn");
+
+	librptr_chat_command_create("\\narrate", "librptr_command_narrate");
+}

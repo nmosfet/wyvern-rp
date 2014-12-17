@@ -21,7 +21,8 @@ struct librptr_player_properties {
 	
 	// chat_msg
 	// ================
-	// player current chat message
+	// player chat message for parsing
+	// when running a command, chat_msg is set to the command being run
 	string chat_msg;
 	
 	// permission_level
@@ -47,20 +48,39 @@ struct librptr_player_properties {
 	// ==================
 	bool disabled;			// can player use any commands
 	bool muted;				// can player chat (only applies to OOC)
-	bool can_use_alias;		// can player use aliases system
-	bool can_use_templates;	// can player use template system
+	bool alias_blocked;		// can player use aliases system
+	bool template_blocked;	// can player use template system
 
 	// context
-	// ================
-	// unit target for applying commands
+	// ===============
+	// unitgroup target for running commands
 	unitgroup context;
 	
+	// is_placing_unit
+	// ===============
+	// flag for using @spawn mouse-click style
+	bool is_placing_unit;
+	
+	// spawn_splat
+	// ==============
+	// hovers under cursor for mouse-click @spawn placement
+	unit spawn_splat;
+	
+	// is_placing_unit
+	// ===============
+	// flag for using _doodad
+	bool is_placing_doodad;
+	
+	// doodad_splat
+	// ==============
+	// hovers under cursor for mouse-click _doodad placement
+	actor doodad_splat;
+	
 	// bank_storage
-	// ================
+	// ===============
 	// player's bank containing things that persist between games
 	// (aliases, templates, setups, etc...)
 	bank bank_storage;
-	
 	
 	// map_revealer
 	// ===============
@@ -81,6 +101,10 @@ librptr_player_properties[LIBRPTR_MAX_PLAYERS] librptr_player;
 void librptr_player_initialize(int player) {
 	librptr_player[player].bank_storage = BankLoad( LIBRPTR_PLAYER_BANK_NAME, player );
 	librptr_player[player].map_revealer = VisRevealerCreate(player, RegionEntireMap());
+	librptr_player[player].mouse_position = RegionGetCenter( RegionEntireMap() );
+	
+	librptr_player[player].spawn_splat = null;
+	librptr_player[player].doodad_splat = null;
 	
 	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
 }
