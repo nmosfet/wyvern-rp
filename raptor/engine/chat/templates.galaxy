@@ -30,10 +30,10 @@ bool librptr_template_command_redirect(string command, int player) {
 		
 		template = StringWord(librptr_player[player].chat_msg, 3);
 		// verify template name is proper:
-		if(StringSub(template, 1, 1) == LIBRPTR_TEMPLATE_TOKEN_IDENTIFIER) {
-			librptr_print_error("TEMPLATE NAME CANNOT BE A TOKEN", player);
-			return true;
-		}
+		// if(StringSub(template, 1, 1) == LIBRPTR_TEMPLATE_TOKEN_IDENTIFIER) {
+			// librptr_print_error("TEMPLATE NAME CANNOT BE A TOKEN", player);
+			// return true;
+		// }
 		if( StringContains(template, "=", c_stringAnywhere, c_stringNoCase) ) {
 			librptr_print_error("TEMPLATE NAME CANNOT HAVE AN \'=\' SYMBOL", player);
 			return true;
