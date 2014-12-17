@@ -15,13 +15,13 @@ const string LIBRPTR_BANK_SECTION_ALIAS = "alias";
 bool librptr_alias_command_redirect(string command, int player) {
 	string subcommand = StringWord(command, 2);
 	string alias = "";
-	string content = librptr_player[player].chat_msg;
+	string content = "";
 	
 	if( StringEqual(subcommand, "create", c_stringNoCase) ) { 
 		alias = StringWord(command, 3);
 		
-		// remove "alias" and "create" and the alias from content string
-		content = StringReplaceWord(content, "alias", "", 1, c_stringNoCase);
+		// remove "alias" and "create" and the alias from chat msg
+		content = StringReplaceWord(librptr_player[player].chat_msg, "alias", "", 1, c_stringNoCase);
 		content = StringReplaceWord(content, "create", "", 1, c_stringNoCase);
 		content = librptr_string_trim( StringSub(content, StringFind(content, alias, c_stringNoCase) + StringLength(alias) + 1, StringLength(content)) );
 		
