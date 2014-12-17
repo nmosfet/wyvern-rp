@@ -6,4 +6,101 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+const string LIBRPTR_BANK_SECTION_TEMPLATE = "template";
+const string LIBRPTR_TEMPLATE_TOKEN_IDENTIFIER = "%";
 
+// librptr_template_command_redirect
+// ===================
+// gets "template ..." command from parser, redirects to function
+bool librptr_template_command_redirect(string command, int player) {
+	string subcommand = StringWord(command, 2);
+	string template = "";
+	string content = "";
+	
+	// format for creating templates is:
+	// "template create foo %a %b = @cmd1 %a; @cmd2 %b"
+	// -> string between "template create" and "=" is the template
+	// -> first word of template becomes bank key
+	// -> bank value stored is: "%a %b = @cmd1 %a; @cmd2 %b"
+	if( StringEqual(subcommand, "create", c_stringNoCase) ) { 
+		if( !StringContains(librptr_player[player].chat_msg, "=", c_stringAnywhere, c_stringNoCase) ) {
+			librptr_print_error("IMPROPER TEMPLATE: NO ASSIGNMENT", player);
+			return true;
+		}
+		
+		template = StringWord(librptr_player[player].chat_msg, 3);
+		// verify template name is proper:
+		if(StringSub(template, 1, 1) == LIBRPTR_TEMPLATE_TOKEN_IDENTIFIER) {
+			librptr_print_error("TEMPLATE NAME CANNOT BE A TOKEN", player);
+			return true;
+		}
+		if( StringContains(template, "=", c_stringAnywhere, c_stringNoCase) ) {
+			librptr_print_error("TEMPLATE NAME CANNOT HAVE AN \'=\' SYMBOL", player);
+			return true;
+		}
+		
+		// content: remove "template" and "create" and the template command from chat msg string
+		content = StringReplaceWord(librptr_player[player].chat_msg, "template", "", 1, c_stringNoCase);
+		content = StringReplaceWord(content, "create", "", 1, c_stringNoCase);
+		content = librptr_string_trim( StringSub(content, StringFind(content, template, c_stringNoCase) + StringLength(template) + 1, StringLength(content)) );
+				
+		if( content != "" ) {
+			librptr_bank_create(LIBRPTR_BANK_SECTION_TEMPLATE, StringWord(template, 1), content, player);
+			librptr_print_success("TEMPLATE CREATED: " + template + " " + StringSub(content, 1, StringFind(content, "=", c_stringNoCase) - 1) + "\n" 
+								  + "[\'" + librptr_string_trim( StringSub(content, StringFind(content, "=", c_stringNoCase) + 1, StringLength(content)) ) + "\']", player);
+		}
+		else {
+			librptr_print_error("TEMPLATE CANNOT BE EMPTY", player);
+		}
+		
+		return true;
+	}
+	else if( StringEqual(subcommand, "remove", c_stringNoCase) ) {
+		template = StringWord(command, 3);
+		if( BankKeyExists(librptr_player[player].bank_storage, LIBRPTR_BANK_SECTION_TEMPLATE, template) ) {
+			librptr_bank_remove(LIBRPTR_BANK_SECTION_TEMPLATE, template, player);
+			librptr_print_success("TEMPLATE REMOVED: " + template, player);
+		}
+		else {
+			librptr_print_error("TEMPLATE " + template + " DOES NOT EXIST", player);
+		}
+	}
+	else if( StringEqual(subcommand, "removeall", c_stringNoCase) ) {
+		librptr_bank_section_remove_all(LIBRPTR_BANK_SECTION_TEMPLATE, player);
+		librptr_print_success("ALL TEMPLATES REMOVED", player);
+	}
+	else if( StringEqual(subcommand, "list", c_stringNoCase) ) {
+		librptr_bank_section_dump(LIBRPTR_BANK_SECTION_TEMPLATE, player);
+	}
+	else if( StringEqual(subcommand, "print", c_stringNoCase) ) {
+		librptr_bank_key_content_dump(LIBRPTR_BANK_SECTION_TEMPLATE, StringWord(command, 3), player);
+	}
+	else if( BankKeyExists(librptr_player[player].bank_storage, LIBRPTR_BANK_SECTION_TEMPLATE, subcommand) ) {
+		librptr_bank_key_content_dump(LIBRPTR_BANK_SECTION_TEMPLATE, subcommand, player);
+	}
+	else {
+		librptr_print_error("INVALID TEMPLATE COMMAND", player);
+	}
+	
+	return false;
+}
+
+// librptr_template
+// =================
+// gets the content of template from bank and replaces tokens with 
+// values from player's chat command
+string librptr_template(string template, int player) {
+	string evaluated = BankValueGetAsString( librptr_player[player].bank_storage, LIBRPTR_BANK_SECTION_TEMPLATE, StringWord(template, 1) ) ;
+	string token_identifiers = StringSub(evaluated, 1, StringFind(evaluated, "=", c_stringNoCase) - 1);
+	int i = 1;
+	
+	evaluated = librptr_string_trim( StringSub( evaluated, StringFind(evaluated, "=", c_stringNoCase) + 1, StringLength(evaluated) ) );
+	
+	// must use index i+1 for template because that string includes the template command itself
+	while( StringWord(token_identifiers, i) != "" && StringWord(template, i + 1) != "" ) {
+		evaluated = StringReplaceWord(evaluated, StringWord(token_identifiers, i), StringWord(template, i + 1), c_stringReplaceAll, c_stringNoCase);
+		i += 1;
+	}
+	
+	return evaluated;
+}

@@ -12,6 +12,11 @@
 // reserved special cases are for "var", "alias", and "template"
 const int LIBRPTR_CHAT_PARSER_RECURSION_LIMIT = 10;
 
+void librptr_chat_run_command(string cmd, int triggering_player, unitgroup target) {
+	
+	//TriggerExecute( t, false, false)
+}
+
 void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_depth) {
 	string current = msg;
 	string current_alias_subbed;
@@ -33,7 +38,7 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 			msg = "";
 		}
 		
-		// check if performing reserved keyword command (alias, template, var)
+		// check if performing reserved keyword commands (alias, template, var)
 		if ( StringEqual( StringWord(current, 1), "alias", c_stringNoCase) ) {
 			// returns true if using "alias create":
 			// in this case, the rest of msg is used up AS IS, so parsing considered finished
@@ -43,7 +48,12 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 			continue; // skip OOC printing
 		}
 		else if ( StringEqual( StringWord(current, 1), "template", c_stringNoCase) ) {
-			// TODO: ADD TEMPLATING SYSTEM
+			// returns true if using "template create":
+			// in this case, the rest of msg is used up AS IS, so parsing considered finished
+			if( librptr_template_command_redirect(current, player) ) { 
+				break;
+			}
+			continue; // skip OOC printing
 		}
 		else if ( StringEqual( StringWord(current, 1), "var", c_stringNoCase) ) {
 			// TODO: ADD VARIABLE SYSTEM
@@ -57,11 +67,11 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 			continue;
 		}
 		
-		// perform template replacement
-		// if( StringWord(current, 1) IS A TEMPLATE ) {
-			// CREATE NEW INSTANCE OF PARSING FOR TEMPLATE.
-			// continue;
-		// }
+		// if template exists, append evaluated template to msg and parse
+		if( BankKeyExists( librptr_player[player].bank_storage, LIBRPTR_BANK_SECTION_TEMPLATE, StringWord(current, 1) ) ) {
+			msg = librptr_template(current, player) + ";" + msg;
+			continue;
+		}
 		
 		
 		// TODO: replace variables
@@ -77,10 +87,3 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 
 }
 
-void librptr_chat_variable() {
-
-}
-void librptr_chat_run_command(string cmd, int triggering_player, unitgroup target) {
-	
-	
-}
