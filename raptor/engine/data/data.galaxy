@@ -10,6 +10,10 @@
 // (TODO: replace with custom abilities in a mod file)
 const string LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION = "SuppressCollision";
 
+// used for unit chat related commands
+const string LIBRPTR_TALK_ICON_ACTOR = "Talk Icon Bubble";
+const string LIBRPTR_TALK_SOUND = "";
+
 // librtpr_catalog_get
 // ====================
 // takes the given word and finds it in the catalog.

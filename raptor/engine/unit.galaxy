@@ -8,11 +8,8 @@
 
 const int LIBRPTR_UNIT_INDEX_ID = 0;
 
-// global data table, unit set names stored as: [ID]_name
-const string LIBRPTR_UNIT_NAME_DATA_TABLE_IDENTIFIER = "_name";
-
-// global data table, unit set names color as: [ID]_name_color
-const string LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER = "_name_color";
+const string LIBRPTR_UNIT_NAME_DATA_TABLE_IDENTIFIER = "_NAME";
+const string LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER = "_NAME_COLOR";
 
 // Each unit given a unique id. Each time unit created, counter increments
 int librptr_unit_id_counter = 0;
@@ -25,12 +22,28 @@ void librptr_unit_set_id(unit u) {
 	librptr_unit_id_counter += 1;
 }
 
+// librptr_unit_id
+// =====================
+// returns the unit's id as a string
+string librptr_unit_id(unit u) {
+	return FixedToString(UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_ID), 0);
+}
+
+// librptr_unit_create
+// =====================
+// function for creating units, sets id and adds unit to player's context
+// used for @spawn command
 void librptr_unit_create(string type, int player, point p, fixed facing) {
 	UnitCreate(1, type, c_unitCreateIgnorePlacement, player, p, facing);
 	librptr_unit_set_id(UnitLastCreated());
 	UnitGroupAdd(librptr_player[EventPlayer()].context, UnitLastCreated());
 }
 
+// librptr_spawn_create_splat
+// =====================
+// creates the unit splat under the cursor when using mouse-click spawn
+// because we cannot get the actor type from a unit, 
+// we use a unit as the splat
 void librptr_spawn_create_splat(string type, int player) {
 	if(librptr_player[player].spawn_splat != null) {
 		UnitRemove(librptr_player[player].spawn_splat);
@@ -48,4 +61,46 @@ void librptr_spawn_create_splat(string type, int player) {
     UnitSetState(librptr_player[player].spawn_splat, c_unitStateRadarable, false);
 	ActorSend(libNtve_gf_MainActorofUnit(librptr_player[player].spawn_splat), "SetOpacity .5");
 	UnitBehaviorAdd(librptr_player[player].spawn_splat, LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION, librptr_player[player].spawn_splat, 1);
+}
+
+// librptr_unit_set_name
+// ===================
+// Sets a unit's custom name into the global data table with format
+// [unit_id]_NAME : [name]
+void librptr_unit_set_name(string name, unit u) {
+	string key = FixedToString(UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_ID), 0) + LIBRPTR_UNIT_NAME_DATA_TABLE_IDENTIFIER;
+	DataTableSetString(true, key, name);
+}
+
+// librptr_unit_set_name_color
+// ===================
+// Sets a unit's name color into global data table
+// [unit_id]_NAME_COLOR : [name]
+void librptr_unit_set_name_color(color col, unit u) {
+	string key = FixedToString(UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_ID), 0) + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER;
+	DataTableSetColor(true, key, col);
+}
+
+// librptr_unit_get_name
+// ==================
+// Gets a unit's custom name from the data table
+// if no custom name, default to catalog name
+text librptr_unit_get_name(unit u) {
+	text name = StringToText("");
+	string unit_id = FixedToString(UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_ID), 0);
+	
+	// check if unit has custom name in data table
+	if( DataTableValueExists(true, unit_id + LIBRPTR_UNIT_NAME_DATA_TABLE_IDENTIFIER) ) {
+		name = StringToText( DataTableGetString(true, unit_id + LIBRPTR_UNIT_NAME_DATA_TABLE_IDENTIFIER) );
+	}
+	else { //get default catalog name
+		name = StringExternal(  CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(u), "Name", UnitGetOwner(u)) );
+	}
+	
+	// check if unit name has a custom color in data table
+	if( DataTableValueExists(true, unit_id + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER) ) {
+		name = TextWithColor(name, DataTableGetColor(true, unit_id + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER));
+	}
+	
+	return name;
 }

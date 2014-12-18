@@ -1,0 +1,34 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// librptr_command_remove
+// ====================
+// removes units in player unitgroup context
+bool libcrtx_command_remove(bool testConds, bool runActions) {
+	UnitGroupLoopBegin(librptr_player[EventPlayer()].context);
+	while(!UnitGroupLoopDone()) {
+		UnitRemove(UnitGroupLoopCurrent());
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
+// librptr_command_remove
+// ====================
+// kills units in player unitgroup context
+bool libcrtx_command_kill(bool testConds, bool runActions) {
+	UnitGroupLoopBegin(librptr_player[EventPlayer()].context);
+	while(!UnitGroupLoopDone()) {
+		UnitKill( UnitGroupLoopCurrent() );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+

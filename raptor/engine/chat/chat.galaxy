@@ -26,6 +26,7 @@ void librptr_chat_initialize_player(int player) {
 // IF message begins with "<<" , directly output the message
 // ELSE, parse message
 bool librptr_process_chat_event(bool testConds, bool runActions) {
+	unitgroup target = null;
 	librptr_player[EventPlayer()].chat_msg = librptr_string_trim(EventChatMessage(false));
 	
 	// "<< " directly dumps message to OOC
@@ -34,7 +35,12 @@ bool librptr_process_chat_event(bool testConds, bool runActions) {
 		librptr_chat_print_OOC( librptr_player[EventPlayer()].chat_msg , EventPlayer());
 	}
 	else if( !librptr_player[EventPlayer()].disabled ) {
-		librptr_chat_parse(librptr_player[EventPlayer()].chat_msg, EventPlayer(), null, 0);
+		// if player is not mouse-click spawning, set context to selected units
+		if( !librptr_player[EventPlayer()].is_placing_unit ) {
+			target = UnitGroupSelected(EventPlayer());
+			// TODO: unit permissions (only affect personal units selected, or those with < permissions)
+		}
+		librptr_chat_parse(librptr_player[EventPlayer()].chat_msg, EventPlayer(), target, 0);
 	}
 	else if( !librptr_player[EventPlayer()].muted ){
 		librptr_chat_print_OOC( librptr_player[EventPlayer()].chat_msg , EventPlayer());
@@ -44,4 +50,3 @@ bool librptr_process_chat_event(bool testConds, bool runActions) {
 
 	return false;
 }
-

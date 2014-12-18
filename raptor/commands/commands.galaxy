@@ -7,11 +7,24 @@
 //=========================================================
 
 include "raptor/commands/spawn_commands.galaxy"
+include "raptor/commands/unit_commands.galaxy"
 include "raptor/commands/chat_commands.galaxy"
 
 void librptr_commands_initialize() {
 
+	// admin commands
+	
+	
+	// spawn command
 	librptr_chat_command_create("@spawn", "librptr_command_spawn");
-
+	
+	// unit commands
+	librptr_chat_command_create("@remove", "libcrtx_command_remove");
+	librptr_chat_command_create("@kill", "libcrtx_command_kill");
+	
+	// chat commands
 	librptr_chat_command_create("\\narrate", "librptr_command_narrate");
+	librptr_chat_command_create("@say", "librptr_command_say");
+	librptr_chat_command_create("@setname", "librptr_command_setname");
+	librptr_chat_command_create("@setnamecolor", "librptr_command_setnamecolor");
 }

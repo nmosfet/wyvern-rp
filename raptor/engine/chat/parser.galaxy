@@ -31,6 +31,8 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 	string current_alias_subbed;
 	int semicolon_index;
 	
+	librptr_player[player].context = target;
+	
 	while ( msg != "" ) {
 		// update player's chat_msg current cache
 		librptr_player[player].chat_msg = msg;
@@ -90,7 +92,8 @@ void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_
 		if( DataTableValueExists(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringWord(current, 1) ) ) {
 			
 			// if does, run wrapper function to run a command (does permissions checks etc)
-			librptr_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
+			
+			//librptr_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
 			
 			librptr_player[player].chat_msg = current;
 			TriggerExecute( DataTableGetTrigger(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringWord(current, 1) ), false, true);
