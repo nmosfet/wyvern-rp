@@ -58,17 +58,10 @@ void librptr_print_warning(string msg, int player) {
 	//SoundPlay(SoundLink(LIBRPTR_OUTPUT_SOUND_ERROR, -1), PlayerGroupSingle(player), 100.0, 0.0);
 }
 
-// librptr_player_name_colored
-// ===========================
-// returns a text string of player name with color
-text librptr_player_name_colored(int player) {
-	return TextWithColor( PlayerName(player) , ColorFromIndex( PlayerGetColorIndex(player, false), c_teamColorDiffuse) );	
-}
-
 // librptr_chat_print_OOC
 // ===========================
 // prints an "out-of-character" message for all players in format
-// "[OOC] [Player-Name]: [msg]"
+// "[OOC] [Clan-tag] [Player-Name]: [msg]"
 void librptr_chat_print_OOC(string msg, int player) {
 	text output;
 	

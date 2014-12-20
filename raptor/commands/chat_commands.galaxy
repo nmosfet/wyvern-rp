@@ -31,7 +31,10 @@ bool librptr_command_say(bool testConds, bool runActions) {
 	
 	UnitGroupLoopBegin(librptr_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
+		// @say unit visuals (flash circle, make a talk icon appear overhead)
 		UnitFlashSelection(UnitGroupLoopCurrent(), 2.0);
+		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AttachModel " + LIBRPTR_TALK_ICON_ACTOR + "{} Overhead");
+		
 		librptr_print_text( librptr_unit_get_name( UnitGroupLoopCurrent() ) + unit_msg, PlayerGroupAll() );
 		UnitGroupLoopStep();
 	}

@@ -11,7 +11,7 @@
 const string LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION = "SuppressCollision";
 
 // used for unit chat related commands
-const string LIBRPTR_TALK_ICON_ACTOR = "Talk Icon Bubble";
+const string LIBRPTR_TALK_ICON_ACTOR = "TalkIconBubble";
 const string LIBRPTR_TALK_SOUND = "";
 
 // librtpr_catalog_get

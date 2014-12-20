@@ -29,8 +29,9 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 		return false;
 	}
 	else {
-		type = librtpr_catalog_get( c_gameCatalogUnit, type );
-		if (type == null) {
+		type = UnitTypeFromString(type);
+		//type = librtpr_catalog_get( c_gameCatalogUnit, type );
+		if (type == "" || !CatalogEntryIsValid(c_gameCatalogUnit, type) || UnitTypeTestFlag(type, c_unitFlagMissile) ) {
 			librptr_print_error("INVALID UNIT TYPE", EventPlayer());
 			return false;
 		}

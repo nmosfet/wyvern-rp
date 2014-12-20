@@ -101,6 +101,9 @@ text librptr_unit_get_name(unit u) {
 	if( DataTableValueExists(true, unit_id + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER) ) {
 		name = TextWithColor(name, DataTableGetColor(true, unit_id + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER));
 	}
+	else { // tint to player's color
+		name = TextWithColor(name, ColorFromIndex((PlayerGetColorIndex(UnitGetOwner(u), false)), c_teamColorDiffuse));
+	}
 	
 	return name;
 }

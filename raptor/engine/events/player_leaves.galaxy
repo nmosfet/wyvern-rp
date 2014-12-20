@@ -1,0 +1,27 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+
+
+bool librptr_player_leaves(bool testConds, bool runActions) {
+	int new_admin = -1;
+	
+	librptr_print_text( librptr_player_name_colored(EventPlayer()) + StringToText(" has left the game"), PlayerGroupAll() );
+	
+	// if admin leaves, make another player the admin
+	if(librptr_player[EventPlayer()].permission_level == LIBRPTR_PERMISSIONS_LEVEL_ADMIN) {
+		// promote first moderator detected
+		
+		// else
+	}
+	
+	
+	
+	
+	return true;
+}

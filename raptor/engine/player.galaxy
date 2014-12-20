@@ -6,8 +6,11 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+// basic game player constants
 const int LIBRPTR_MAX_PLAYERS = 16; // max players supported is 16 (0 - neutral, 15 - hostile)
 const string LIBRPTR_PLAYER_BANK_NAME = "raptor_bank";
+const int LIBRPTR_PLAYER_NEUTRAL = 0;
+const int LIBRPTR_PLAYER_HOSTILE = 15;
 
 // librptr_player_struct
 // =======================
@@ -97,11 +100,12 @@ librptr_player_properties[LIBRPTR_MAX_PLAYERS] librptr_player;
 
 // librptr_initialize_player
 // ==============================
-// initialize players (initialize settings, pan camera to center of map)
+// initialize players (default settings)
 void librptr_player_initialize(int player) {
 	librptr_player[player].bank_storage = BankLoad( LIBRPTR_PLAYER_BANK_NAME, player );
 	librptr_player[player].map_revealer = VisRevealerCreate(player, RegionEntireMap());
 	librptr_player[player].mouse_position = RegionGetCenter( RegionEntireMap() );
+	librptr_player[player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_DEFAULT;
 	
 	librptr_player[player].spawn_splat = null;
 	librptr_player[player].doodad_splat = null;
@@ -109,6 +113,12 @@ void librptr_player_initialize(int player) {
 	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
 }
 
+// librptr_player_name_colored
+// ===========================
+// returns a text string of player name with color
+text librptr_player_name_colored(int player) {
+	return TextWithColor( StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player), ColorFromIndex( PlayerGetColorIndex(player, false), c_teamColorDiffuse) );	
+}
 
 int librptr_color_to_player(string colour) {
 	// special color keywords
@@ -119,6 +129,8 @@ int librptr_color_to_player(string colour) {
 	} else if( colour == "me" ) {
 		return EventPlayer();
 	}
+	
+	
 	
 	return -1;
 }

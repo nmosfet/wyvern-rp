@@ -14,6 +14,13 @@
 // Contains various utility functions used throughout engine
 include "raptor/engine/utility/scripts.galaxy"
 
+// permissions
+// =============
+// Contains functions for player permissions
+// (included before player.galaxy because player requires
+// permissions level constants in here)
+include "raptor/engine/permissions.galaxy"
+
 // player
 // =============
 // Contains any important player specific variables during 
@@ -63,9 +70,14 @@ include "raptor/engine/events/events.galaxy"
 // tools for debugging
 include "raptor/engine/debug.galaxy"
 
+// engine version
+const int LIBRPTR_BUILD_VERSION = 0;
+const int LIBRPTR_BUILD_SUB_VERSION = 1;
+const string LIBRPTR_BUILD_VERSION_MODIFIER = "-alpha";
 
 void librptr_engine_initialize() {
 	int player = 1;
+	bool admin_set = false;
 	
 	// intialize engine
 	librptr_settings_initialize();
@@ -73,9 +85,15 @@ void librptr_engine_initialize() {
 	
 	// initialize players
 	while ( player < LIBRPTR_MAX_PLAYERS ) {
-		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive) {
+		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
 			librptr_player_initialize(player);
 			librptr_chat_initialize_player(player);
+			
+			// give admin to first active player (assumes player 1 is lobby host and should be default admin)
+			if( !admin_set ) {
+				librptr_player[player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_ADMIN;
+				admin_set = true;
+			}
 		}
 		player += 1;
 	}

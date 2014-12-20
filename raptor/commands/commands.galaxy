@@ -6,14 +6,21 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+include "raptor/commands/general_commands.galaxy"
+include "raptor/commands/admin_commands.galaxy"
 include "raptor/commands/spawn_commands.galaxy"
 include "raptor/commands/unit_commands.galaxy"
 include "raptor/commands/chat_commands.galaxy"
 
 void librptr_commands_initialize() {
 
+	// general commands
+	librptr_chat_command_create("\\info", "librptr_command_info");
+	librptr_chat_command_create("\\commands", "librptr_command_list_commands");
+	librptr_chat_command_create("\\players", "librptr_command_players");
+
 	// admin commands
-	
+	librptr_chat_command_create("\\ban", "librptr_command_ban");
 	
 	// spawn command
 	librptr_chat_command_create("@spawn", "librptr_command_spawn");

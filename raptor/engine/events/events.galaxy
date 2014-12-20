@@ -12,4 +12,5 @@ void librtpr_events_initialize() {
 	TriggerAddEventMouseMoved( TriggerCreate("librptr_mouse_moved"), c_playerAny );
 	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_left_clicked_down"), c_playerAny, c_mouseButtonLeft, true );
 	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_right_clicked_down"), c_playerAny, c_mouseButtonRight, true );
+	TriggerAddEventPlayerLeft( TriggerCreate("librptr_player_leaves"), c_playerAny, c_gameResultUndecided );
 }

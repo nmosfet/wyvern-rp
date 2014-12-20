@@ -6,6 +6,7 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+
 // librptr_settings_definition
 // ============================
 // contains a games parameters
@@ -15,12 +16,11 @@ struct librptr_settings_definition {
 	string commands;
 	
 };
-
-
+// create instance of settings:
 librptr_settings_definition librptr_settings;
 
 // initializes default settings
 void librptr_settings_initialize() {
 	librptr_settings.map_revealed = true;
-	librptr_settings.commands = "alias, template, var,";
+	librptr_settings.commands = "alias, template, var, ";
 }
