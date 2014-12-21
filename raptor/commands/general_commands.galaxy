@@ -27,13 +27,18 @@ bool librptr_command_list_commands(bool testConds, bool runActions) {
 // ===============
 // prints player info (name + color + permissions level)
 bool librptr_command_players(bool testConds, bool runActions) {
-	int player = 1;
-	text player_info = StringToText("> Listing players: ");
+	int player = 0;
+	text player_info;
+	text output = StringToText("> Listing players: ");
 	
 	while( player < LIBRPTR_MAX_PLAYERS ) {
-		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
-			player_info = player_info + StringToText("\n") + librptr_player_name_colored(player) + StringToText(" (") + PlayerColorName(player) + StringToText(")");
-
+		if( PlayerStatus(player) != c_playerStatusUnused ) {
+			if( PlayerStatus(player) == c_playerStatusActive || PlayerType(player) != c_playerTypeUser ) {
+				player_info = librptr_player_name_colored(player) + StringToText(" (") + PlayerColorName(PlayerGetColorIndex(player, false)) + StringToText(")");
+			} else { // player left: print info in grey
+				player_info = TextWithColor( PlayerName(player) + StringToText(" (") + PlayerColorName(PlayerGetColorIndex(player, false)) + StringToText(") (Left)"), Color(35,35,35) );
+			}
+			
 			// display mod or admin status
 			if( librptr_player[player].permission_level == LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
 				player_info = player_info + StringToText(" (Mod)");
@@ -41,11 +46,15 @@ bool librptr_command_players(bool testConds, bool runActions) {
 			else if( librptr_player[player].permission_level == LIBRPTR_PERMISSIONS_LEVEL_ADMIN ) {
 				player_info = player_info + StringToText(" (Admin)");
 			}
+			
+			output = output + StringToText("\n") + player_info;
 		}
 		player += 1;
 	}
 
-	librptr_print_text(player_info, PlayerGroupSingle(EventPlayer()));
+	librptr_print_text(output, PlayerGroupSingle(EventPlayer()));
 
 	return true;
 }
+
+
