@@ -81,6 +81,7 @@ void librptr_engine_initialize() {
 	
 	// intialize engine
 	librptr_settings_initialize();
+	librptr_preplaced_unit_initialize();
 	librtpr_events_initialize();
 	
 	// initialize players

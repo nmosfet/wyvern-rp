@@ -51,7 +51,7 @@ bool librptr_command_scale(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "SetScale " + FixedToString(x, 4) + "," + FixedToString(y, 4)  + "," + FixedToString(z, 4) + " " + FixedToString(time, 3) );
-		//TODO: update unit cache system
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@scale", librptr_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
@@ -142,7 +142,7 @@ bool librptr_command_tint(bool testConds, bool runActions) {
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "SetTintColor {" + IntToString(red) + "," + IntToString(green) + "," + IntToString(blue) + " " +
 			FixedToString(hdr, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "SetOpacity {" + FixedToString(alpha, c_fixedPrecisionAny) + "} {" + "0 }");
-		//TODO: update unit cache system
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@tint", librptr_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
@@ -173,7 +173,7 @@ bool librptr_command_modelswap(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), amsg);
-		//TODO: update unit cache system
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@modelswap", librptr_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
@@ -232,7 +232,7 @@ bool librptr_command_actormessage(bool testConds, bool runActions) {
 		}
 		else {
 			ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, amsg);
-			//TODO: update unit cache system
+			librptr_unit_cache_update(UnitGroupLoopCurrent(), "@actormsg", librptr_player[EventPlayer()].chat_msg);
 		}
 		UnitGroupLoopStep();
 	}
@@ -420,8 +420,10 @@ bool librptr_command_attach(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), actormsg);
-		if(!StringContains(actr, "TalkIcon", c_stringAnywhere, c_stringNoCase)) {
-			//TODO: update unit cache system
+		
+		// TODO: need to generalize actors that shouldnt update cache
+		if(!StringContains(actr, "TalkIcon", c_stringAnywhere, c_stringNoCase)) { 
+			librptr_unit_cache_update(UnitGroupLoopCurrent(), "@attach", librptr_player[EventPlayer()].chat_msg);
 		}
 		UnitGroupLoopStep();
 	}

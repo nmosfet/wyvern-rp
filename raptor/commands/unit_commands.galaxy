@@ -32,3 +32,34 @@ bool libcrtx_command_kill(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_cache
+// ===================
+// displays unit command cache info or values
+bool librptr_command_cache(bool testConds, bool runActions) {
+	string cache;
+	string unit_caches;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	cache = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(StringToInt(cache) == 0) { //display number of caches
+			if(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_CACHE_COUNT) == 1 && !DataTableValueExists(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_ID), 0) + ".1")) {
+				unit_caches = "0";
+			}
+			else {
+				unit_caches = FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_CACHE_COUNT), 0);
+			}
+			librptr_print_output("Unit " + UnitGetType(UnitGroupLoopCurrent()) + " has " + unit_caches + " command caches (type \"@cache #\" to view a cache)", EventPlayer());
+		}
+		else {
+			if(DataTableValueExists(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_ID), 0) + "." + cache)) {
+				librptr_print_output("Unit " + UnitGetType(UnitGroupLoopCurrent()) + " cache " + cache + ":<n/>" + DataTableGetString(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_ID), 0) + "." + cache), EventPlayer());
+			}
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();	
+	return true;
+}

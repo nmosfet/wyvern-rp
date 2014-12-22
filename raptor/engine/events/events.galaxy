@@ -14,4 +14,9 @@ void librtpr_events_initialize() {
 	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_left_clicked_down"), c_playerAny, c_mouseButtonLeft, true );
 	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_right_clicked_down"), c_playerAny, c_mouseButtonRight, true );
 	TriggerAddEventPlayerLeft( TriggerCreate("librptr_player_leaves"), c_playerAny, c_gameResultUndecided );
+	
+	// unit initialization events (functions found in unit.galaxy)
+    TriggerAddEventUnitCreated( TriggerCreate("librptr_unit_initialize"), null, null, null );
+    TriggerAddEventUnitRemoved( TriggerCreate("librptr_unit_death_data_remove"), null );
+    TriggerAddEventUnitDied( TriggerCreate("librptr_unit_death_data_remove"), null) ;
 }

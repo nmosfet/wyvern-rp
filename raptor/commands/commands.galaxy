@@ -33,6 +33,7 @@ void librptr_commands_initialize() {
 	// unit commands
 	librptr_chat_command_create("@remove", "libcrtx_command_remove");
 	librptr_chat_command_create("@kill", "libcrtx_command_kill");
+	librptr_chat_command_create("@cache", "librptr_command_cache");
 	
 	// unit visual (actor) commands
 	librptr_chat_command_create("@scale", "librptr_command_scale");

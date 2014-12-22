@@ -54,6 +54,7 @@ bool librptr_command_setname(bool testConds, bool runActions) {
 	while(!UnitGroupLoopDone()) {
 		librptr_unit_set_name(name, UnitGroupLoopCurrent());
 		librptr_print_output( "Unit [ID: " + librptr_unit_id(UnitGroupLoopCurrent()) + "] name set to: " + name, EventPlayer() );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@setname", librptr_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
@@ -77,6 +78,7 @@ bool librptr_command_setnamecolor(bool testConds, bool runActions) {
 	while(!UnitGroupLoopDone()) {
 		librptr_unit_set_name_color(col, UnitGroupLoopCurrent());
 		librptr_print_text( StringToText("> Unit [ID: " + librptr_unit_id(UnitGroupLoopCurrent()) + "] name set to: ") + librptr_unit_get_name(UnitGroupLoopCurrent()), PlayerGroupSingle(EventPlayer()) );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@setnamecolor", librptr_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
