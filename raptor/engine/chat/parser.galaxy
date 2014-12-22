@@ -32,7 +32,7 @@ void librptr_chat_command_create(string command, string function) {
 // parses a chat message string for commands (each command separated by ";" )
 // built-in commands are "alias", "template", and "var" which affect parsing
 // hence these are treated separately than all other commands
-void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_depth) {
+void librptr_chat_parse(string msg, int player, unitgroup target) {
 	string current = msg;
 	string current_alias_subbed;
 	int semicolon_index;

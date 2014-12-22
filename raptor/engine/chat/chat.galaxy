@@ -40,7 +40,7 @@ bool librptr_process_chat_event(bool testConds, bool runActions) {
 			target = UnitGroupSelected(EventPlayer());
 			// TODO: unit permissions (only affect personal units selected, or those with < permissions)
 		}
-		librptr_chat_parse(librptr_player[EventPlayer()].chat_msg, EventPlayer(), target, 0);
+		librptr_chat_parse(librptr_player[EventPlayer()].chat_msg, EventPlayer(), target);
 	}
 	else if( !librptr_player[EventPlayer()].muted ){
 		librptr_chat_print_OOC( librptr_player[EventPlayer()].chat_msg , EventPlayer());
