@@ -6,13 +6,14 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-// librptr_chat_parse
-// =====================
-// iteratively parses a string of commands
-// reserved special cases are for "var", "alias", and "template"
-const int LIBRPTR_CHAT_PARSER_RECURSION_LIMIT = 10;
 const string LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX = "librptr_command_";
 
+// librptr_chat_command_create
+// ==================
+// creates a chat command by storing as a trigger in data table
+// [key: command string] : [value: command trigger]
+// when a command needs to be run, if command exists as a key in the data table,
+// the trigger is run as a command function
 void librptr_chat_command_create(string command, string function) {
 	trigger t = TriggerCreate(function);
 	if (t == null) {
@@ -22,10 +23,15 @@ void librptr_chat_command_create(string command, string function) {
 		
 		librptr_print("REGISTERED COMMAND: " + command, PlayerGroupAll() );
 		
-		librptr_settings.commands = librptr_settings.commands + command + ", ";
+		librptr_settings.commands = librptr_settings.commands +  ", " + command;
 	}
 }
 
+// librptr_chat_parse
+// =================
+// parses a chat message string for commands (each command separated by ";" )
+// built-in commands are "alias", "template", and "var" which affect parsing
+// hence these are treated separately than all other commands
 void librptr_chat_parse(string msg, int player, unitgroup target, int recursion_depth) {
 	string current = msg;
 	string current_alias_subbed;

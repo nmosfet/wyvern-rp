@@ -37,7 +37,7 @@ librptr_settings_definition librptr_settings;
 // initializes default settings
 void librptr_settings_initialize() {
 	librptr_settings.map_revealed = true;
-	librptr_settings.commands = "alias, template, var, ";
+	librptr_settings.commands = "alias, template, var";
 	librptr_settings.min_scale = 0.001;
 	librptr_settings.max_scale = 10.0;
 }
