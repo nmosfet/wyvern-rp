@@ -8,8 +8,139 @@
 
 // librptr_command_ban
 // ====================
-// bans a player
+// bans a player (removes all player's units from map too)
 bool librptr_command_ban(bool testConds, bool runActions) {
-	// TODO
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
+		librptr_print_error("Only moderators and admins can use \\ban", EventPlayer());
+		return false;
+	}
+	if( librptr_player[EventPlayer()].permission_level <= librptr_player[target_player].permission_level ) {
+		librptr_print_error("You cannot ban someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	GameOver( target_player, c_gameOverDefeat, false, true );
+
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been banned by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	// TODO: REMOVE ALL OF A PLAYER'S UNITS ON BAN
+	
+	return true;
+}
+
+// librptr_command_disable
+// ====================
+// prevents player from using commands
+// all chat instead routed directly to OOC
+bool librptr_command_disable(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
+		librptr_print_error("Only moderators and admins can use \\disable", EventPlayer());
+		return false;
+	}
+	if( librptr_player[EventPlayer()].permission_level <= librptr_player[target_player].permission_level ) {
+		librptr_print_error("You cannot disable/enable someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+
+	librptr_player[target_player].disabled = true;
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been disabled by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// librptr_command_enable
+// ====================
+// "enables" a player; allows commands to be used
+bool librptr_command_enable(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
+		librptr_print_error("Only moderators and admins can use \\enable", EventPlayer());
+		return false;
+	}
+	if( librptr_player[EventPlayer()].permission_level <= librptr_player[target_player].permission_level ) {
+		librptr_print_error("You cannot disable/enable someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	librptr_player[target_player].disabled = false;
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been enabled by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// librptr_command_mute
+// ====================
+// prevents player's messages appearing in chat
+bool librptr_command_mute(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
+		librptr_print_error("Only moderators and admins can use \\mute", EventPlayer());
+		return false;
+	}
+	if( librptr_player[EventPlayer()].permission_level <= librptr_player[target_player].permission_level ) {
+		librptr_print_error("You cannot mute/unmute someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+
+	librptr_player[target_player].muted = true;
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been muted by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// librptr_command_unmute
+// ====================
+// unmutes a player (messages can appear in chat)
+bool librptr_command_unmute(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
+		librptr_print_error("Only moderators and admins can use \\unmute", EventPlayer());
+		return false;
+	}
+	if( librptr_player[EventPlayer()].permission_level <= librptr_player[target_player].permission_level ) {
+		librptr_print_error("You cannot mute/unmute someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	librptr_player[target_player].muted = false;
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been unmuted by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
 	return true;
 }

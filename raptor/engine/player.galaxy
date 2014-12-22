@@ -8,7 +8,7 @@
 
 // basic game player constants
 const int LIBRPTR_MAX_PLAYERS = 16; // max players supported is 16 (0 - neutral, 15 - hostile)
-const string LIBRPTR_PLAYER_BANK_NAME = "raptor_bank";
+const string LIBRPTR_PLAYER_BANK_NAME = "RaptorBank";
 const int LIBRPTR_PLAYER_NEUTRAL = 0;
 const int LIBRPTR_PLAYER_HOSTILE = 15;
 
@@ -120,17 +120,74 @@ text librptr_player_name_colored(int player) {
 	return TextWithColor( StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player), ColorFromIndex( PlayerGetColorIndex(player, false), c_teamColorDiffuse) );	
 }
 
+// librptr_color_to_player_default
+// ==========================
+// Returns the default player index for a color string
+int librptr_color_to_player_default(string colour)
+{
+	if( colour == "white" ) {
+		return 0;
+	} else if( colour == "red" ) {
+		return 1;
+	} else if( colour == "blue") {
+		return 2;
+	} else if( colour == "teal" ) {
+		return 3;
+	} else if( colour == "purple" ) {
+		return 4;
+	} else if( colour == "yellow" ) {
+		return 5;
+	} else if( colour == "orange" ) {
+		return 6;
+	} else if( colour == "green" ) {
+		return 7;
+	} else if( colour == "lightpink" ) {
+		return 8;
+	} else if( colour == "violet" ) {
+		return 9;
+	} else if( colour == "lightgrey" ) {
+		return 10;
+	} else if( colour == "lightgray" ) {
+		return 10;
+	} else if( colour == "darkgreen" ) {
+		return 11;
+	} else if( colour == "brown" ) {
+		return 12;
+	} else if( colour == "lightgreen" ) {
+		return 13;
+	} else if( colour == "darkgrey" ) {
+		return 14; 
+	} else if( colour == "darkgray" ) {
+		return 14; 
+	} else if( colour == "pink" ) {
+		return 15;
+	}
+
+	return -1;
+}
+
+// librptr_color_to_player
+// ===================
+// Converts a color from a string to a player's index
+// (since Blizzard has no function to get color of a player as a string)
 int librptr_color_to_player(string colour) {
+	int player = LIBRPTR_MAX_PLAYERS - 1;
+	
 	// special color keywords
 	if( colour == "hostile" ) {
-		return 15;// some hostile color
+		return LIBRPTR_PLAYER_HOSTILE;
 	} else if( colour == "neutral" ) {
-		return 0; // generalize later
+		return LIBRPTR_PLAYER_NEUTRAL;
 	} else if( colour == "me" ) {
 		return EventPlayer();
 	}
 	
-	
+	while( player >= 0) {
+		if( PlayerGetColorIndex( player, false ) == librptr_color_to_player_default(colour) && PlayerStatus(player) != c_playerStatusUnused) {
+			return player;
+		}
+		player -= 1;
+	}
 	
 	return -1;
 }

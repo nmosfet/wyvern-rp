@@ -22,6 +22,10 @@ void librptr_commands_initialize() {
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");
+	librptr_chat_command_create("\\disable", "librptr_command_disable");
+	librptr_chat_command_create("\\enable", "librptr_command_enable");
+	librptr_chat_command_create("\\mute", "librptr_command_mute");
+	librptr_chat_command_create("\\unmute", "librptr_command_unmute");
 	
 	// spawn command
 	librptr_chat_command_create("@spawn", "librptr_command_spawn");

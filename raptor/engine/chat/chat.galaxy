@@ -29,8 +29,8 @@ bool librptr_process_chat_event(bool testConds, bool runActions) {
 	unitgroup target = null;
 	librptr_player[EventPlayer()].chat_msg = librptr_string_trim(EventChatMessage(false));
 	
-	// "<< " directly dumps message to OOC
-	if ( StringWord( librptr_player[EventPlayer()].chat_msg, 1) == "<<" ) {
+	// "<< " directly dumps message to OOC (if player not muted)
+	if ( StringWord( librptr_player[EventPlayer()].chat_msg, 1) == "<<" &&  !librptr_player[EventPlayer()].muted ) {
 		librptr_player[EventPlayer()].chat_msg = librptr_string_trim( StringSub(librptr_player[EventPlayer()].chat_msg, 3, StringLength(librptr_player[EventPlayer()].chat_msg)) );
 		librptr_chat_print_OOC( librptr_player[EventPlayer()].chat_msg , EventPlayer());
 	}
