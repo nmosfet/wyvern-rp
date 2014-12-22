@@ -10,6 +10,7 @@ include "raptor/commands/general_commands.galaxy"
 include "raptor/commands/admin_commands.galaxy"
 include "raptor/commands/spawn_commands.galaxy"
 include "raptor/commands/unit_commands.galaxy"
+include "raptor/commands/actor_commands.galaxy"
 include "raptor/commands/chat_commands.galaxy"
 
 void librptr_commands_initialize() {
@@ -28,6 +29,13 @@ void librptr_commands_initialize() {
 	// unit commands
 	librptr_chat_command_create("@remove", "libcrtx_command_remove");
 	librptr_chat_command_create("@kill", "libcrtx_command_kill");
+	
+	// unit visual (actor) commands
+	librptr_chat_command_create("@scale", "librptr_command_scale");
+	librptr_chat_command_create("@tint", "librptr_command_tint");
+	librptr_chat_command_create("@modelswap", "librptr_command_modelswap");
+	librptr_chat_command_create("@actormsg", "librptr_command_actormessage");
+	librptr_chat_command_create("@attach", "librptr_command_attach");
 	
 	// chat commands
 	librptr_chat_command_create("\\narrate", "librptr_command_narrate");

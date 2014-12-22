@@ -12,10 +12,25 @@
 // contains a games parameters
 struct librptr_settings_definition {
 	int flags;
+	
+	// map_revealed
+	// ========
+	// flag for whether the map is revealed
 	bool map_revealed;
+	
+	// commands
+	// ========
+	// string containing all of the game's commands, separated by commas ", "
 	string commands;
 	
+	// min_scale / max_scale
+	// ===============
+	// minimum and max scale of a unit that player can use from @scale
+	// (not actually that useful because @actrmsg will allow arbitrary scale)
+	fixed min_scale;
+	fixed max_scale;
 };
+
 // create instance of settings:
 librptr_settings_definition librptr_settings;
 
@@ -23,4 +38,6 @@ librptr_settings_definition librptr_settings;
 void librptr_settings_initialize() {
 	librptr_settings.map_revealed = true;
 	librptr_settings.commands = "alias, template, var, ";
+	librptr_settings.min_scale = 0.001;
+	librptr_settings.max_scale = 10.0;
 }
