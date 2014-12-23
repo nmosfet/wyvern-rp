@@ -76,7 +76,6 @@ void librptr_chat_parse(string msg, int player, unitgroup target) {
 				break;
 			}
 			
-			Wait(0.0, c_timeGame); // speeds up loop processing
 		}
 		// after getting current, replace escape sequence for semicolon: "\;" -> ";"
 		current = StringReplaceWord(current, "\\;", ";", c_stringReplaceAll, false);
@@ -140,7 +139,6 @@ void librptr_chat_parse(string msg, int player, unitgroup target) {
 			librptr_chat_print_OOC( current, player );
 		}
 		
-		Wait(0.0, c_timeGame); // speeds up loop processing
 	}
 }
 
