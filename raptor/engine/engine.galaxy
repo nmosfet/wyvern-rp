@@ -56,8 +56,15 @@ include "raptor/engine/chat/chat.galaxy"
 
 // unit
 // =============
-// Unit spawn related functions
+// Unit spawn related functions, unit death/creation data management,
+// unit command caching functionality
 include "raptor/engine/unit.galaxy"
+
+// gamesetups
+// =============
+// Saving/loading units and their command history into player banks
+// -> allows creation of "gamesetups" (act like game saves)
+include "raptor/engine/gamesetups.galaxy"
 
 // events
 // =============

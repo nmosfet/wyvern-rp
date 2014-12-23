@@ -57,4 +57,118 @@ bool librptr_command_players(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_gamesetup
+// ====================
+// redirects to proper gamesetup saving/loading/removing commands
+bool librptr_command_gamesetup(bool testConds, bool runActions) {
+	string param;
+	string gamesetup_name;
+	string rgnName;
+	region rgn = RegionEntireMap();
+	int i;
+	string gamesetup_list = "";
+	
+	if(StringWord(librptr_player[EventPlayer()].chat_msg, 2) == "") {
+		return true;
+	}
+	
+	param = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	
+	if(StringEqual(param, "save", c_stringNoCase)) {
+		gamesetup_name = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+		if(gamesetup_name == "") {
+			librptr_print_error("Invalid game setup name", EventPlayer());			
+			return true;
+		}
+		// TODO: PROPER REGIONS
+		if(StringWord(librptr_player[EventPlayer()].chat_msg, 4) != "") {
+			if(StringSub(StringWord(librptr_player[EventPlayer()].chat_msg, 4), 1, 1) == "#") {
+				rgnName = StringWord(librptr_player[EventPlayer()].chat_msg, 4);
+				rgnName = StringSub(rgnName, 2, StringLength(rgnName)); // remove the #
+				
+				// TODO: Get region from rgnName
+				
+				if(rgn == null) {
+					librptr_print_error("No region with that name exists!", EventPlayer());
+					return true;
+				}
+				librptr_print_success("Saving region " + rgnName, EventPlayer());
+			}
+			else {
+				librptr_print_error("Region name must be prefixed with '#' (e.g. a region named \"rgn\" must be entered as #rgn", EventPlayer());
+				return true;				
+			}
+		}
+		
+		librptr_gamesetup_save(EventPlayer(), gamesetup_name, rgn);
+		return true;
+	}
+	
+	if(StringEqual(param, "load", c_stringNoCase)) {
+		gamesetup_name = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+		
+		if(BankSectionExists(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_GAMESETUP_PREFIX + gamesetup_name)) {
+			librptr_print_text( librptr_player_name_colored(EventPlayer()) + StringToText(" is loading a gamesetup..."), PlayerGroupAll() );
+			librptr_gamesetup_load(EventPlayer(), gamesetup_name);
+			return true;
+		}
+		else {
+			librptr_print_error("Game setup " + gamesetup_name + " does not exist", EventPlayer());
+			return true;
+		}
+	}
+	
+	if(StringEqual(param, "remove", c_stringNoCase)) {
+		gamesetup_name = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+		
+		if( librptr_gamesetup_remove(EventPlayer(), gamesetup_name) ) {
+			librptr_print_success("Game setup \"" + gamesetup_name + "\" has been deleted", EventPlayer());
+			return true;
+		}
+		else {
+			librptr_print_error("Game setup \"" + gamesetup_name + "\" does not exist", EventPlayer());
+			return true;
+		}
+	}
+	
+	if(StringEqual(param, "removeall", c_stringNoCase)) {
+		i = BankSectionCount(librptr_player[EventPlayer()].bank_storage) - 1;
+		
+		while( i >= 0 ) {
+			if( StringContains(BankSectionName(librptr_player[EventPlayer()].bank_storage, i), LIBRPTR_BANK_GAMESETUP_PREFIX, c_stringBegin, c_stringNoCase) ) {
+				BankSectionRemove(librptr_player[EventPlayer()].bank_storage, BankSectionName(librptr_player[EventPlayer()].bank_storage, i));
+			}
+			i -= 1;
+		}
+		BankSave(librptr_player[EventPlayer()].bank_storage);
+		librptr_print_success("All game setups have been deleted", EventPlayer());
+	
+		return true;
+	}
+	
+	if(StringEqual(param, "list", c_stringNoCase)) {
+		i = BankSectionCount(librptr_player[EventPlayer()].bank_storage) - 1;
 
+		while(i >= 0) {
+			if( StringContains(BankSectionName(librptr_player[EventPlayer()].bank_storage, i), LIBRPTR_BANK_GAMESETUP_PREFIX, c_stringBegin, c_stringNoCase) ) {
+				gamesetup_name = BankSectionName(librptr_player[EventPlayer()].bank_storage, i);
+				gamesetup_list = gamesetup_list + ", " + StringSub(gamesetup_name, 4, StringLength(gamesetup_name));
+			}
+			i -= 1;
+		}
+		
+		if(gamesetup_list == "") {
+			librptr_print_output("You have no saved game setups", EventPlayer());
+			return true;
+		}
+		
+		//remove the first comma
+		gamesetup_list = StringSub(gamesetup_list, 3, StringLength(gamesetup_list));
+		
+		librptr_print_output("Listing gamesetups:\n" + gamesetup_list, EventPlayer());
+		
+		return true;
+	}
+	
+	return true;
+}

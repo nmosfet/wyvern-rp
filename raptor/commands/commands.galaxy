@@ -19,6 +19,7 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\info", "librptr_command_info");
 	librptr_chat_command_create("\\commands", "librptr_command_list_commands");
 	librptr_chat_command_create("\\players", "librptr_command_players");
+	librptr_chat_command_create("\\gamesetup", "librptr_command_gamesetup");
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");

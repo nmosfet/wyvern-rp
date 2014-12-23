@@ -9,7 +9,6 @@
 include "raptor/engine/chat/alias.galaxy"
 include "raptor/engine/chat/templates.galaxy"
 include "raptor/engine/chat/variables.galaxy"
-include "raptor/engine/chat/cache.galaxy"
 include "raptor/engine/chat/parser.galaxy"
 
 // prototypes

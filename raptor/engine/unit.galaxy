@@ -69,6 +69,11 @@ string librptr_unit_id(unit u) {
 // runs when unit created (from UnitCreate or from abils)
 // sets the unit's id and sets command cache count to 1
 bool librptr_unit_initialize(bool testConds, bool runActions) {
+	// if unit already has data initialized -> skip
+	if( UnitGetCustomValue( EventUnitCreatedUnit(), LIBRPTR_UNIT_INDEX_ID ) > 0 ) {
+		return true;
+	}
+	
 	librptr_unit_set_id(EventUnitCreatedUnit());
 	UnitSetCustomValue(EventUnitCreatedUnit(), LIBRPTR_UNIT_INDEX_CACHE_COUNT, 1);
 	return true;
