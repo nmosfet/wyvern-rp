@@ -37,7 +37,7 @@ bool librptr_process_chat_event(bool testConds, bool runActions) {
 		// if player is not mouse-click spawning, set context to selected units
 		if( !librptr_player[EventPlayer()].is_placing_unit ) {
 			target = UnitGroupSelected(EventPlayer());
-			// TODO: unit permissions (only affect personal units selected, or those with < permissions)
+			target = librptr_enforce_unit_permissions(target, EventPlayer());
 		}
 		librptr_chat_parse(librptr_player[EventPlayer()].chat_msg, EventPlayer(), target);
 	}

@@ -14,18 +14,17 @@
 // Contains various utility functions used throughout engine
 include "raptor/engine/utility/scripts.galaxy"
 
-// permissions
-// =============
-// Contains functions for player permissions
-// (included before player.galaxy because player requires
-// permissions level constants in here)
-include "raptor/engine/permissions.galaxy"
-
 // player
 // =============
 // Contains any important player specific variables during 
 // runtime of the engine (e.g. player mouse position, chat lines,...)
 include "raptor/engine/player.galaxy"
+
+// permissions
+// =============
+// Contains functions for player permissions related functions
+// and unit permissions
+include "raptor/engine/permissions.galaxy"
 
 // output
 // =============

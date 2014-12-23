@@ -11,6 +11,7 @@
 // bans a player (removes all player's units from map too)
 bool librptr_command_ban(bool testConds, bool runActions) {
 	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	unitgroup g;
 	
 	// check if player is valid
 	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
@@ -28,10 +29,17 @@ bool librptr_command_ban(bool testConds, bool runActions) {
 	}
 	
 	GameOver( target_player, c_gameOverDefeat, false, true );
-
+	
+	// remove all of a player's units
+	g = UnitGroup( null, target_player, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0 );
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitRemove( UnitGroupLoopCurrent() );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
 	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been banned by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
-
-	// TODO: REMOVE ALL OF A PLAYER'S UNITS ON BAN
 	
 	return true;
 }

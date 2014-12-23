@@ -105,7 +105,7 @@ void librptr_player_initialize(int player) {
 	librptr_player[player].bank_storage = BankLoad( LIBRPTR_PLAYER_BANK_NAME, player );
 	librptr_player[player].map_revealer = VisRevealerCreate(player, RegionEntireMap());
 	librptr_player[player].mouse_position = RegionGetCenter( RegionEntireMap() );
-	librptr_player[player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_DEFAULT;
+	librptr_player[player].permission_level = 0;
 	
 	librptr_player[player].spawn_splat = null;
 	librptr_player[player].doodad_splat = null;
@@ -123,8 +123,7 @@ text librptr_player_name_colored(int player) {
 // librptr_color_to_player_default
 // ==========================
 // Returns the default player index for a color string
-int librptr_color_to_player_default(string colour)
-{
+int librptr_color_to_player_default(string colour) {
 	if( colour == "white" ) {
 		return 0;
 	} else if( colour == "red" ) {
@@ -190,4 +189,55 @@ int librptr_color_to_player(string colour) {
 	}
 	
 	return -1;
+}
+
+// librptr_color_from_player_default
+// =======================
+// returns the default color for a player index (ported from Cortex)
+// (assumes mapmakers don't mess with default player color index)
+string librptr_color_from_player_default(int plr) {
+	if( plr == 0 ) {
+		return "white";
+	} else if( plr == 1 ) {
+		return "red";
+	} else if( plr == 2 ) {
+		return "blue";
+	} else if( plr == 3 ) {
+		return "teal";
+	} else if( plr == 4 ) {
+		return "purple";
+	} else if( plr == 5 ) {
+		return "yellow";
+	} else if( plr == 6 ) {
+		return "orange";
+	} else if( plr == 7 ) {
+		return "green";
+	} else if( plr == 8 ) {
+		return "lightpink";
+	} else if( plr == 9 ) {
+		return "violet";
+	} else if( plr == 10 ) {
+		return "lightgrey";
+	} else if( plr == 11 ) {
+		return "darkgreen";
+	} else if( plr == 12 ) {
+		return "brown";
+	} else if( plr == 13 ) {
+		return "lightgreen";
+	} else if( plr == 14 ) {
+		return "darkgrey";
+	} else if( plr == 15 ) {
+		return "pink";
+	}
+
+	return "";
+}
+
+// librptr_color_from_player
+// ======================
+// Returns the string name of the color a player currently is (Ported from Cortex)
+// (since Blizzard PlayerColorName returns as text, which 
+// cant be used for comparisons or anything useful)
+string librptr_color_from_player(int plr) {
+	return librptr_color_from_player_default(PlayerGetColorIndex(plr, false));
 }

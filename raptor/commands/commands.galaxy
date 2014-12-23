@@ -20,6 +20,9 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\commands", "librptr_command_list_commands");
 	librptr_chat_command_create("\\players", "librptr_command_players");
 	librptr_chat_command_create("\\gamesetup", "librptr_command_gamesetup");
+	librptr_chat_command_create("\\control", "librptr_command_control");
+	librptr_chat_command_create("\\uncontrol", "librptr_command_uncontrol");
+	librptr_chat_command_create("\\remove", "librptr_command_remove_player");
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");
@@ -32,9 +35,11 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@spawn", "librptr_command_spawn");
 	
 	// unit commands
-	librptr_chat_command_create("@remove", "libcrtx_command_remove");
-	librptr_chat_command_create("@kill", "libcrtx_command_kill");
+	librptr_chat_command_create("@kill", "librptr_command_kill");
+	librptr_chat_command_create("@remove", "librptr_command_remove");
+	librptr_chat_command_create("@removearea", "librptr_command_removearea");
 	librptr_chat_command_create("@cache", "librptr_command_cache");
+	librptr_chat_command_create("@give", "librptr_command_give");
 	
 	// unit visual (actor) commands
 	librptr_chat_command_create("@scale", "librptr_command_scale");

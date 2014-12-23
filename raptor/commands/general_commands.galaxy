@@ -172,3 +172,170 @@ bool librptr_command_gamesetup(bool testConds, bool runActions) {
 	
 	return true;
 }
+
+// librptr_command_control
+// ==================
+// gives a player control over another player's units (modified from Cortex Engine)
+bool librptr_command_control(bool testConds, bool runActions) {
+	string player = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	string target_player = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	string original = player;
+	int i = 1;
+	int context = EventPlayer();	// a player to be controlled/given control
+
+	// if target player specified, trying to make two players control one another
+	if( target_player != "" ) {
+		context = librptr_color_to_player(player);
+		player = target_player;
+	}
+	
+	if( context == -1 ) { // Invalid player.
+		return true;
+	}
+	
+	// check permissions on context player
+	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && librptr_player[EventPlayer()].permission_level <= librptr_player[context].permission_level ) {
+		return true;
+	}
+
+	// if original player was "all", unally all / ally all by 
+	// parsing command for each player
+	if( original == "all" ) {
+		while( i != LIBRPTR_MAX_PLAYERS ) {
+			// Issue this command over the next color.
+			librptr_chat_parse("\\control " + librptr_color_from_player(i) + " " + target_player, EventPlayer(), librptr_player[EventPlayer()].context);
+			i += 1;
+		}
+		return true;
+	}
+	
+	
+	// apply alliance control/spending
+	while( i != LIBRPTR_MAX_PLAYERS ) { 
+		if( i == context || (librptr_color_to_player(player) != i && player != "all") ) {
+			i += 1;
+			continue;
+		}
+
+		if( PlayerType(i) != c_playerTypeUser ) { 
+			PlayerSetAlliance( context, c_allianceIdControl, i, true );
+			PlayerSetAlliance( context, c_allianceIdSpend, i, true );
+			PlayerSetAlliance( i, c_allianceIdControl, context, true );
+			PlayerSetAlliance( i, c_allianceIdSpend, context, true );			
+		}
+		else {
+			PlayerSetAlliance( context, c_allianceIdControl, i, true );
+			PlayerSetAlliance( context, c_allianceIdSpend, i, true );
+			// Now check, do we have permission to modify this player's alliances, too?
+			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[context].permission_level ) {
+				PlayerSetAlliance( i, c_allianceIdControl, context, true );
+				PlayerSetAlliance( i, c_allianceIdSpend, context, true );	
+			}
+		}
+
+		i += 1;
+	}
+	
+	return true;
+}
+
+// librptr_command_uncontrol
+// ======================
+// stops unit spending/control between two players (Modified from Cortex Engine)
+bool librptr_command_uncontrol(bool testConds, bool runActions) {
+	string player = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	string target_player = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	string original = player;
+	int i = 1;
+	int context = EventPlayer();	// a player to be controlled/given control
+
+	// if target player specified, trying to make two players control one another
+	if( target_player != "" ) {
+		context = librptr_color_to_player(player);
+		player = target_player;
+	}
+	
+	if( context == -1 ) { // Invalid player.
+		return true;
+	}
+	
+	// check permissions on context player
+	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && librptr_player[EventPlayer()].permission_level <= librptr_player[context].permission_level ) {
+		return true;
+	}
+
+	// if original player was "all", unally all / ally all by 
+	// parsing command for each player
+	if( original == "all" ) {
+		while( i != LIBRPTR_MAX_PLAYERS ) {
+			// Issue this command over the next color.
+			librptr_chat_parse("\\control " + librptr_color_from_player(i) + " " + target_player, EventPlayer(), librptr_player[EventPlayer()].context);
+			i += 1;
+		}
+		return true;
+	}
+
+
+	// apply alliance control/spending
+	while( i != LIBRPTR_MAX_PLAYERS ) { 
+		if( i == context || (librptr_color_to_player(player) != i && player != "all") ) {
+			i += 1;
+			continue;
+		}
+
+		if( PlayerType(i) != c_playerTypeUser ) { 
+			PlayerSetAlliance( context, c_allianceIdControl, i, false );
+			PlayerSetAlliance( context, c_allianceIdSpend, i, false );
+			PlayerSetAlliance( i, c_allianceIdControl, context, false );
+			PlayerSetAlliance( i, c_allianceIdSpend, context, false );			
+		}
+		else {
+			PlayerSetAlliance( context, c_allianceIdControl, i, false );
+			PlayerSetAlliance( context, c_allianceIdSpend, i, false );
+			// Now check, do we have permission to modify this player's alliances, too?
+			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[context].permission_level ) {
+				PlayerSetAlliance( i, c_allianceIdControl, context, false );
+				PlayerSetAlliance( i, c_allianceIdSpend, context, false );	
+			}
+		}
+
+		i += 1;
+	}
+	
+	return true;
+}
+
+// librptr_command_remove_player
+// ===================
+// removes all of a specific players units from the map
+bool librptr_command_remove_player(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	unitgroup g;
+	
+	if( target_player == -1 ) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	// if target_player is not yourself or a non-user, do permissions check
+	if ( target_player != EventPlayer() && PlayerType(target_player) == c_playerTypeUser ) {
+		if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD && 
+			librptr_player[EventPlayer()].permission_level <= librptr_player[target_player].permission_level ) {
+			librptr_print_error("You cannot remove someone of equal or greater rank than you (while not a moderator or admin)", EventPlayer());
+			return false;
+		}
+	}
+	
+	// remove all of target player's units
+	g = UnitGroup( null, target_player, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0 );
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitRemove( UnitGroupLoopCurrent() );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been removed by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}

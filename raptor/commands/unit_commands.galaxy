@@ -6,10 +6,23 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+// libcrtx_command_kill
+// ====================
+// kills units in player unitgroup context
+bool librptr_command_kill(bool testConds, bool runActions) {
+	UnitGroupLoopBegin(librptr_player[EventPlayer()].context);
+	while(!UnitGroupLoopDone()) {
+		UnitKill( UnitGroupLoopCurrent() );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
 // librptr_command_remove
 // ====================
 // removes units in player unitgroup context
-bool libcrtx_command_remove(bool testConds, bool runActions) {
+bool librptr_command_remove(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(librptr_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		UnitRemove(UnitGroupLoopCurrent());
@@ -19,16 +32,28 @@ bool libcrtx_command_remove(bool testConds, bool runActions) {
 	return true;
 }
 
-// librptr_command_remove
-// ====================
-// kills units in player unitgroup context
-bool libcrtx_command_kill(bool testConds, bool runActions) {
-	UnitGroupLoopBegin(librptr_player[EventPlayer()].context);
+// librptr_command_removearea
+// =====================
+// removes unit in a radius around mouse position
+bool librptr_command_removearea(bool testConds, bool runActions) {
+	unitgroup g;
+	fixed radius = StringToFixed( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ));
+	if(radius == 0.0) {
+		radius = 5.0;
+	}
+
+	g = UnitGroup( null, c_playerAny, RegionCircle( librptr_player[EventPlayer()].mouse_position, radius), null, 0 );
+	g = librptr_enforce_unit_permissions(g, EventPlayer());
+
+	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
-		UnitKill( UnitGroupLoopCurrent() );
+		UnitRemove( UnitGroupLoopCurrent() );
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
+	
+	libNtve_gf_RemoveDeathModelsinRegion( RegionCircle( librptr_player[EventPlayer()].mouse_position, radius) );
+
 	return true;
 }
 
@@ -61,5 +86,26 @@ bool librptr_command_cache(bool testConds, bool runActions) {
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();	
+	return true;
+}
+
+// librptr_command_give
+// =================
+// gives another player units 
+bool librptr_command_give(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	int new_owner = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); 
+	
+	if(new_owner == -1) { // invalid entry by user
+		return true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetOwner( UnitGroupLoopCurrent(), new_owner, true );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
 	return true;
 }
