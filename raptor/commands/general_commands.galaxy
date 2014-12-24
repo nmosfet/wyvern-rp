@@ -339,3 +339,104 @@ bool librptr_command_remove_player(bool testConds, bool runActions) {
 
 	return true;
 }
+
+// librptr_command_search
+// ===================
+// searches a catalog for a specific keyword, then prints out
+// a set number of results. continued using "\search" with no parameters
+// lists more search results, until none are left
+bool librptr_command_search(bool testConds, bool runActions) {
+	const int SEARCH_LIST_COUNT = 8;
+	string type = StringCase( StringWord(librptr_player[EventPlayer()].chat_msg, 2), false );
+	string query = StringCase( StringWord(librptr_player[EventPlayer()].chat_msg, 3), false );
+	int catalog;
+	int i;
+	int count;
+	string result;
+
+	if(type == "ability" || type == "abilities") {
+		catalog = c_gameCatalogAbil;
+	}
+	else if(type == "actor" || type == "actors") {
+		catalog = c_gameCatalogActor;
+	}
+	else if(type == "behavior" || type == "behaviors") {
+		catalog = c_gameCatalogBehavior;
+	}
+	else if(type == "effect" || type == "effects") {
+		catalog = c_gameCatalogEffect;
+	}
+	else if(type == "footprint" || type == "footprints") {
+		catalog = c_gameCatalogFootprint;
+	}
+	else if(type == "light" || type == "lights") {
+		catalog = c_gameCatalogLight;
+	}
+	else if(type == "model" || type == "models") {
+		catalog = c_gameCatalogModel;
+	}
+	else if(type == "decal" || type == "decals") {
+		catalog = c_gameCatalogTexture;
+	}
+	else if(type == "turret" || type == "turrets") {
+		catalog = c_gameCatalogTurret;
+	}
+	else if(type == "unit" || type == "units") {
+		catalog = c_gameCatalogUnit;
+	}
+	else if(type == "upgrade" || type == "upgrades") {
+		catalog = c_gameCatalogUpgrade;
+	}
+	else if(type == "validator" || type == "validators") {
+		catalog = c_gameCatalogValidator;
+	}
+	else if(type == "weapon" || type == "weapons") {
+		catalog = c_gameCatalogWeapon;
+	}
+	else if(librptr_player[EventPlayer()].search_index == -1) {
+		librptr_print_output("Usage: search [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [what to search for]", EventPlayer());
+		return true;
+	}
+	
+	i = CatalogEntryCount(catalog);
+
+	// Allow for multi-page query results
+	if(type == "") {
+		i = librptr_player[EventPlayer()].search_index;
+		catalog = librptr_player[EventPlayer()].search_catalog;
+		query  = librptr_player[EventPlayer()].search_last_query;
+	}
+	else if(type == "repeat") {
+		i = librptr_player[EventPlayer()].search_index + SEARCH_LIST_COUNT;
+		catalog = librptr_player[EventPlayer()].search_catalog;
+		query  = librptr_player[EventPlayer()].search_last_query;
+	}
+
+	librptr_print(" ", PlayerGroupSingle(EventPlayer())); // newline for readability
+	librptr_print_output("<h>Results for the word \"" + query + "\"</h>:", EventPlayer());
+	
+	count = SEARCH_LIST_COUNT;
+	while(i != 0 && count != 0) {
+		result = CatalogEntryGet(catalog, i);
+		if(StringContains(result, query, c_stringAnywhere, c_stringNoCase) || query == "") {
+			// hide "decal" results that aren't decals at all.
+			if( catalog != c_gameCatalogTexture || StringContains(result, "Decal", c_stringAnywhere, c_stringNoCase) ) {
+				librptr_print(result, PlayerGroupSingle(EventPlayer()));
+				count -= 1;
+			}
+		}
+		i -= 1;
+	}
+
+	if(count == 0 && i != 0) {
+		librptr_print_output("<h>More results exist. Type \"\\search\" to see them.</h>", EventPlayer());
+		librptr_player[EventPlayer()].search_index = i;
+		librptr_player[EventPlayer()].search_last_query = query;
+		librptr_player[EventPlayer()].search_catalog = catalog;
+	}
+	else {
+		librptr_player[EventPlayer()].search_index = -1;
+	}
+	
+	return true;
+}

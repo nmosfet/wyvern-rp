@@ -90,6 +90,13 @@ struct librptr_player_properties {
 	// map revealer for entire map (revealers player specific)
 	revealer map_revealer;
 	
+	// search_ variables
+	// ==============
+	// used to mark player's search catalog, index, and query
+	// when using the "\search" command
+	int search_catalog;			// current search catalog
+	int search_index;			// current search index (> 0)
+	string search_last_query;	// current search term
 };
 
 // librptr_player[LIBRPTR_MAX_PLAYERS]

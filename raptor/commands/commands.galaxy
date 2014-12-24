@@ -23,6 +23,7 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\control", "librptr_command_control");
 	librptr_chat_command_create("\\uncontrol", "librptr_command_uncontrol");
 	librptr_chat_command_create("\\remove", "librptr_command_remove_player");
+	librptr_chat_command_create("\\search", "librptr_command_search");
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");
