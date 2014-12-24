@@ -394,7 +394,7 @@ bool librptr_command_search(bool testConds, bool runActions) {
 		catalog = c_gameCatalogWeapon;
 	}
 	else if(librptr_player[EventPlayer()].search_index == -1) {
-		librptr_print_output("Usage: search [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [what to search for]", EventPlayer());
+		librptr_print_output("Usage: \\search [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [what to search for]", EventPlayer());
 		return true;
 	}
 	
@@ -440,3 +440,95 @@ bool librptr_command_search(bool testConds, bool runActions) {
 	
 	return true;
 }
+
+// librptr_command_replace
+// ==================
+// replaces an entry in a data catalog with another entry
+// Note: This is a VERY insecure command, that could cause
+// a lot of really weird things to happen ingame. More testing is
+// needed to decide proper permissions for this
+bool librptr_command_replace(bool testConds, bool runActions) {
+	string type = StringCase( StringWord(librptr_player[EventPlayer()].chat_msg, 2), false );
+	int catalog;
+	string source = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	string replace = StringWord(librptr_player[EventPlayer()].chat_msg, 4);
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	if( source == "" || replace == "" ) {
+		librptr_print_output("Usage: \\replace [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [SOURCE] [REPLACEMENT]", EventPlayer());
+		return true;
+	}
+	
+	if(type == "ability" || type == "abilities") {
+		catalog = c_gameCatalogAbil;
+	}
+	else if(type == "actor" || type == "actors") {
+		catalog = c_gameCatalogActor;
+	}
+	else if(type == "behavior" || type == "behaviors") {
+		catalog = c_gameCatalogBehavior;
+	}
+	else if(type == "effect" || type == "effects") {
+		catalog = c_gameCatalogEffect;
+	}
+	else if(type == "footprint" || type == "footprints") {
+		catalog = c_gameCatalogFootprint;
+	}
+	else if(type == "light" || type == "lights") {
+		catalog = c_gameCatalogLight;
+	}
+	else if(type == "model" || type == "models") {
+		catalog = c_gameCatalogModel;
+	}
+	else if(type == "decal" || type == "decals") {
+		catalog = c_gameCatalogTexture;
+	}
+	else if(type == "turret" || type == "turrets") {
+		catalog = c_gameCatalogTurret;
+	}
+	else if(type == "unit" || type == "units") {
+		catalog = c_gameCatalogUnit;
+	}
+	else if(type == "upgrade" || type == "upgrades") {
+		catalog = c_gameCatalogUpgrade;
+	}
+	else if(type == "validator" || type == "validators") {
+		catalog = c_gameCatalogValidator;
+	}
+	else if(type == "weapon" || type == "weapons") {
+		catalog = c_gameCatalogWeapon;
+	}
+	else {
+		librptr_print_output("Usage: \\replace [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [SOURCE] [REPLACEMENT]", EventPlayer());
+		return true;
+	}
+	
+	// get source and replace actual data names
+	source = librptr_catalog_get(catalog, source);
+	replace = librptr_catalog_get(catalog, replace);
+	if( source == null || replace == null ) {
+		librptr_print_error("Invalid [source] or [replace] entry", EventPlayer());
+		return true;
+	}
+	
+	// so \replace works on other players (owner of any selected units)
+	if( UnitGroupCount(g, c_unitCountAlive) > 0 ) {
+		UnitGroupLoopBegin(g);
+		while(!UnitGroupLoopDone()) {
+			if( UnitGetOwner(UnitGroupLoopCurrent()) == EventPlayer() || librptr_player[EventPlayer()].permission_level > librptr_player[UnitGetOwner(UnitGroupLoopCurrent())].permission_level ) {
+				librptr_print_text( StringToText("> Replacing catalog entry for ") + librptr_player_name_colored(UnitGetOwner(UnitGroupLoopCurrent()))
+								  + StringToText(" in " + type + ": " + source + " -> " + replace), PlayerGroupSingle(EventPlayer()) );
+				CatalogLinkReplace(UnitGetOwner(UnitGroupLoopCurrent()), catalog, source, replace);
+			}
+			UnitGroupLoopStep();
+		}
+		UnitGroupLoopEnd();
+	}
+	else {
+		librptr_print_output("Replacing catalog entry in " + type + ": " + source + " -> " + replace, EventPlayer() );
+		CatalogLinkReplace(EventPlayer(), catalog, source, replace);
+	}
+	
+	return true;
+}
+

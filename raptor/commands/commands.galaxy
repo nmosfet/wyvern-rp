@@ -24,6 +24,7 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\uncontrol", "librptr_command_uncontrol");
 	librptr_chat_command_create("\\remove", "librptr_command_remove_player");
 	librptr_chat_command_create("\\search", "librptr_command_search");
+	librptr_chat_command_create("\\replace", "librptr_command_replace");
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");
@@ -41,6 +42,25 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@removearea", "librptr_command_removearea");
 	librptr_chat_command_create("@cache", "librptr_command_cache");
 	librptr_chat_command_create("@give", "librptr_command_give");
+	librptr_chat_command_create("@renameall", "librptr_command_renameall");
+	librptr_chat_command_create("@addbehavior", "librptr_command_addbehavior");
+	librptr_chat_command_create("@removebehavior", "librptr_command_removebehavior");
+	librptr_chat_command_create("@addweapon", "librptr_command_addweapon");
+	librptr_chat_command_create("@removeweapon", "librptr_command_removeweapon");
+	librptr_chat_command_create("@life", "librptr_command_life");
+	librptr_chat_command_create("@shields", "librptr_command_shields");
+	librptr_chat_command_create("@energy", "librptr_command_energy");
+	librptr_chat_command_create("@maxlife", "librptr_command_maxlife");
+	librptr_chat_command_create("@maxshields", "librptr_command_maxshields");
+	librptr_chat_command_create("@maxenergy", "librptr_command_maxenergy");
+	librptr_chat_command_create("@liferegen", "librptr_command_liferegen");
+	librptr_chat_command_create("@shieldsregen", "librptr_command_shieldsregen");
+	librptr_chat_command_create("@energyregen", "librptr_command_energyregen");
+	librptr_chat_command_create("@speed", "librptr_command_speed");
+	librptr_chat_command_create("@height", "librptr_command_height");
+	librptr_chat_command_create("@color", "librptr_command_color");
+	librptr_chat_command_create("@invulnerable", "librptr_command_invulnerable");
+	librptr_chat_command_create("@vulnerable", "librptr_command_vulnerable");
 	
 	// unit visual (actor) commands
 	librptr_chat_command_create("@scale", "librptr_command_scale");

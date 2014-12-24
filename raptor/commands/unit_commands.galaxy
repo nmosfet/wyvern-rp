@@ -6,7 +6,7 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-// libcrtx_command_kill
+// librptr_command_kill
 // ====================
 // kills units in player unitgroup context
 bool librptr_command_kill(bool testConds, bool runActions) {
@@ -107,5 +107,653 @@ bool librptr_command_give(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
+	return true;
+}
+
+// librptr_command_renameall
+// ===================
+// renames all units (by replacing unit catalog name entry)
+bool librptr_command_renameall(bool testConds, bool runActions) {
+	string val;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	val = librptr_player[EventPlayer()].chat_msg;
+	val = StringSub( val, StringFind(val, " ", c_stringCase)+1, StringLength(val)); // The remainder of the chat message.	
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		CatalogFieldValueSet(c_gameCatalogUnit, UnitGetType(UnitGroupLoopCurrent()), "Name", UnitGetOwner(UnitGroupLoopCurrent()), val);
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@renameall", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
+bool librptr_command_addbehavior(bool testConds, bool runActions) {
+	string val;
+	int x;
+	int i;
+	string s;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	val = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	
+	// get full behavior name from catalog
+	val = librptr_catalog_get(c_gameCatalogBehavior, val);
+	if(val == null) {
+		librptr_print_error("<c val=\"ff0000\">Unable to add behavior</c>: No such behavior exists.", EventPlayer());
+		return true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitBehaviorAdd( UnitGroupLoopCurrent(), val, UnitGroupLoopCurrent(), 1 );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@addbehavior", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
+
+bool librptr_command_removebehavior(bool testConds, bool runActions) {
+	string val;
+	string s;
+	int i;
+	int x;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	val = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+
+	// Check for an invalid behavior name, and attempt to compensate.
+	val = librptr_catalog_get(c_gameCatalogBehavior, val);
+	if(val == null) {
+		librptr_print_error("<c val=\"ff0000\">Unable to remove behavior</c>: No such behavior exists.", EventPlayer());
+		return true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), val, 1 );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@removebehavior", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
+
+bool librptr_command_addweapon(bool testConds, bool runActions) {
+	string weapon;
+	string turret;
+	int i;
+	int x;
+	string s;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	weapon = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	turret = StringWord( librptr_player[EventPlayer()].chat_msg, 3 );
+	
+	if( turret == "" ) {
+		turret = "CTurret";
+	}
+
+	weapon = librptr_catalog_get(c_gameCatalogWeapon, weapon);
+	if( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
+		librptr_print_error("<c val=\"ff0000\">Unable to add weapon</c>: No such weapon exists.", EventPlayer());		
+		return true;
+	}
+	
+	// if turret is not default, use catalog get on turet
+	if( turret != "CTurret") {
+		turret = librptr_catalog_get(c_gameCatalogTurret, turret);
+		if( turret == null ) {
+			librptr_print_error("<c val=\"ff0000\">Unable to add weapon</c>: No such turret exists.", EventPlayer());		
+			return true;
+		}
+	}
+
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitWeaponAdd( UnitGroupLoopCurrent(), weapon, turret );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@addweapon", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_removeweapon(bool testConds, bool runActions) {
+	string weapon;
+	int i;
+	int x;
+	string s;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	weapon = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+
+	weapon = librptr_catalog_get(c_gameCatalogWeapon, weapon);
+	if ( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
+		librptr_print_error("<c val=\"ff0000\">Unable to remove weapon</c>: No such weapon exists.", EventPlayer());		
+		return true;
+	}
+	
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitWeaponRemove( UnitGroupLoopCurrent(), weapon );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@removeweapon", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
+
+// librptr_command_life
+// librptr_command_shields
+// librptr_command_energy
+// ===================
+// sets units life, shields, or energy (absolute, adding, or percentage)
+// e.g. syntax: @life 10, @life 10%, @life +10, @life +10%
+bool librptr_command_life(bool testConds, bool runActions) {
+	string param;
+	fixed val;
+	bool percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+	
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		percent = true;
+		param = StringSub(param, 1, StringLength(param)-1);
+	}
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(!absolute) {
+			if(percent) {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLife, UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLife, c_unitPropCurrent) + (UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, c_unitPropCurrent)*(val/100)) );
+			}
+			else {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLife, UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLife, c_unitPropCurrent) + val );
+			}
+		}
+		else {
+			if(percent) {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLifePercent, val );
+			}
+			else {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLife, val );
+			}
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_shields(bool testConds, bool runActions) {
+	string param;
+	fixed val;
+	bool percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+	
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		percent = true;
+		param = StringSub(param, 1, StringLength(param)-1);
+	}
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(!absolute) {
+			if(percent) {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShields, UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShields, c_unitPropCurrent) + (UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, c_unitPropCurrent)*(val/100)) );
+			}
+			else {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShields, UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShields, c_unitPropCurrent) + val );
+			}
+		}
+		else {
+			if(percent) {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShieldsPercent, val );
+			}
+			else {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShields, val );
+			}
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_energy(bool testConds, bool runActions) {
+	string param;
+	fixed val;
+	bool percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+	
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		percent = true;
+		param = StringSub(param, 1, StringLength(param)-1);
+	}
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(!absolute) {
+			if(percent) {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergy, UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergy, c_unitPropCurrent) + (UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, c_unitPropCurrent)*(val/100)) );
+			}
+			else {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergy, UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergy, c_unitPropCurrent) + val );
+			}
+		}
+		else {
+			if(percent) {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergyPercent, val );
+			}
+			else {
+				UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergy, val );
+			}
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// librptr_command_maxlife
+// librptr_command_maxshields
+// librptr_command_maxenergy
+// =====================
+// sets a unit's maxlife, maxshields, or maxenergy
+// can specify as either absolute, percentage, or added value
+// e.g. syntax: @maxlife 10, @maxlife 10%, @maxlife +10%, @maxlife +10
+bool librptr_command_maxlife(bool testConds, bool runActions) {
+	string param;
+	fixed val;
+	bool percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+	
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		percent = true;
+		param = StringSub(param, 1, StringLength(param)-1);
+	}
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+
+	if( val <= 0 && absolute) {
+		return true;
+	}
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(!absolute) {
+			if(percent) {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, c_unitPropCurrent) + (UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, c_unitPropCurrent)*(val/100));
+			}
+			else {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, c_unitPropCurrent) + val;
+			}
+		}
+		else if(percent) {
+			val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, c_unitPropCurrent)*(val/100);
+		}
+		if(UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, c_unitPropCurrent) + val < 0) {
+			val = 1;
+		}
+		UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLifeMax, val );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_maxshields(bool testConds, bool runActions) {
+	string param;
+	fixed val;
+	bool percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+	
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		percent = true;
+		param = StringSub(param, 1, StringLength(param)-1);
+	}
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+
+	if( val <= 0 && absolute) {
+		return true;
+	}
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(!absolute) {
+			if(percent) {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, c_unitPropCurrent) + (UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, c_unitPropCurrent)*(val/100));
+			}
+			else {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, c_unitPropCurrent) + val;
+			}
+		}
+		else if(percent) {
+			val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, c_unitPropCurrent)*(val/100);
+		}
+		if(UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, c_unitPropCurrent) + val < 0) {
+			val = 1;
+		}
+		UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShieldsMax, val );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_maxenergy(bool testConds, bool runActions) {
+	string param;
+	fixed val;
+	bool percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+	
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		percent = true;
+		param = StringSub(param, 1, StringLength(param)-1);
+	}
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+
+	if( val <= 0 && absolute) {
+		return true;
+	}
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(!absolute) {
+			if(percent) {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, c_unitPropCurrent) + (UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, c_unitPropCurrent)*(val/100));
+			}
+			else {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, c_unitPropCurrent) + val;
+			}
+		}
+		else if(percent) {
+			val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, c_unitPropCurrent)*(val/100);
+		}
+		if(UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, c_unitPropCurrent) + val < 0) {
+			val = 1;
+		}
+		UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergyMax, val );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// librptr_command_liferegen
+// librptr_command_shieldsregen
+// librptr_command_energyregen
+// =========================
+// changes units life, shields, or energy regeneration
+// can specify as absolute or as a percentage
+// e.g. syntax: @liferegen 2 or @liferegen 2%
+bool librptr_command_liferegen(bool testConds, bool runActions) {
+	string param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	fixed val = StringToFixed(param);
+	bool is_percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		param = StringSub(param, 1, StringLength(param)-1);
+		val = StringToFixed(param);
+		is_percent = true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(is_percent) {
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLifeRegen,
+				val * UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, false));
+		}
+		else {
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropLifeRegen, val );
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_shieldsregen(bool testConds, bool runActions) {
+	string param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	fixed val = StringToFixed(param);
+	bool is_percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		param = StringSub(param, 1, StringLength(param)-1);
+		val = StringToFixed(param);
+		is_percent = true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(is_percent) {
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShieldsRegen,
+				val * UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropShieldsMax, false));
+		}
+		else {
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropShieldsRegen, val );
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+bool librptr_command_energyregen(bool testConds, bool runActions) {
+	string param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	fixed val = StringToFixed(param);
+	bool is_percent = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+
+	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
+		param = StringSub(param, 1, StringLength(param)-1);
+		val = StringToFixed(param);
+		is_percent = true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(is_percent) {
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergyRegen,
+				val * UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropEnergyMax, false));
+		}
+		else {
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropEnergyRegen, val );
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// librptr_command_speed
+// ==================
+// sets a unit's speed (either for a single unit, or permanently for all)
+bool librptr_command_speed(bool testConds, bool runActions) {
+	string param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	fixed val;
+	bool is_permanent = false;
+	bool absolute = true;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	is_permanent = StringContains(librptr_player[EventPlayer()].chat_msg, "all", c_stringAnywhere, false) ||
+				  StringContains(librptr_player[EventPlayer()].chat_msg, "permanent", c_stringAnywhere, false);
+
+	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+		absolute = false;
+		param = StringSub(param, 2, StringLength(param));
+	}
+	
+	val = StringToFixed(param);
+
+	if( val < 0 && absolute) {
+		val = 0;
+	}
+	
+	UnitGroupLoopBegin(g);
+	if(is_permanent) {
+		while(!UnitGroupLoopDone()) {
+			if(!absolute) {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropMovementSpeed, c_unitPropCurrent) + val;
+				if(val < 0) {
+					val = 0.0;
+				}
+			}
+			CatalogFieldValueSet(c_gameCatalogUnit, UnitGetType(UnitGroupLoopCurrent()),
+				"Speed", UnitGetOwner(UnitGroupLoopCurrent()), FixedToString(val, 4));
+			UnitGroupLoopStep();
+		}
+	}
+	else {
+		while(!UnitGroupLoopDone()) {
+			if(!absolute) {
+				val = UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropMovementSpeed, c_unitPropCurrent) + val;
+				if(val < 0) {
+					val = 0.0;
+				}
+			}
+			UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropMovementSpeed, val );
+			UnitGroupLoopStep();
+		}
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
+
+// librptr_command_height
+// ====================
+// sets a unit's z height
+bool librptr_command_height(bool testConds, bool runActions) {
+	fixed height;
+	fixed time;
+	string param;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	height = StringToFixed( param );
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 3 );
+	time = StringToFixed( param );
+
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitSetHeight( UnitGroupLoopCurrent(), height, time );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@height", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// librptr_command_color
+// ==================
+// changes the player color of a unit
+bool librptr_command_color(bool testConds, bool runActions) {
+	int new_color;
+	string param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	new_color = librptr_color_to_player_default(param);
+	if(new_color == -1) { // invalid entry by user
+		return true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetTeamColorIndex( UnitGroupLoopCurrent(), new_color );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@color", librptr_player[EventPlayer()].chat_msg);		
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
+// librptr_command_invulnerable
+// librptr_command_vulnerable
+// ====================
+// Makes a unit invulnerable or vulnerable
+bool librptr_command_invulnerable(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetState( UnitGroupLoopCurrent(), c_unitStateInvulnerable, true );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+bool librptr_command_vulnerable(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetState( UnitGroupLoopCurrent(), c_unitStateInvulnerable, false );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", "");
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
 	return true;
 }
