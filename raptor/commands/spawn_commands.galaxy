@@ -45,7 +45,12 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 		return true;
 	}
 
-	// otherwise spawn a number of units
+	// otherwise spawn a number of units:
+	// ensure spawn instance count is less than max count in settings
+	// TEMPORARY: until better spawn throttling is implemented
+	if( count > librptr_settings.max_spawn_count ) {
+		count = librptr_settings.max_spawn_count;
+	}
 	librptr_player[EventPlayer()].context = UnitGroupEmpty();
 	while (count > 0) {
 		librptr_unit_create(type, EventPlayer(), spawn_point, 270.0);

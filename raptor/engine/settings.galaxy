@@ -29,6 +29,11 @@ struct librptr_settings_definition {
 	// (not actually that useful because @actrmsg will allow arbitrary scale)
 	fixed min_scale;
 	fixed max_scale;
+	
+	// max_spawn_count
+	// =============
+	// max units a player can spawn in one instance
+	int max_spawn_count;
 };
 
 // create instance of settings:
@@ -40,4 +45,6 @@ void librptr_settings_initialize() {
 	librptr_settings.commands = "alias, template, var";
 	librptr_settings.min_scale = 0.001;
 	librptr_settings.max_scale = 10.0;
+	
+	librptr_settings.max_spawn_count = 20;
 }
