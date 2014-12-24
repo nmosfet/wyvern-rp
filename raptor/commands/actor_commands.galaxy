@@ -159,7 +159,7 @@ bool librptr_command_modelswap(bool testConds, bool runActions) {
 	string amsg;
 	unitgroup g = librptr_player[EventPlayer()].context;
 
-	model = librtpr_catalog_get(c_gameCatalogModel, model);
+	model = librptr_catalog_get(c_gameCatalogModel, model);
 	if(model == null) {
 		librptr_print_output("<c val=\"ff0000\">Unable to swap model</c>: No such model exists.", EventPlayer());
 		return true;
@@ -280,14 +280,14 @@ bool librptr_command_attach(bool testConds, bool runActions) {
 	
 	//Check actr/model is valid
 	if(StringWord( librptr_player[EventPlayer()].chat_msg, 2) == "-m") { //do catalog check for model
-		model = librtpr_catalog_get(c_gameCatalogModel, model);
+		model = librptr_catalog_get(c_gameCatalogModel, model);
 		if(model == null) {
 			librptr_print_output("<c val=\"ff0000\">Unable to attach actor model</c>: No such model exists.", EventPlayer());
 			return true;
 		}
 	}
 	else { //do catalog check for actor
-		actr = librtpr_catalog_get(c_gameCatalogActor, actr);
+		actr = librptr_catalog_get(c_gameCatalogActor, actr);
 		if(actr == null) {
 			librptr_print_output("<c val=\"ff0000\">Unable to attach actor</c>: No such actor exists.", EventPlayer());
 			return true;
@@ -380,7 +380,7 @@ bool librptr_command_attach(bool testConds, bool runActions) {
 		while(StringWord( librptr_player[EventPlayer()].chat_msg, 4 + parse_offset + x) != "") {
 			if(StringContains(StringWord( librptr_player[EventPlayer()].chat_msg, 4 + parse_offset + x), "SOp", c_stringAnywhere, c_stringNoCase)) {
 				SOp = StringWord( librptr_player[EventPlayer()].chat_msg, 4 + parse_offset + x);
-				SOp = librtpr_catalog_get(c_gameCatalogActor, SOp);
+				SOp = librptr_catalog_get(c_gameCatalogActor, SOp);
 				if(SOp == null) {
 					librptr_print_output("<c val=\"ff0000\">Warning: Encounted invalid or unknown Site Op: Skipping", EventPlayer());
 				}

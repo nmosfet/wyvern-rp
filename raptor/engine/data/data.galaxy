@@ -10,15 +10,32 @@
 // (TODO: replace with custom abilities in a mod file)
 const string LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION = "SuppressCollision";
 
+// Behaviors to add/subtract damage
+const string LIBRPTR_BEHAVIOR_ADD_DAMAGE_1 = "RaptorDamageAdd1";
+const string LIBRPTR_BEHAVIOR_ADD_DAMAGE_10 = "RaptorDamageAdd10";
+const string LIBRPTR_BEHAVIOR_ADD_DAMAGE_100 = "RaptorDamageAdd100";
+const string LIBRPTR_BEHAVIOR_ADD_DAMAGE_1000 = "RaptorDamageAdd1000";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1 = "RaptorDamageSubtract1";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_10 = "RaptorDamageSubtract10";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_100 = "RaptorDamageSubtract100";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1000 = "RaptorDamageSubtract1000";
+
+// Behaviors to add/subtract weapon range
+const string LIBRPTR_BEHAVIOR_ADD_RANGE_1 = "RaptorRangeAdd1";
+const string LIBRPTR_BEHAVIOR_ADD_RANGE_10 = "RaptorRangeAdd10";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_1 = "RaptorRangeSubtract1";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_10 = "RaptorRangeSubtract10";
+
 // used for unit chat related commands
 const string LIBRPTR_TALK_ICON_ACTOR = "TalkIconBubble";
 const string LIBRPTR_TALK_SOUND = "";
+
 
 // librtpr_catalog_get
 // ====================
 // takes the given word and finds it in the catalog.
 // if it is not in the catalog, returns null.
-string librtpr_catalog_get(int catalog, string word) {
+string librptr_catalog_get(int catalog, string word) {
 	int i;
 	string test;
 
