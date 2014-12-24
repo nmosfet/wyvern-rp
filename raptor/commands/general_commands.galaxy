@@ -532,3 +532,97 @@ bool librptr_command_replace(bool testConds, bool runActions) {
 	return true;
 }
 
+// 	librptr_command_minerals
+// 	librptr_command_gas
+// 	librptr_command_terrazine
+// ======================
+// Adds a number of resources to a player (default: 100000)
+// e.g. syntax: \minerals 9001
+bool librptr_command_minerals(bool testConds, bool runActions) {
+    int param = StringToInt(StringWord(librptr_player[EventPlayer()].chat_msg, 2));
+    if(param == 0) {
+		param = 100000;
+    }
+    PlayerModifyPropertyInt( EventPlayer(), c_playerPropMinerals, c_playerPropOperAdd, param );
+    return true;
+}
+bool librptr_command_gas(bool testConds, bool runActions) {
+    int param = StringToInt(StringWord(librptr_player[EventPlayer()].chat_msg, 2));
+    if(param == 0) {
+		param = 100000;
+    }
+    PlayerModifyPropertyInt( EventPlayer(), c_playerPropVespene, c_playerPropOperAdd, param );
+    return true;
+}
+bool librptr_command_terrazine(bool testConds, bool runActions) {
+    int param = StringToInt(StringWord(librptr_player[EventPlayer()].chat_msg, 2));
+    if(param == 0) {
+		param = 100000;
+    }
+    PlayerModifyPropertyInt( EventPlayer(), c_playerPropTerrazine, c_playerPropOperAdd, param );
+    return true;
+}
+
+// librptr_command_supply
+// ===================
+// Sets the player's built supply to a value (default 200)
+bool librptr_command_supply(bool testConds, bool runActions) {
+    int param = StringToInt(StringWord(librptr_player[EventPlayer()].chat_msg, 2));
+    if(param == 0) {
+		param = 200;
+    }
+    PlayerModifyPropertyInt( EventPlayer(), c_playerPropSuppliesMade, c_playerPropOperSetTo, param );
+    return true;
+}
+
+// librptr_command_zoom
+// =================
+// Zooms out a player's camera (max distance: 128)
+bool librptr_command_zoom(bool testConds, bool runActions) {
+	int height = StringToInt( StringWord(librptr_player[EventPlayer()].chat_msg, 2 ));
+	
+	if( height == 0 ) { // reset camera for player
+		CameraApplyInfo( EventPlayer(), CameraInfoDefault(), 2.0, -1, 10, false );
+	}
+	else {
+		if(height > 128) {
+			height = 128;
+		}
+		else if( height < 0 ) {
+			height = 0;
+		}
+		CameraSetValue( EventPlayer(), c_cameraValueDistance, IntToFixed(height), 2.0, -1, 10 );
+	}
+	return true;
+}
+
+// librptr_command_light
+// ==================
+// Changes the map's lighting over a specified period of time
+// if no light is specified, defaults to map terrain's lighting
+bool librptr_command_light(bool testConds, bool runActions) {
+	string light = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	fixed blend_time = StringToFixed(StringWord(librptr_player[EventPlayer()].chat_msg, 3));
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_MOD  ) {
+		return true;
+	}
+	
+	if(light == "") { // get default lighting for terrain set
+		light = CatalogFieldValueGet(c_gameCatalogTerrain,  GameTerrainSet(), "Lighting", EventPlayer());
+	}
+	
+	light = librptr_catalog_get(c_gameCatalogLight, light);
+	if(light == null) {
+		librptr_print_error("<c val=\"ff0000\">Unable to change lighting</c>: No such light exists.", EventPlayer());
+		return true;
+	}
+
+	if(StringWord(librptr_player[EventPlayer()].chat_msg, 3) == "") {
+		blend_time = 2;
+	}
+
+	GameSetLighting(light, blend_time);
+
+	return true;
+}

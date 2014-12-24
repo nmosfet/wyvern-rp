@@ -25,6 +25,12 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\remove", "librptr_command_remove_player");
 	librptr_chat_command_create("\\search", "librptr_command_search");
 	librptr_chat_command_create("\\replace", "librptr_command_replace");
+	librptr_chat_command_create("\\minerals", "librptr_command_minerals");
+	librptr_chat_command_create("\\gas", "librptr_command_gas");
+	librptr_chat_command_create("\\terrazine", "librptr_command_terrazine");
+	librptr_chat_command_create("\\supply", "librptr_command_supply");
+	librptr_chat_command_create("\\zoom", "librptr_command_zoom");
+	librptr_chat_command_create("\\light", "librptr_command_light");
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");
