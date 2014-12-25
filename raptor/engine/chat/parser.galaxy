@@ -20,9 +20,6 @@ void librptr_chat_command_create(string command, string function) {
 		librptr_print("FAILED TO LOAD COMMAND: " + command, PlayerGroupAll());
 	} else {
 		DataTableSetTrigger(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + command, t);
-		
-		librptr_print("REGISTERED COMMAND: " + command, PlayerGroupAll() );
-		
 		librptr_settings.commands = librptr_settings.commands +  ", " + command;
 	}
 }
@@ -126,14 +123,14 @@ void librptr_chat_parse(string msg, int player, unitgroup target) {
 
 		
 		// run command (if exists and permissions for player valid)
-		if( DataTableValueExists(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringWord(current, 1) ) ) {
+		if( DataTableValueExists(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ) {
 			
 			// if does, run wrapper function to run a command (does permissions checks etc)
 			
 			//librptr_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
 			
 			librptr_player[player].chat_msg = current;
-			TriggerExecute( DataTableGetTrigger(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringWord(current, 1) ), false, true);
+			TriggerExecute( DataTableGetTrigger(true, LIBRPTR_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ), false, true);
 		}
 		else if ( !librptr_player[player].muted ) {
 			librptr_chat_print_OOC( current, player );
