@@ -67,6 +67,13 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@color", "librptr_command_color");
 	librptr_chat_command_create("@invulnerable", "librptr_command_invulnerable");
 	librptr_chat_command_create("@vulnerable", "librptr_command_vulnerable");
+	librptr_chat_command_create("@face", "librptr_command_face");
+	librptr_chat_command_create("@adddamage", "librptr_command_damage");
+	librptr_chat_command_create("@removedamage", "librptr_command_damage");
+	librptr_chat_command_create("@addrange", "librptr_command_range");
+	librptr_chat_command_create("@removerange", "librptr_command_range");
+	librptr_chat_command_create("@subtitle", "librptr_command_subtitle");
+	librptr_chat_command_create("@tooltip", "librptr_command_tooltip");
 	
 	// unit visual (actor) commands
 	librptr_chat_command_create("@scale", "librptr_command_scale");
@@ -80,4 +87,5 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@say", "librptr_command_say");
 	librptr_chat_command_create("@setname", "librptr_command_setname");
 	librptr_chat_command_create("@setnamecolor", "librptr_command_setnamecolor");
+
 }

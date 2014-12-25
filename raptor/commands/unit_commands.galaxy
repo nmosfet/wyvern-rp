@@ -757,3 +757,216 @@ bool librptr_command_vulnerable(bool testConds, bool runActions) {
 	UnitGroupLoopEnd();
 	return true;
 }
+
+// librptr_command_face
+// ===============
+// makes a unit face an angle. (modified from Cortex engine)
+// if no angle is specified, unit will face towards player's mouse cursor
+bool librptr_command_face(bool testConds, bool runActions) {
+	fixed angle;
+	string param;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool absolute = true;
+
+	param = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	if( param != "" ) {
+		if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
+			absolute = false;
+			param = StringSub(param, 2, StringLength(param));
+		}
+		angle = StringToFixed( param );
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if( param == "" ) { // face mouse
+			libNtve_gf_MakeUnitFacePoint( UnitGroupLoopCurrent(), librptr_player[EventPlayer()].mouse_position, 0.0 );
+		}
+		else if(!absolute) {
+			UnitSetFacing(UnitGroupLoopCurrent(), UnitGetFacing(UnitGroupLoopCurrent()) + angle, 0.0);
+		}
+		else { // face angle
+			UnitSetFacing( UnitGroupLoopCurrent(), angle, 0.0 );
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
+// librptr_command_damage
+// =================
+// deals with both adding or removing damage (modified from Cortex engine)
+// both @adddamage and @removedamage are directed here
+// max damage added or removed is currently set at 9999
+bool librptr_command_damage(bool testConds, bool runActions) {
+	string command = StringCase( StringWord( librptr_player[EventPlayer()].chat_msg, 1 ), false );
+	string dmg_behavior_1;
+	string dmg_behavior_10;
+	string dmg_behavior_100;
+	string dmg_behavior_1000;
+	int amt;
+	int val = StringToInt(StringWord( librptr_player[EventPlayer()].chat_msg, 2 ));
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	// since we are using the same command for both @adddamage and @removedamage,
+	// check which command it is, and set proper behaviors
+	if( (command == "@adddamage" && val > 0) || (command == "@removedamage" && val < 0) ) {
+		dmg_behavior_1 = LIBRPTR_BEHAVIOR_ADD_DAMAGE_1;
+		dmg_behavior_10 = LIBRPTR_BEHAVIOR_ADD_DAMAGE_10;
+		dmg_behavior_100 = LIBRPTR_BEHAVIOR_ADD_DAMAGE_100;
+		dmg_behavior_1000 = LIBRPTR_BEHAVIOR_ADD_DAMAGE_1000;
+	}
+	else { // we are using @removedamage
+		dmg_behavior_1 = LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1;
+		dmg_behavior_10 = LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_10;
+		dmg_behavior_100 = LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_100;
+		dmg_behavior_1000 = LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1000;
+	}
+	
+	val = AbsI(val);
+	if(val > 9999) {
+	   val = 9999;
+	}
+	
+	amt = val;
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		// First remove all damage bonuses and maluses, since we're now treating this as a "strictly positive setdamagebonus" command
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_ADD_DAMAGE_1, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_ADD_DAMAGE_10, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_ADD_DAMAGE_100, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_ADD_DAMAGE_1000, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_10, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_100, -1);
+		UnitBehaviorRemove( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1000, -1);
+
+		val = amt;
+		
+		// Add appropriate behaviors until they reach the desired total damage bonus
+		while(val >= 1000) {
+			UnitBehaviorAdd( UnitGroupLoopCurrent(), dmg_behavior_1000, UnitGroupLoopCurrent(), 1 );
+			val -= 1000;
+		}
+		while(val >= 100) {
+			UnitBehaviorAdd( UnitGroupLoopCurrent(), dmg_behavior_100, UnitGroupLoopCurrent(), 1 );
+			val -= 100;
+		}
+		while(val >= 10) {
+			UnitBehaviorAdd( UnitGroupLoopCurrent(), dmg_behavior_10, UnitGroupLoopCurrent(), 1 );
+			val -= 10;
+		}
+		UnitBehaviorAdd( UnitGroupLoopCurrent(), dmg_behavior_1, UnitGroupLoopCurrent(), val );
+		
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@adddamage", librptr_player[EventPlayer()].chat_msg);		
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
+
+// librptr_command_range
+// =================
+// deals with both adding or removing weapon range (modified from Cortex engine)
+// both @addrange and @removerange are directed here
+// max range able to be added/removed is currently set as 100
+bool librptr_command_range(bool testConds, bool runActions) {
+	string command = StringCase( StringWord( librptr_player[EventPlayer()].chat_msg, 1 ), false );
+	string range_behavior_1;
+	string range_behavior_10;
+	int range = StringToInt( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ) );
+	unitgroup g = librptr_player[EventPlayer()].context;
+
+	// since we are using the same command for both @addrange and @removerange,
+	// check which command it is, and set proper behaviors
+	if( (command == "@addrange" && range > 0) || (command == "@removerange" && range < 0) ) {
+		range_behavior_1 = LIBRPTR_BEHAVIOR_ADD_RANGE_1;
+		range_behavior_10 = LIBRPTR_BEHAVIOR_ADD_RANGE_10;
+	}
+	else { // are removing range
+		range_behavior_1 = LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_1;
+		range_behavior_10 = LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_10;
+	}
+
+	range = AbsI(range);
+	if(range > 100) {
+		range = 100;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitBehaviorRemove(UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_ADD_RANGE_1, -1);
+		UnitBehaviorRemove(UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_ADD_RANGE_10, -1);
+		UnitBehaviorRemove(UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_1, -1);
+		UnitBehaviorRemove(UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_10, -1);
+
+		UnitBehaviorAdd(UnitGroupLoopCurrent(), range_behavior_1, null, ModI(range, 10));
+		UnitBehaviorAdd(UnitGroupLoopCurrent(), range_behavior_10, null, range / 10);
+
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@addrange", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// librptr_command_subtitle
+// =================
+// sets a unit's subtitle (underneath a unit name)
+bool librptr_command_subtitle(bool testConds, bool runActions) {
+	string val = librptr_player[EventPlayer()].chat_msg;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	val = StringSub( val, StringFind(val, " ", c_stringCase)+1, StringLength(val)); // The remainder of the chat message.	
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		CatalogFieldValueSet(c_gameCatalogUnit, UnitGetType(UnitGroupLoopCurrent()), "Subtitle", UnitGetOwner(UnitGroupLoopCurrent()), val);
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@subtitle", librptr_player[EventPlayer()].chat_msg);	
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
+// librptr_command_tooltip
+// =====================
+// sets a units tooltip, either the main tip or subtip
+// (note: this is only visible to OTHER players)
+bool librptr_command_tooltip(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	string description;
+	bool subtip = false;
+	
+	if(StringWord( librptr_player[EventPlayer()].chat_msg, 2) == "") {
+		return true;
+	}
+
+	if(StringEqual(StringWord( librptr_player[EventPlayer()].chat_msg, 2),"sub",c_stringNoCase)) {
+		description = StringSub( librptr_player[EventPlayer()].chat_msg, StringLength(StringWord( librptr_player[EventPlayer()].chat_msg, 1)) + 2, StringLength(librptr_player[EventPlayer()].chat_msg));
+		description = StringSub( description, StringLength(StringWord( description, 1)) + 2, StringLength(description));
+
+		subtip = true;
+	}
+	else {
+		description = StringSub( librptr_player[EventPlayer()].chat_msg, StringLength(StringWord( librptr_player[EventPlayer()].chat_msg, 1)) + 2, StringLength(librptr_player[EventPlayer()].chat_msg));
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if(subtip) {
+			UnitSetInfoSubTip(UnitGroupLoopCurrent(), StringToText(description));
+		}
+		else {
+			UnitSetInfoTip(UnitGroupLoopCurrent(), StringToText(description));
+		}
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@tooltip", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();		
+	
+	return true;
+}
