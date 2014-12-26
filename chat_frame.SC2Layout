@@ -19,7 +19,6 @@
         <AcceptsMouse val="false"/>
 		<BatchText val="true"/>
         <Anchor side="Bottom" relative="$parent" pos="Max" offset="-335"/>
-        <Anchor side="Left" relative="$parent" pos="Min" offset="-80"/>
         <Anchor side="Right" relative="$parent" pos="Mid" offset="0"/>
         <Width val="750"/>
         <Height val="700"/>
