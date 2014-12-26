@@ -24,6 +24,7 @@ const int LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED = 6;	// flag for @animspeed has been
 const int LIBRPTR_UNIT_INDEX_FLAG_PLAY = 7;			// flag for @play has been used
 const int LIBRPTR_UNIT_INDEX_FLAG_STATBARS = 8;		// flag for @statbars has been used
 
+const int LIBRPTR_UNIT_INDEX_WAYGATE = 15;		// flag for region waygates
 
 // Each unit given a unique id. Each time unit created, counter increments
 int librptr_unit_id_counter = 1;

@@ -97,6 +97,12 @@ struct librptr_player_properties {
 	int search_catalog;			// current search catalog
 	int search_index;			// current search index (> 0)
 	string search_last_query;	// current search term
+	
+	// waygate_dialog
+	// ============
+	// dialog and button for using region waygates (teleport)
+	int waygate_dialog;
+	int waygate_dialog_control_btn;
 };
 
 // librptr_player[LIBRPTR_MAX_PLAYERS]
@@ -116,6 +122,8 @@ void librptr_player_initialize(int player) {
 	
 	librptr_player[player].spawn_splat = null;
 	librptr_player[player].doodad_splat = null;
+	
+	librptr_player[player].waygate_dialog = 0;
 	
 	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
 }

@@ -8,6 +8,7 @@
 
 include "raptor/engine/events/mouse.galaxy"
 include "raptor/engine/events/player_leaves.galaxy"
+include "raptor/engine/events/region_waygates.galaxy"
 
 void librtpr_events_initialize() {
 	TriggerAddEventMouseMoved( TriggerCreate("librptr_mouse_moved"), c_playerAny );
@@ -19,4 +20,8 @@ void librtpr_events_initialize() {
     TriggerAddEventUnitCreated( TriggerCreate("librptr_unit_initialize"), null, null, null );
     TriggerAddEventUnitRemoved( TriggerCreate("librptr_unit_death_data_remove"), null );
     TriggerAddEventUnitDied( TriggerCreate("librptr_unit_death_data_remove"), null) ;
+	
+	// region waygate and waygate dialog events
+	TriggerAddEventTimePeriodic( TriggerCreate("librptr_waygate_dialog_manager"), 1.0, c_timeGame );
+	TriggerAddEventDialogControl( TriggerCreate("librptr_waygate_dialog_clicked"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
 }

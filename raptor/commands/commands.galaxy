@@ -12,6 +12,7 @@ include "raptor/commands/spawn_commands.galaxy"
 include "raptor/commands/unit_commands.galaxy"
 include "raptor/commands/actor_commands.galaxy"
 include "raptor/commands/chat_commands.galaxy"
+include "raptor/commands/region_commands.galaxy"
 
 void librptr_commands_initialize() {
 
@@ -88,4 +89,11 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@setname", "librptr_command_setname");
 	librptr_chat_command_create("@setnamecolor", "librptr_command_setnamecolor");
 
+	// region commands
+	librptr_chat_command_create("#create", "librptr_command_region_create");
+	librptr_chat_command_create("#remove", "librptr_command_region_remove");
+	librptr_chat_command_create("#list", "librptr_command_region_list");
+	librptr_chat_command_create("#teleport", "librptr_command_region_teleport");
+
+	
 }

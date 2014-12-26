@@ -1,0 +1,64 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+const string LIBRPTR_REGION_DATA_TABLE_IDENTIFIER = "reg";
+const string LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER = "reg_link";
+const string LIBRPTR_WAYGATE_DATA_TABLE_IDENTIFIER = "reg_waygate";
+
+// region teleport counter
+// (must start at one because unit custom val defaults to 0)
+int librptr_region_waygate_counter = 1; 
+
+// librptr_region_get_name
+// ==================
+// Regions are stored in global data table as:
+// "reg [player number] [name]", e.g. "reg 1 R"
+string librptr_region_get_name(string name, int player) {
+	return (LIBRPTR_REGION_DATA_TABLE_IDENTIFIER + " " + IntToString(player) + " " + StringCase(name, false));
+}
+
+// librptr_link_regions
+// =================
+// region links involve 2 data table parameters:
+// -> [region_name_from_ID] (string) : links a waygate by ID to a region name (for quick region check via loop)
+// -> [name_to_linked_region_id] (int) : stores the [region_name_from_ID] (an integer ID) of the linked region
+void librptr_link_regions(string name_1, string name_2, int player) {
+	string rgn_name_1 = librptr_region_get_name(name_1, player);
+	string rgn_name_2 = librptr_region_get_name(name_2, player);
+	
+	// create a link from region_1 to region_2
+	DataTableSetString(true, LIBRPTR_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(librptr_region_waygate_counter), rgn_name_1);
+	DataTableSetInt(true, LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_1, librptr_region_waygate_counter + 1);
+	librptr_region_waygate_counter += 1;
+	
+	// create a link from region 2 to region 1
+	DataTableSetString(true, LIBRPTR_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(librptr_region_waygate_counter), rgn_name_2);
+	DataTableSetInt(true, LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_2, librptr_region_waygate_counter - 1);
+	librptr_region_waygate_counter += 1;
+}
+
+// librptr_region_remove_links
+// =====================
+// checks if there are linked regions, from a region name,
+// and remove links if exist
+void librptr_region_remove_links(string name, int player) {
+	string rgn_name_1 = librptr_region_get_name(name, player);
+	string rgn_name_2;
+	int rgn_2_id;
+	
+	if( DataTableValueExists(true, LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_1) ) {
+		rgn_2_id = DataTableGetInt(true, LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_1);
+		rgn_name_2 = DataTableGetString(true, LIBRPTR_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(rgn_2_id) );
+		
+		// remove the region linking data
+		DataTableValueRemove(true, LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_2);
+		DataTableValueRemove(true, LIBRPTR_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(rgn_2_id));
+		DataTableValueRemove(true, LIBRPTR_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_1);
+		DataTableValueRemove(true, LIBRPTR_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(rgn_2_id - 1));
+	}
+}

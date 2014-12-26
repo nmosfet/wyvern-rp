@@ -14,6 +14,11 @@
 // Contains various utility functions used throughout engine
 include "raptor/engine/utility/scripts.galaxy"
 
+// ui_helper
+// =============
+// Contains various helper functions for creating ui dialogs
+include "raptor/engine/ui_helper.galaxy"
+
 // player
 // =============
 // Contains any important player specific variables during 
@@ -58,6 +63,12 @@ include "raptor/engine/chat/chat.galaxy"
 // Unit spawn related functions, unit death/creation data management,
 // unit command caching functionality
 include "raptor/engine/unit.galaxy"
+
+// regions
+// =============
+// Contains helper functions for managing regions and linking
+// regions for waygate (teleport) functionality
+include "raptor/engine/regions.galaxy"
 
 // gamesetups
 // =============

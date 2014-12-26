@@ -1,0 +1,130 @@
+//=========================================================
+//		Raptor Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// librptr_command_region_create
+// ====================
+// creates a region and sets it into the global data table
+// regions are stored in format:
+// "reg [player] [name]"
+bool librptr_command_region_create(bool testConds, bool runActions) {
+	region r;
+	fixed radius;
+	string name = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	
+	if( name == "" ) {
+		librptr_print_error("Invalid region name", EventPlayer());
+		return false;
+	}
+	
+	radius = StringToFixed(StringWord(librptr_player[EventPlayer()].chat_msg, 3));
+	if( radius == 0.0 ) {
+		radius = 2;
+	}
+
+	if( DataTableGetRegion( true, librptr_region_get_name(name, EventPlayer()) ) ) {
+		librptr_print_error("A region with that name already exists!", EventPlayer());
+		return false;
+	}
+
+	r = RegionCircle( librptr_player[EventPlayer()].mouse_position, radius );
+	
+	DataTableSetRegion( true, librptr_region_get_name(name, EventPlayer()), r );
+	librptr_print_output("Region (circle) \"" + name + "\" has been created.", EventPlayer());
+	
+	return true;
+}
+
+// librptr_command_region_remove
+// ==================
+// removes a region and any linking to other regions
+// (for linking, see librptr_command_region_teleport below)
+bool librptr_command_region_remove(bool testConds, bool runActions) {
+	string name = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	region rgn = DataTableGetRegion( true, librptr_region_get_name(name, EventPlayer()) );
+
+	if( rgn == null ) {
+		librptr_print_error("Region does not exist", EventPlayer());
+		return true;
+	}
+	
+	// first remove any linking data (for teleports) related to this region
+	librptr_region_remove_links(name, EventPlayer());
+
+	// remove region
+	DataTableValueRemove( true, librptr_region_get_name(name, EventPlayer()) );
+	librptr_print_output("Region \"" + name + "\" has been removed", EventPlayer());
+	
+	return true;
+}
+
+// librptr_command_region_list
+// ======================
+// lists a player's regions from the data table
+// because region creation is not case sensitive, 
+// these will always be in lowercase
+bool librptr_command_region_list(bool testConds, bool runActions) {
+	int i = 1;
+	string region_list = "";
+	
+	while( i < DataTableValueCount(true) ) {
+		if( StringWord( DataTableValueName(true, i), 1 ) == LIBRPTR_REGION_DATA_TABLE_IDENTIFIER &&
+			StringToInt( StringWord( DataTableValueName(true, i), 2) ) == EventPlayer() ) {
+			region_list = region_list + ", " + StringWord( DataTableValueName(true, i), 3);
+		}
+		i += 1;
+	}
+	
+	if( region_list != "" ) {
+		region_list = StringSub(region_list, 3, StringLength(region_list)); // get rid of leading ", "
+		librptr_print_output("Your regions:\n" + region_list, EventPlayer());
+	}
+	else {
+		librptr_print_output("You have no regions", EventPlayer());
+	}
+	
+	return true;
+}
+
+// librptr_command_region_teleport
+// =========================
+// creates a "waygate" between two regions, allowing (any) player
+// to press a dialog button to teleport selected units between
+// regions. (see engine/regions.galaxy to see how regions are linked,
+// events/region_waygates.galaxy to see how waygates function)
+// (heavily modified from Cortex engine)
+bool librptr_command_region_teleport(bool testConds, bool runActions) {
+	string param_rgn_1 = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	string param_rgn_2 = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	region rgn_1;
+	region rgn_2;
+	trigger t;
+
+	rgn_1 = DataTableGetRegion( true, librptr_region_get_name(param_rgn_1, EventPlayer()) );
+	rgn_2 = DataTableGetRegion( true, librptr_region_get_name(param_rgn_2, EventPlayer()) );
+	if( rgn_1 == null || rgn_2 == null ) {
+		librptr_print_error("One or more invalid regions were entered.", EventPlayer());
+		return true;
+	}
+	
+	// remove existing links for the regions
+	librptr_region_remove_links(param_rgn_1, EventPlayer());
+	librptr_region_remove_links(param_rgn_2, EventPlayer());
+	
+	// create link between these two regions
+	librptr_link_regions(param_rgn_1, param_rgn_2, EventPlayer());
+
+	t = TriggerCreate("librptr_region_entered");
+	TriggerAddEventUnitRegion( t, null, rgn_1, true );
+	TriggerAddEventUnitRegion( t, null, rgn_1, false );
+	TriggerAddEventUnitRegion( t, null, rgn_2, true );
+	TriggerAddEventUnitRegion( t, null, rgn_2, false );
+	
+	librptr_print_output("Teleport created between regions " + param_rgn_1 + " and " + param_rgn_2, EventPlayer());
+	
+	return true;
+}
