@@ -92,6 +92,7 @@ void librptr_commands_initialize() {
 	// region commands
 	librptr_chat_command_create("#create", "librptr_command_region_create");
 	librptr_chat_command_create("#remove", "librptr_command_region_remove");
+	librptr_chat_command_create("#removeall", "librptr_command_region_removeall");
 	librptr_chat_command_create("#list", "librptr_command_region_list");
 	librptr_chat_command_create("#teleport", "librptr_command_region_teleport");
 
