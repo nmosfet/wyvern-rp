@@ -181,6 +181,78 @@ bool librptr_command_modelswap(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_play
+// ================
+// makes the main actor play an animation by applying an animgroup
+// "@play reset" stops the animation
+bool librptr_command_play(bool testConds, bool runActions) {
+	string val;
+	int flags = 0;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	string animgroup = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	val = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	val = StringCase(StringSub(val, 1, 1), true) + StringSub(val, 2, StringLength(val));
+
+	if( StringEqual(StringWord( librptr_player[EventPlayer()].chat_msg, 3), "loop", false) ) {
+		flags = c_animFlagPlayForever;
+		animgroup = StringWord(librptr_player[EventPlayer()].chat_msg, 4);
+	}
+
+	animgroup = StringCase(StringSub(animgroup, 1, 1), true) + StringSub(animgroup, 2, StringLength(animgroup));
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if( StringEqual(val, "reset", false) ) {
+			libNtve_gf_ClearAnimation( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "librptr_command_play" );
+		}
+		else {
+			libNtve_gf_PlayAnimation( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "librptr_command_play", val, flags, 1 );
+			if(animgroup != "") {
+				ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AnimGroupRemoveAll");
+				ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AnimGroupApply {" + animgroup + "}");
+			}
+		}
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@play", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
+
+// librptr_command_animspeed
+// ===================
+// changes the animation speed of any animations
+// a unit is playing (range is set as 0-10x default, 1)
+bool librptr_command_animspeed(bool testConds, bool runActions) {
+	string speed = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	fixed anm_speed;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	if( StringContains( speed, "%", c_stringEnd, c_stringCase ) ) {
+		anm_speed = StringToFixed( StringSub(speed, 1, StringLength(speed)-1) ) / 100;
+	} else {
+		anm_speed = StringToFixed( speed );
+	}
+
+	if( anm_speed < 0 ) {
+		anm_speed = 0;
+	}
+	else if(anm_speed > 10) {
+		anm_speed = 10;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		ActorSend( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), libNtve_gf_AnimSetTimeScaleGlobal(anm_speed) );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@animspeed", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
 // libcrtx_command_actormessage
 // =======================
 // Sends an ActorMessage to a unit (main or a actor reference) or to a global reference
