@@ -1299,3 +1299,42 @@ bool librptr_command_copy(bool testConds, bool runActions) {
 	
 	return true;
 }
+
+// librptr_command_effect
+// ===============
+// creates an effect at target units or at a point
+bool librptr_command_effect(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	string effect = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+
+	effect = librptr_catalog_get(c_gameCatalogEffect, effect);
+	if(effect == null) {
+		librptr_print_error( "<c val=\"ff0000\">Unable to create effect</c>: No such effect exists.", EventPlayer() );
+		return true;
+	}
+
+	if( UnitGroupCount(g, c_unitCountAll) != 0 ) {
+		UnitGroupLoopBegin(g);
+		while(!UnitGroupLoopDone()) {
+			if( libNtve_gf_PlayerCanCreateEffectOnUnit(EventPlayer(), effect, UnitGroupLoopCurrent()) ) {
+				PlayerCreateEffectUnit(EventPlayer(), effect, UnitGroupLoopCurrent());
+				librptr_unit_cache_update(UnitGroupLoopCurrent(), "@effect", librptr_player[EventPlayer()].chat_msg);				
+			}
+			else {
+				librptr_print_error( "<c val=\"ff0000\">Unable to create the effect.</c>", EventPlayer() );
+			}
+			UnitGroupLoopStep();
+		}
+		UnitGroupLoopEnd();
+	}
+	else {
+		if( libNtve_gf_PlayerCanCreateEffectAtPoint(EventPlayer(), StringWord(EventChatMessage(false), 2), librptr_player[EventPlayer()].mouse_position) ) {
+			PlayerCreateEffectPoint(EventPlayer(), effect, librptr_player[EventPlayer()].mouse_position);
+		}
+		else {
+			librptr_print_error( "<c val=\"ff0000\">Unable to create the effect.</c>", EventPlayer() );
+		}
+	}
+	
+	return true;
+}
