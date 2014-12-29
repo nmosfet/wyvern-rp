@@ -37,6 +37,7 @@ bool librtpr_mouse_right_clicked_down(bool testConds, bool runActions) {
 	if( librptr_player[EventPlayer()].is_placing_unit ) {
 		librptr_player[EventPlayer()].is_placing_unit = false;
 		UnitRemove(librptr_player[EventPlayer()].spawn_splat);
+		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, true);
 	}
 	
 	return true;

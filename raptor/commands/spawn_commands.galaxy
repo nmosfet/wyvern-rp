@@ -41,7 +41,8 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 	if( count <= 0 ) {
 		librptr_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [Right Mouse] to cancel)", EventPlayer());
 		librptr_spawn_create_splat(type, EventPlayer());
-		librptr_player[EventPlayer()].is_placing_unit = true; 
+		librptr_player[EventPlayer()].is_placing_unit = true;
+		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);
 		return true;
 	}
 
