@@ -23,6 +23,7 @@ const int LIBRPTR_UNIT_INDEX_FLAG_MS = 5;			// flag for @modelswap has been used
 const int LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED = 6;	// flag for @animspeed has been used
 const int LIBRPTR_UNIT_INDEX_FLAG_PLAY = 7;			// flag for @play has been used
 const int LIBRPTR_UNIT_INDEX_FLAG_STATBARS = 8;		// flag for @statbars has been used
+const int LIBRPTR_UNIT_INDEX_FLAG_ROTATE = 9;		// flag for @rotate has been used
 
 const int LIBRPTR_UNIT_INDEX_WAYGATE = 15;		// flag for region waygates
 
@@ -405,6 +406,7 @@ void librptr_unit_cache_update(unit subject, string command, string user_command
 		UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED, 0); //"reset" animspeed
 		UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_PLAY, 0); //"reset" play
 		UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_STATBARS, 0); //"reset" statbars
+		UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ROTATE, 0); //"reset" rotate
 		return;
 	}
 	else if(command == "@tint") {
@@ -466,6 +468,17 @@ void librptr_unit_cache_update(unit subject, string command, string user_command
 		if(UnitGetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_STATBARS) != 1) {
 			librptr_unit_cache_update_add(subject, unit_id, user_command);
 			UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_STATBARS, 1);
+			return;
+		}
+		else {
+			librptr_unit_cache_update_overwrite(subject, unit_id, command, user_command);
+			return;
+		}
+	}
+	else if(command == "@rotate") {
+		if(UnitGetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ROTATE) != 1) {
+			librptr_unit_cache_update_add(subject, unit_id, user_command);
+			UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ROTATE, 1);
 			return;
 		}
 		else {

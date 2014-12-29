@@ -253,6 +253,36 @@ bool librptr_command_animspeed(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_rotate
+// ==================
+// applies a rotation on a unit (modified from Cortex Engine)
+// (note: movement removes these rotations,
+// so only really useful for static props)
+bool librptr_command_rotate(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	fixed yaw = StringToFixed( StringWord(librptr_player[EventPlayer()].chat_msg, 2) );
+	fixed pitch = StringToFixed( StringWord(librptr_player[EventPlayer()].chat_msg, 3) );
+	fixed roll = StringToFixed( StringWord(librptr_player[EventPlayer()].chat_msg, 4) );
+	
+	fixed forwardX = Sin(yaw);
+	fixed forwardY = -Sin(pitch) * Cos(yaw);
+	fixed forwardZ = Cos(pitch) * Cos(yaw);
+	
+	fixed upX = -Cos(yaw) * Sin(roll);
+	fixed upY = -Sin(pitch) * Sin(yaw) * Sin(roll) + Cos(pitch) * Cos(roll);
+	fixed upZ = Cos(pitch) * Sin(yaw) * Sin(roll) + Sin(pitch) * Cos(roll);
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		ActorSend( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), libNtve_gf_SetRotation(forwardX, forwardY, forwardZ, upX, upY, upZ) );
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@rotate", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
 // libcrtx_command_actormessage
 // =======================
 // Sends an ActorMessage to a unit (main or a actor reference) or to a global reference
