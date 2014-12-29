@@ -69,6 +69,14 @@ struct librptr_player_properties {
 	// hovers under cursor for mouse-click @spawn placement
 	unit spawn_splat;
 	
+	// spawn instance variables
+	// ============
+	// these record a player's previous usage of @spawn
+	// so players can repeat @spawn without parameters
+	// to repeat the last instance
+	string spawn_instance_type;		// unit type
+	int spawn_instance_count;		// # spawned
+	
 	// is_placing_unit
 	// ===============
 	// flag for using _doodad

@@ -16,6 +16,26 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 	string type = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
 	//region r = null; //TODO ADD SPAWNING AT REGIONS
 	
+	// if no parameters specified, check last instance and try to repeat
+	if( StringWord(librptr_player[EventPlayer()].chat_msg, 2) == "" ) {
+		if( librptr_player[EventPlayer()].spawn_instance_type != "" ) {
+			type = librptr_player[EventPlayer()].spawn_instance_type;
+			count = librptr_player[EventPlayer()].spawn_instance_count;
+			
+			librptr_player[EventPlayer()].context = UnitGroupEmpty();
+			while (count > 0) {
+				librptr_unit_create(type, EventPlayer(), spawn_point, 270.0);
+				count -= 1;
+			}
+			
+			return true;
+		}
+		else {
+			librptr_print_error("Invalid unit type, or no previous spawn instance", EventPlayer());
+			return false;
+		}
+	}
+	
 	// if count is 0, try checking 3rd index, swap unit type to 2nd index
 	// (this allows either @spawn # unit or @spawn unit #)
 	if( count == 0 ) {
@@ -52,11 +72,17 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 	if( count > librptr_settings.max_spawn_count ) {
 		count = librptr_settings.max_spawn_count;
 	}
+	
+	// set player spawn instance (before spawning so count is preserved)
+	librptr_player[EventPlayer()].spawn_instance_type = type;
+	librptr_player[EventPlayer()].spawn_instance_count = count;
+	
+	// make spawned units
 	librptr_player[EventPlayer()].context = UnitGroupEmpty();
 	while (count > 0) {
 		librptr_unit_create(type, EventPlayer(), spawn_point, 270.0);
 		count -= 1;
 	}
-	
+
 	return true;
 }
