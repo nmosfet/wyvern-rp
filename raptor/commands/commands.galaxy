@@ -75,6 +75,8 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@removerange", "librptr_command_range");
 	librptr_chat_command_create("@armor", "librptr_command_armor");
 	librptr_chat_command_create("@shieldsarmor", "librptr_command_armor");
+	librptr_chat_command_create("@weaponspeed", "librptr_command_weaponspeed");
+	librptr_chat_command_create("@weaponspeedall", "librptr_command_weaponspeedall");
 	librptr_chat_command_create("@subtitle", "librptr_command_subtitle");
 	librptr_chat_command_create("@tooltip", "librptr_command_tooltip");
 	librptr_chat_command_create("@copy", "librptr_command_copy");

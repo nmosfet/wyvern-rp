@@ -994,7 +994,119 @@ bool librptr_command_armor(bool testConds, bool runActions) {
 				armor_diff = armor_diff + 0.1;
 			}
 		}
+		
+		if( StringCase( StringWord( librptr_player[EventPlayer()].chat_msg, 1 ), false ) == "@shieldsarmor" ) {
+			librptr_unit_cache_update(UnitGroupLoopCurrent(), "@shieldsarmor", librptr_player[EventPlayer()].chat_msg);
+		}
+		else { // using @armor
+			librptr_unit_cache_update(UnitGroupLoopCurrent(), "@armor", librptr_player[EventPlayer()].chat_msg);
+		}
+		
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
 
+	return true;
+}
+
+// librptr_command_weaponspeed
+// =====================
+// Changes the weapon speed of a unit (local change)
+// Because behaviors can only apply a weapon speed multiplier, 
+// to get target weapon speed we use formula
+// W : original weapon speed
+// Y : target weapon speed
+// X : behavior stack, each behavior .9 or 1.1 weapon speed multiplier
+// If Y > W : W(1.1)^X = Y
+// If Y < W : W(0.9)^X = Y
+// So we require stack X given by (floored to an int):
+// If Y > W : X = log(Y/W)/log(1.1)
+// If Y < W : X = log(Y/W)/log(0.9)
+bool librptr_command_weaponspeed(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	fixed speed = StringToFixed( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ) );
+	fixed ratio = 0;
+	int stack_required;
+	string weapon;
+	unit current;
+	
+	if(speed > 15) {
+		speed = 15;
+	}
+	if(speed <= 0.1) {
+		speed = 0.1;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		current = UnitGroupLoopCurrent();
+		weapon = UnitWeaponGet(current, 1);
+		if(weapon != "") {
+			ratio = StringToFixed(CatalogFieldValueGet(c_gameCatalogWeapon, weapon, "Period", UnitGetOwner(current))) / speed;
+		}
+		else {
+			ratio = speed;
+		}
+
+		UnitBehaviorRemove(current, LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_P9, -1);
+		UnitBehaviorRemove(current, LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_1P1, -1);
+
+		if(ratio > 1) { // apply 1.1 multiplier
+			stack_required = FixedToInt( Log2(ratio)/Log2(1.1) );
+			if( stack_required > 100 ) {
+				stack_required = 100;
+			}
+			UnitBehaviorAdd(current, LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_1P1, null, stack_required);
+		}
+		else if( ratio < 1) { // ratio < 1: apply .9 multiplier
+			stack_required = FixedToInt( Log2(ratio)/Log2(0.9) );
+			if( stack_required > 100 ) {
+				stack_required = 100;
+			}
+			UnitBehaviorAdd(current, LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_P9, null, stack_required);
+		}
+
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@weaponspeed", librptr_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// librptr_command_weaponspeedall
+// ====================
+// sets global weaponspeed for weapons on a unit
+// (by changing the catalog weaponspeed value)
+bool librptr_command_weaponspeedall(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	fixed speed = StringToFixed( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ) );
+	int index;
+	string weapon;
+	unit current;
+	
+	if(speed > 15) {
+		speed = 15;
+	}	
+	if(speed <= 0.1) {
+		speed = 0.1;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		current = UnitGroupLoopCurrent();
+		index = UnitWeaponCount(current);
+		while(index != 0) {
+			weapon = UnitWeaponGet(current, 1);
+			CatalogFieldValueSet(c_gameCatalogWeapon, UnitWeaponGet(current, index),
+				"Period", UnitGetOwner(current), FixedToString(speed, -1));
+			index -= 1;
+		}
+
+		UnitBehaviorRemove(current, LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_P9, -1);
+		UnitBehaviorRemove(current, LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_1P1, -1);
+
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@weaponspeedall", librptr_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();

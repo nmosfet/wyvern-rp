@@ -40,6 +40,10 @@ const string LIBRPTR_BEHAVIOR_ADD_RANGE_10 = "RaptorRangeAdd10";
 const string LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_1 = "RaptorRangeSubtract1";
 const string LIBRPTR_BEHAVIOR_SUBTRACT_RANGE_10 = "RaptorRangeSubtract10";
 
+// Behaviors to increase/decrease weapon speed
+const string LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_1P1 = "RaptorWeaponSpeedMultiplier1P1";
+const string LIBRPTR_BEHAVIOR_WEAPONSPEED_MULT_P9 = "RaptorWeaponSpeedMultiplierP9";
+
 // used for unit chat related commands
 const string LIBRPTR_TALK_ICON_ACTOR = "TalkIconBubble";
 const string LIBRPTR_TALK_SOUND = "";

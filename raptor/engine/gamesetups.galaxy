@@ -194,6 +194,8 @@ string librptr_gamesetup_alias_commands(string s) {
 	aliased = StringReplaceWord(aliased, "@addweapon", "@aw", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@removeweapon", "@rw", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@effect", "@ef", c_stringReplaceAll, false);
+	aliased = StringReplaceWord(aliased, "@armor", "@rmr", c_stringReplaceAll, false);
+	aliased = StringReplaceWord(aliased, "@shieldsarmor", "@srmr", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@adddamage", "@ad", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@addrange", "@ar", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@height", "@ht", c_stringReplaceAll, false);
@@ -204,6 +206,8 @@ string librptr_gamesetup_alias_commands(string s) {
 	aliased = StringReplaceWord(aliased, "@renameall", "@rn", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@color", "@col", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@tooltip", "@tt", c_stringReplaceAll, false);
+	aliased = StringReplaceWord(aliased, "@weaponspeedall", "@wpa", c_stringReplaceAll, false);
+	aliased = StringReplaceWord(aliased, "@weaponspeed", "@wp", c_stringReplaceAll, false);
 	return aliased;
 }
 
@@ -222,6 +226,8 @@ string librptr_gamesetup_alias_commands_unpack(string aliased) {
 	unpacked = StringReplaceWord(unpacked, "@amsg", "@actormsg", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@ad", "@adddamage", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@ar", "@addrange", c_stringReplaceAll, false);
+	unpacked = StringReplaceWord(unpacked, "@rmr", "@armor", c_stringReplaceAll, false);
+	unpacked = StringReplaceWord(unpacked, "@srmr", "@shieldsarmor", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@ab", "@addbehavior", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@rb", "@removebehavior", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@aw", "@addweapon", c_stringReplaceAll, false);
@@ -235,5 +241,7 @@ string librptr_gamesetup_alias_commands_unpack(string aliased) {
 	unpacked = StringReplaceWord(unpacked, "@rn", "@renameall", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@col", "@color", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@tt", "@tooltip", c_stringReplaceAll, false);
+	unpacked = StringReplaceWord(unpacked, "@wpa", "@weaponspeedall", c_stringReplaceAll, false);
+	unpacked = StringReplaceWord(unpacked, "@wp", "@weaponspeed", c_stringReplaceAll, false);
 	return unpacked;
 }

@@ -443,9 +443,9 @@ void librptr_unit_cache_update(unit subject, string command, string user_command
 		}
 	}
 	else if(command == "@animspeed") {
-		if(UnitGetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED) != 2) {
+		if(UnitGetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED) != 1) {
 			librptr_unit_cache_update_add(subject, unit_id, user_command);
-			UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED, UnitGetCustomValue(subject, 16) + 1);
+			UnitSetCustomValue(subject, LIBRPTR_UNIT_INDEX_FLAG_ANIMSPEED, 1);
 			return;
 		}
 		else {
@@ -507,7 +507,11 @@ void librptr_unit_cache_update(unit subject, string command, string user_command
 			 command == "@subtitle" ||
 			 command == "@renameall" ||
 			 command == "@color" || 
-			 command == "@tooltip" ) {
+			 command == "@tooltip" ||
+			 command == "@weaponspeed" ||
+			 command == "@weaponspeedall" ||
+			 command == "@armor" ||
+			 command == "@shieldsarmor" ) {
 		librptr_unit_cache_update_overwrite(subject, unit_id, command, user_command);
 		return;
 	}
