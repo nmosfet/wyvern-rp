@@ -1058,3 +1058,132 @@ bool librptr_command_tooltip(bool testConds, bool runActions) {
 	
 	return true;
 }
+
+// librptr_command_copy
+// ===============
+// copies selected units:
+// - stats, behaviors, orders, weapons
+// - visuals (by parsing commands from source cache)
+bool librptr_command_copy(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	unitgroup created = UnitGroupEmpty();
+	unit source;
+	unitgroup targets;
+	unit target;
+	int i;
+	int cache;
+	string source_unit_id;
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		source = UnitGroupLoopCurrent();
+		targets = UnitCreate(1, UnitGetType(source), c_unitCreateIgnorePlacement, UnitGetOwner(source), librptr_player[EventPlayer()].mouse_position, UnitGetFacing(source));
+		target = UnitGroupUnit(targets, 1);
+		
+		//set the unit's id on data table
+		librptr_unit_set_id(target);
+		UnitSetCustomValue(target, LIBRPTR_UNIT_INDEX_CACHE_COUNT, 1);
+		
+		// add to created unit group
+		UnitGroupAdd(created, target);
+
+		UnitSetHeight(target, UnitGetHeight(source), 0);
+		UnitSetState(target, c_unitStateInvulnerable, 
+			UnitTestState(source, c_unitStateInvulnerable));
+		UnitSetState(target, c_unitStatePaused, 
+			UnitTestState(source, c_unitStatePaused));
+		UnitSetState(target, c_unitStateHidden, 
+			UnitTestState(source, c_unitStateHidden));
+		UnitSetState(target, c_unitStateHighlightable, 
+			UnitTestState(source, c_unitStateHighlightable));
+		UnitSetState(target, c_unitStateIgnoreTerrainZ, 
+			UnitTestState(source, c_unitStateIgnoreTerrainZ));
+		UnitSetState(target, c_unitStateFidget, 
+			UnitTestState(source, c_unitStateFidget));
+		UnitSetState(target, c_unitStateTargetable, 
+			UnitTestState(source, c_unitStateTargetable));
+		UnitSetState(target, c_unitStateStatusBar, 
+			UnitTestState(source, c_unitStateStatusBar));
+		UnitSetState(target, c_unitStateTooltipable, 
+			UnitTestState(source, c_unitStateTooltipable));
+		UnitSetState(target, c_unitStateCursorable, 
+			UnitTestState(source, c_unitStateCursorable));
+		UnitSetState(target, c_unitStateHighlighted, 
+			UnitTestState(source, c_unitStateHighlighted));
+		UnitSetState(target, c_unitStateUsingSupply, 
+			UnitTestState(source, c_unitStateUsingSupply));
+		UnitSetPropertyFixed(target, c_unitPropLifeMax, 
+			UnitGetPropertyFixed(source, c_unitPropLifeMax, true));
+		UnitSetPropertyFixed(target, c_unitPropLife, 
+			UnitGetPropertyFixed(source, c_unitPropLife, true));
+		UnitSetPropertyFixed(target, c_unitPropLifeRegen, 
+			UnitGetPropertyFixed(source, c_unitPropLifeRegen, true));
+		UnitSetPropertyFixed(target, c_unitPropEnergyMax, 
+			UnitGetPropertyFixed(source, c_unitPropEnergyMax, true));
+		UnitSetPropertyFixed(target, c_unitPropEnergy, 
+			UnitGetPropertyFixed(source, c_unitPropEnergy, true));
+		UnitSetPropertyFixed(target, c_unitPropEnergyRegen, 
+			UnitGetPropertyFixed(source, c_unitPropEnergyRegen, true));
+		UnitSetPropertyFixed(target, c_unitPropShieldsMax, 
+			UnitGetPropertyFixed(source, c_unitPropShieldsMax, true));
+		UnitSetPropertyFixed(target, c_unitPropShields, 
+			UnitGetPropertyFixed(source, c_unitPropShields, true));
+		UnitSetPropertyFixed(target, c_unitPropShieldsRegen, 
+			UnitGetPropertyFixed(source, c_unitPropShieldsRegen, true));
+		UnitSetPropertyFixed(target, c_unitPropKills, 
+			UnitGetPropertyFixed(source, c_unitPropKills, true));
+		UnitSetPropertyFixed(target, c_unitPropMovementSpeed, 
+			UnitGetPropertyFixed(source, c_unitPropMovementSpeed, true));
+		UnitSetPropertyFixed(target, c_unitPropResources, 
+			UnitGetPropertyFixed(source, c_unitPropResources, true));
+
+		// Skipping implementing ability commands and their charges.
+		// Skipping implementing the cargo contained in a unit
+		// Skipping implementing unit magazines
+		// Skipping implementing unit queues
+
+		i = UnitBehaviorCountAll(source);
+		while(i != 0) {
+			UnitBehaviorAdd(target, UnitBehaviorGet(source, i), null,
+				UnitBehaviorCount(source, UnitBehaviorGet(source, i)));
+			UnitBehaviorSetDuration(target, UnitBehaviorGet(source, i),
+				UnitBehaviorDuration(source, UnitBehaviorGet(source, i)));
+			i -= 1;
+		}
+
+		i = 1;
+		while(i <= UnitOrderCount(source)) {
+			UnitIssueOrder(target, UnitOrder(source, i), c_orderQueueAddToEnd);
+			i += 1;
+		}
+
+		i = UnitWeaponCount(target);
+		while(i != 0) {
+			UnitWeaponRemove(target, UnitWeaponGet(target, 1));
+			i -= 1;
+		}
+
+		i = UnitWeaponCount(source);
+		while(i != 0) {
+			// Does not copy turrets!
+			UnitWeaponAdd(target, UnitWeaponGet(source, i), null);
+			i -= 1;
+		}
+
+		// Skipping implementing setname duplications
+		// Copy the visuals via cache
+		source_unit_id = FixedToString(UnitGetCustomValue(source, LIBRPTR_UNIT_INDEX_ID), 0);
+		cache = 1;
+		while( DataTableValueExists(true, source_unit_id + "." + IntToString(cache)) ) {
+			librptr_chat_parse(DataTableGetString(true, source_unit_id + "." + IntToString(cache)), EventPlayer(), targets);		
+			cache += 1;
+		}
+
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	librptr_player[EventPlayer()].context = created;
+	
+	return true;
+}
