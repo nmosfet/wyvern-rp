@@ -20,6 +20,20 @@ const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_10 = "RaptorDamageSubtract10";
 const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_100 = "RaptorDamageSubtract100";
 const string LIBRPTR_BEHAVIOR_SUBTRACT_DAMAGE_1000 = "RaptorDamageSubtract1000";
 
+// Behavior to add/subtract armor (life and shields separate)
+const string LIBRPTR_BEHAVIOR_ADD_LIFEARMOR_P1 = "RaptorLifeArmorAddP1";
+const string LIBRPTR_BEHAVIOR_ADD_LIFEARMOR_1 = "RaptorLifeArmorAdd1";
+const string LIBRPTR_BEHAVIOR_ADD_LIFEARMOR_10 = "RaptorLifeArmorAdd10";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_LIFEARMOR_P1 = "RaptorLifeArmorSubtractP1";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_LIFEARMOR_1 = "RaptorLifeArmorSubtract1";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_LIFEARMOR_10 = "RaptorLifeArmorSubtract10";
+const string LIBRPTR_BEHAVIOR_ADD_SHIELDSARMOR_P1 = "RaptorShieldsArmorAddP1";
+const string LIBRPTR_BEHAVIOR_ADD_SHIELDSARMOR_1 = "RaptorShieldsArmorAdd1";
+const string LIBRPTR_BEHAVIOR_ADD_SHIELDSARMOR_10 = "RaptorShieldsArmorAdd10";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_SHIELDSARMOR_P1 = "RaptorShieldsArmorSubtractP1";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_SHIELDSARMOR_1 = "RaptorShieldsArmorSubtract1";
+const string LIBRPTR_BEHAVIOR_SUBTRACT_SHIELDSARMOR_10 = "RaptorShieldsArmorSubtract10";
+
 // Behaviors to add/subtract weapon range
 const string LIBRPTR_BEHAVIOR_ADD_RANGE_1 = "RaptorRangeAdd1";
 const string LIBRPTR_BEHAVIOR_ADD_RANGE_10 = "RaptorRangeAdd10";

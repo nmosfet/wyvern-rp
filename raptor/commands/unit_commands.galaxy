@@ -914,6 +914,94 @@ bool librptr_command_range(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_armor
+// ===============
+// used for both @armor and @shieldsarmor
+// sets a unit's armor to the amount given via behaviors
+bool librptr_command_armor(bool testConds, bool runActions) {
+	fixed armor = StringToFixed( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ) );
+	fixed armor_curr = 0;
+	fixed armor_diff = 0;
+	string behav_armor_add_p1;
+	string behav_armor_add_1;
+	string behav_armor_add_10;
+	string behav_armor_subtract_p1;
+	string behav_armor_subtract_1;
+	string behav_armor_subtract_10;
+	unit current;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	
+	if( StringCase( StringWord( librptr_player[EventPlayer()].chat_msg, 1 ), false ) == "@shieldsarmor" ) {
+		behav_armor_add_p1 = LIBRPTR_BEHAVIOR_ADD_SHIELDSARMOR_P1;
+		behav_armor_add_1 = LIBRPTR_BEHAVIOR_ADD_SHIELDSARMOR_1;
+		behav_armor_add_10 = LIBRPTR_BEHAVIOR_ADD_SHIELDSARMOR_10;
+		behav_armor_subtract_p1 = LIBRPTR_BEHAVIOR_SUBTRACT_SHIELDSARMOR_P1;
+		behav_armor_subtract_1 = LIBRPTR_BEHAVIOR_SUBTRACT_SHIELDSARMOR_1;
+		behav_armor_subtract_10 = LIBRPTR_BEHAVIOR_SUBTRACT_SHIELDSARMOR_10;
+	}
+	else { // using @armor
+		behav_armor_add_p1 = LIBRPTR_BEHAVIOR_ADD_LIFEARMOR_P1;
+		behav_armor_add_1 = LIBRPTR_BEHAVIOR_ADD_LIFEARMOR_1;
+		behav_armor_add_10 = LIBRPTR_BEHAVIOR_ADD_LIFEARMOR_10;
+		behav_armor_subtract_p1 = LIBRPTR_BEHAVIOR_SUBTRACT_LIFEARMOR_P1;
+		behav_armor_subtract_1 = LIBRPTR_BEHAVIOR_SUBTRACT_LIFEARMOR_1;
+		behav_armor_subtract_10 = LIBRPTR_BEHAVIOR_SUBTRACT_LIFEARMOR_10;
+	}
+	
+	if(armor > 255) {
+		armor = 255;
+	}
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		current = UnitGroupLoopCurrent();
+		armor_curr = StringToFixed(CatalogFieldValueGet(c_gameCatalogUnit, UnitGetType(current), "LifeArmor", UnitGetOwner(current)));
+		armor_diff = armor - armor_curr;
+		
+		// remove any existing armor behaviors
+		UnitBehaviorRemove(current, behav_armor_add_p1, -1);
+		UnitBehaviorRemove(current, behav_armor_add_1, -1);
+		UnitBehaviorRemove(current, behav_armor_add_10, -1);
+		UnitBehaviorRemove(current, behav_armor_subtract_p1, -1);
+		UnitBehaviorRemove(current, behav_armor_subtract_1, -1);
+		UnitBehaviorRemove(current, behav_armor_subtract_10, -1);
+
+		if(armor_diff > 0) {
+			while(armor_diff >= 10) {
+				UnitBehaviorAdd(current, behav_armor_add_10, null, 1);
+				armor_diff = armor_diff - 10;
+			}
+			while(armor_diff >= 1) {
+				UnitBehaviorAdd(current, behav_armor_add_1, null, 1);
+				armor_diff = armor_diff - 1;
+			}
+			while(armor_diff >= 0.1) {
+				UnitBehaviorAdd(current, behav_armor_add_p1, null, 1);
+				armor_diff = armor_diff - 0.1;
+			}
+		}
+		else {
+			while(armor_diff <= -10) {
+				UnitBehaviorAdd(current, behav_armor_subtract_10, null, 1);
+				armor_diff = armor_diff + 10;
+			}
+			while(armor_diff <= -1) {
+				UnitBehaviorAdd(current, behav_armor_subtract_1, null, 1);
+				armor_diff = armor_diff + 1;
+			}
+			while(armor_diff <= -0.1) {
+				UnitBehaviorAdd(current, behav_armor_subtract_p1, null, 1);
+				armor_diff = armor_diff + 0.1;
+			}
+		}
+
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
 // librptr_command_subtitle
 // =================
 // sets a unit's subtitle (underneath a unit name)
