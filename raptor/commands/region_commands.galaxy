@@ -154,3 +154,38 @@ bool librptr_command_region_teleport(bool testConds, bool runActions) {
 	
 	return true;
 }
+
+// librptr_command_region_attach
+// =================
+// attaches a region to a unit
+bool librptr_command_region_attach(bool checkConds, bool runActions) {
+	string name = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	region rgn = null;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	point offset;
+	
+	name = librptr_region_get_name(name, EventPlayer());
+	
+	rgn = DataTableGetRegion(true, name);
+	if(rgn == null) {
+		librptr_print_error("No region with that name exists!", EventPlayer());
+		return true;
+	}
+
+	offset = Point( StringToFixed(StringWord(librptr_player[EventPlayer()].chat_msg, 3)),
+					StringToFixed(StringWord(librptr_player[EventPlayer()].chat_msg, 4)) );
+
+	if(UnitGroupCount(g, c_unitCountAll) == 0) {
+		RegionAttachToUnit(rgn, null, offset);
+		librptr_print_success("Region unattached successfully.", EventPlayer());
+	}
+	else if(UnitGroupCount(g, c_unitCountAll) == 1) {
+		RegionAttachToUnit(rgn, UnitGroupUnit(g, 1), offset);
+		librptr_print_success("Region attached successfully.", EventPlayer());
+	}
+	else {
+		librptr_print_error("You can't attach the same region to multiple units!", EventPlayer());
+	}
+
+	return true;
+}

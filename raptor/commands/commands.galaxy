@@ -106,5 +106,6 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("#removeall", "librptr_command_region_removeall");
 	librptr_chat_command_create("#list", "librptr_command_region_list");
 	librptr_chat_command_create("#teleport", "librptr_command_region_teleport");
+	librptr_chat_command_create("#attach", "librptr_command_region_attach");
 
 }
