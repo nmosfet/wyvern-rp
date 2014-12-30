@@ -198,7 +198,7 @@ bool librptr_command_control(bool testConds, bool runActions) {
 		return true;
 	}
 
-	// if original player was "all", unally all / ally all by 
+	// if original player was "all", set control by
 	// parsing command for each player
 	if( original == "all" ) {
 		while( i != LIBRPTR_MAX_PLAYERS ) {
@@ -227,7 +227,7 @@ bool librptr_command_control(bool testConds, bool runActions) {
 			PlayerSetAlliance( context, c_allianceIdControl, i, true );
 			PlayerSetAlliance( context, c_allianceIdSpend, i, true );
 			// Now check, do we have permission to modify this player's alliances, too?
-			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[context].permission_level ) {
+			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[i].permission_level ) {
 				PlayerSetAlliance( i, c_allianceIdControl, context, true );
 				PlayerSetAlliance( i, c_allianceIdSpend, context, true );	
 			}
@@ -264,7 +264,7 @@ bool librptr_command_uncontrol(bool testConds, bool runActions) {
 		return true;
 	}
 
-	// if original player was "all", unally all / ally all by 
+	// if original player was "all", set control by 
 	// parsing command for each player
 	if( original == "all" ) {
 		while( i != LIBRPTR_MAX_PLAYERS ) {
@@ -293,7 +293,7 @@ bool librptr_command_uncontrol(bool testConds, bool runActions) {
 			PlayerSetAlliance( context, c_allianceIdControl, i, false );
 			PlayerSetAlliance( context, c_allianceIdSpend, i, false );
 			// Now check, do we have permission to modify this player's alliances, too?
-			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[context].permission_level ) {
+			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[i].permission_level ) {
 				PlayerSetAlliance( i, c_allianceIdControl, context, false );
 				PlayerSetAlliance( i, c_allianceIdSpend, context, false );	
 			}
