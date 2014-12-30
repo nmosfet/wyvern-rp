@@ -76,6 +76,8 @@ struct librptr_player_properties {
 	// to repeat the last instance
 	string spawn_instance_type;		// unit type
 	int spawn_instance_count;		// # spawned
+	int spawn_instance_player;		// player units spawned for
+	region spawn_instance_location;	// location spawned
 	
 	// is_placing_unit
 	// ===============

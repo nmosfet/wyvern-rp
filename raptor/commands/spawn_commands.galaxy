@@ -14,17 +14,23 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 	point spawn_point = librptr_player[EventPlayer()].mouse_position;
 	int count = StringToInt( StringWord(librptr_player[EventPlayer()].chat_msg, 2) );
 	string type = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
-	//region r = null; //TODO ADD SPAWNING AT REGIONS
-	
+	region location = null;
+	int player = EventPlayer(); 
+	string parameter; 	// used for parsing a location or player parameter
+
 	// if no parameters specified, check last instance and try to repeat
 	if( StringWord(librptr_player[EventPlayer()].chat_msg, 2) == "" ) {
 		if( librptr_player[EventPlayer()].spawn_instance_type != "" ) {
 			type = librptr_player[EventPlayer()].spawn_instance_type;
 			count = librptr_player[EventPlayer()].spawn_instance_count;
+			player = librptr_player[EventPlayer()].spawn_instance_player;
+			if( librptr_player[EventPlayer()].spawn_instance_location != null ) {
+				spawn_point = RegionGetCenter( librptr_player[EventPlayer()].spawn_instance_location );
+			}
 			
 			librptr_player[EventPlayer()].context = UnitGroupEmpty();
 			while (count > 0) {
-				librptr_unit_create(type, EventPlayer(), spawn_point, 270.0);
+				librptr_unit_create(type, player, spawn_point, 270.0);
 				count -= 1;
 			}
 			
@@ -65,8 +71,55 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);
 		return true;
 	}
-
+	
 	// otherwise spawn a number of units:
+	
+	// check if a player or region is specified (4th and 5th index)
+	// -> region specified by "#[name]"
+	// -> player specified by "@[player-color]"
+	if( StringWord(librptr_player[EventPlayer()].chat_msg, 4) != "" ) {
+		if( StringContains( StringWord(librptr_player[EventPlayer()].chat_msg, 4), "#", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(librptr_player[EventPlayer()].chat_msg, 4);
+			parameter = librptr_region_get_name( StringSub(parameter, 2, StringLength(parameter)), EventPlayer() );
+			if( DataTableValueExists(true, parameter) ) {
+				location = DataTableGetRegion(true, parameter);
+				spawn_point = RegionGetCenter(location);
+			}
+			else {
+				librptr_print_error("No region by name \"" + parameter + "\" exists, defaulting to cursor", EventPlayer() );
+			}
+		}
+		else if( StringContains( StringWord(librptr_player[EventPlayer()].chat_msg, 4), "@", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(librptr_player[EventPlayer()].chat_msg, 4);
+			player = librptr_color_to_player( StringSub(parameter, 2, StringLength(parameter)) );
+			if( player == -1 ) {
+				player = EventPlayer();
+				librptr_print_error("Invalid player color, defaulting to self", EventPlayer() );
+			}
+		}
+	}
+	if( StringWord(librptr_player[EventPlayer()].chat_msg, 5) != "" ) {
+		if( StringContains( StringWord(librptr_player[EventPlayer()].chat_msg, 5), "#", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(librptr_player[EventPlayer()].chat_msg, 5);
+			parameter = librptr_region_get_name( StringSub(parameter, 2, StringLength(parameter)), EventPlayer() );
+			if( DataTableValueExists(true, parameter) ) {
+				location = DataTableGetRegion(true, parameter);
+				spawn_point = RegionGetCenter(location);
+			}
+			else {
+				librptr_print_error("No region by name \"" + parameter + "\" exists, defaulting to cursor", EventPlayer() );
+			}
+		}
+		else if( StringContains( StringWord(librptr_player[EventPlayer()].chat_msg, 5), "@", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(librptr_player[EventPlayer()].chat_msg, 5);
+			player = librptr_color_to_player( StringSub(parameter, 2, StringLength(parameter)) );
+			if( player == -1 ) {
+				player = EventPlayer();
+				librptr_print_error("Invalid player color, defaulting to self", EventPlayer() );
+			}
+		}
+	}	
+
 	// ensure spawn instance count is less than max count in settings
 	// TEMPORARY: until better spawn throttling is implemented
 	if( count > librptr_settings.max_spawn_count ) {
@@ -76,11 +129,13 @@ bool librptr_command_spawn(bool testConds, bool runActions) {
 	// set player spawn instance (before spawning so count is preserved)
 	librptr_player[EventPlayer()].spawn_instance_type = type;
 	librptr_player[EventPlayer()].spawn_instance_count = count;
+	librptr_player[EventPlayer()].spawn_instance_player = player;
+	librptr_player[EventPlayer()].spawn_instance_location = location;
 	
 	// make spawned units
 	librptr_player[EventPlayer()].context = UnitGroupEmpty();
 	while (count > 0) {
-		librptr_unit_create(type, EventPlayer(), spawn_point, 270.0);
+		librptr_unit_create(type, player, spawn_point, 270.0);
 		count -= 1;
 	}
 
