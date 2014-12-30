@@ -10,6 +10,9 @@
 // (TODO: replace with custom abilities in a mod file)
 const string LIBRPTR_BEHAVIOR_SUPPRESS_COLLISION = "SuppressCollision";
 
+// Veterancy behavior (levels)
+const string LIBRPTR_BEHAVIOR_LEVELS = "RaptorLevels";
+
 // Behaviors to add/subtract damage
 const string LIBRPTR_BEHAVIOR_ADD_DAMAGE_1 = "RaptorDamageAdd1";
 const string LIBRPTR_BEHAVIOR_ADD_DAMAGE_10 = "RaptorDamageAdd10";

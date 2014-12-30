@@ -81,6 +81,8 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@tooltip", "librptr_command_tooltip");
 	librptr_chat_command_create("@copy", "librptr_command_copy");
 	librptr_chat_command_create("@effect", "librptr_command_effect");
+	librptr_chat_command_create("@kills", "librptr_command_kills");
+	librptr_chat_command_create("@level", "librptr_command_level");
 	
 	// unit visual (actor) commands
 	librptr_chat_command_create("@scale", "librptr_command_scale");

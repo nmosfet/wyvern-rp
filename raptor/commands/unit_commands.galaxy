@@ -1338,3 +1338,57 @@ bool librptr_command_effect(bool testConds, bool runActions) {
 	
 	return true;
 }
+
+// librptr_command_kills
+// ==============
+// sets the number of kills on a unit 
+// (only useful for changing unit kill rank)
+bool librptr_command_kills(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	fixed val = StringToFixed( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ) );
+
+	if( val <= 0 ) { // Bad input!
+		return true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetPropertyFixed( UnitGroupLoopCurrent(), c_unitPropKills, val );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
+// librptr_command_level
+// ===============
+// sets a unit's level (level range between 0 - 20)
+// (if a unit does not have veterancy behavior, 
+// it is added before setting level)
+bool librptr_command_level(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	int val = StringToInt( StringWord( librptr_player[EventPlayer()].chat_msg, 2 ) );
+
+	if( val <= 0 || val > 20 ) { // Bad input!
+		return true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+        // Give the level behavior to the unit so that it can level.
+        if( !UnitHasBehavior(UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_LEVELS) ) {
+            UnitBehaviorAdd( UnitGroupLoopCurrent(), LIBRPTR_BEHAVIOR_LEVELS, UnitGroupLoopCurrent(), 1);
+        }
+		
+        if( UnitLevel(UnitGroupLoopCurrent()) == val ) {
+            UnitGroupLoopStep();
+            continue;
+        }
+
+        UnitSetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLevel, val);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
