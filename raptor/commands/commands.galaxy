@@ -23,6 +23,8 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\gamesetup", "librptr_command_gamesetup");
 	librptr_chat_command_create("\\control", "librptr_command_control");
 	librptr_chat_command_create("\\uncontrol", "librptr_command_uncontrol");
+	librptr_chat_command_create("\\ally", "librptr_command_ally");
+	librptr_chat_command_create("\\unally", "librptr_command_unally");
 	librptr_chat_command_create("\\remove", "librptr_command_remove_player");
 	librptr_chat_command_create("\\search", "librptr_command_search");
 	librptr_chat_command_create("\\replace", "librptr_command_replace");
@@ -39,6 +41,8 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\enable", "librptr_command_enable");
 	librptr_chat_command_create("\\mute", "librptr_command_mute");
 	librptr_chat_command_create("\\unmute", "librptr_command_unmute");
+	librptr_chat_command_create("\\promote", "librptr_command_promote");
+	librptr_chat_command_create("\\demote", "librptr_command_demote");
 	
 	// spawn command
 	librptr_chat_command_create("@spawn", "librptr_command_spawn");

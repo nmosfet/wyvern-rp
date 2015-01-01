@@ -305,6 +305,122 @@ bool librptr_command_uncontrol(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_ally
+// ==================
+// allies another player, and if your permissions are greater
+// than target player, also forces them to ally you
+bool librptr_command_ally(bool testConds, bool runActions) {
+	string player = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	string target_player = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	string original = player;
+	int i = 1;
+	int context = EventPlayer();	// a player to be controlled/given control
+
+	// if target player specified, trying to make two players control one another
+	if( target_player != "" ) {
+		context = librptr_color_to_player(player);
+		player = target_player;
+	}
+	
+	if( context == -1 ) { // Invalid player.
+		return true;
+	}
+	
+	// check permissions on context player
+	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && librptr_player[EventPlayer()].permission_level <= librptr_player[context].permission_level ) {
+		return true;
+	}
+
+	// if original player was "all", set control by
+	// parsing command for each player
+	if( original == "all" ) {
+		while( i != LIBRPTR_MAX_PLAYERS ) {
+			// Issue this command over the next color.
+			librptr_chat_parse("\\ally " + librptr_color_from_player(i) + " " + target_player, EventPlayer(), librptr_player[EventPlayer()].context);
+			i += 1;
+		}
+		return true;
+	}
+	
+	
+	// apply alliance control/spending
+	while( i != LIBRPTR_MAX_PLAYERS ) { 
+		if( i == context || (librptr_color_to_player(player) != i && player != "all") ) {
+			i += 1;
+			continue;
+		}
+
+		if( PlayerType(i) != c_playerTypeUser ) { 
+			libNtve_gf_SetAllianceOneWay( context, i, 1);
+			libNtve_gf_SetAllianceOneWay( i, context, 1);
+		}
+		else {
+			libNtve_gf_SetAllianceOneWay( context, i, 1);
+			// Now check, do we have permission to modify this player's alliances, too?
+			if( EventPlayer() == i || librptr_player[EventPlayer()].permission_level > librptr_player[i].permission_level ) {
+				libNtve_gf_SetAllianceOneWay( i, context, 1);
+			}
+		}
+
+		i += 1;
+	}
+	
+	return true;
+}
+
+// librptr_command_unally
+// ==================
+// unallies another player. other player automatically
+// will unally you also
+bool librptr_command_unally(bool testConds, bool runActions) {
+	string player = StringWord(librptr_player[EventPlayer()].chat_msg, 2);
+	string target_player = StringWord(librptr_player[EventPlayer()].chat_msg, 3);
+	string original = player;
+	int i = 1;
+	int context = EventPlayer();	// a player to be controlled/given control
+
+	// if target player specified, trying to make two players control one another
+	if( target_player != "" ) {
+		context = librptr_color_to_player(player);
+		player = target_player;
+	}
+	
+	if( context == -1 ) { // Invalid player.
+		return true;
+	}
+	
+	// check permissions on context player
+	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && librptr_player[EventPlayer()].permission_level <= librptr_player[context].permission_level ) {
+		return true;
+	}
+
+	// if original player was "all", set control by
+	// parsing command for each player
+	if( original == "all" ) {
+		while( i != LIBRPTR_MAX_PLAYERS ) {
+			// Issue this command over the next color.
+			librptr_chat_parse("\\ally " + librptr_color_from_player(i) + " " + target_player, EventPlayer(), librptr_player[EventPlayer()].context);
+			i += 1;
+		}
+		return true;
+	}
+	
+	
+	// apply alliance control/spending
+	while( i != LIBRPTR_MAX_PLAYERS ) { 
+		if( i == context || (librptr_color_to_player(player) != i && player != "all") ) {
+			i += 1;
+			continue;
+		}
+		libNtve_gf_SetAllianceOneWay( context, i, 5);
+		libNtve_gf_SetAllianceOneWay( i, context, 5);
+
+		i += 1;
+	}
+	
+	return true;
+}
+
 // librptr_command_remove_player
 // ===================
 // removes all of a specific players units from the map

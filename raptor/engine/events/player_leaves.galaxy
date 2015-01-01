@@ -25,6 +25,7 @@ bool librptr_player_leaves(bool testConds, bool runActions) {
 		while( player < LIBRPTR_MAX_PLAYERS ) {
 			if ( librptr_player[player].permission_level == LIBRPTR_PERMISSIONS_LEVEL_MOD ) {
 				librptr_player[player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_ADMIN;
+				librptr_print_text( librptr_player_name_colored(player) + StringToText(" has been promoted to admin"), PlayerGroupAll() );
 				return true;
 			}
 			player += 1;

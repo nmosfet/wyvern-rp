@@ -152,3 +152,53 @@ bool librptr_command_unmute(bool testConds, bool runActions) {
 
 	return true;
 }
+
+// librptr_command_promote
+// ================
+// promotes a player to moderator status
+bool librptr_command_promote(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser || 
+		target_player == EventPlayer() || librptr_player[target_player].permission_level == LIBRPTR_PERMISSIONS_LEVEL_ADMIN) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_ADMIN ) {
+		librptr_print_error("Only admins can promote/demote moderators", EventPlayer());
+		return false;
+	}
+	
+	librptr_player[target_player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_MOD;
+
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been promoted to moderator by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// librptr_command_demote
+// ================
+// sets a player to default status
+bool librptr_command_demote(bool testConds, bool runActions) {
+	int target_player = librptr_color_to_player( StringWord(librptr_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser || 
+		target_player == EventPlayer() || librptr_player[target_player].permission_level == LIBRPTR_PERMISSIONS_LEVEL_ADMIN) {
+		librptr_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( librptr_player[EventPlayer()].permission_level < LIBRPTR_PERMISSIONS_LEVEL_ADMIN ) {
+		librptr_print_error("Only admins can promote/demote moderators", EventPlayer());
+		return false;
+	}
+	
+	librptr_player[target_player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_DEFAULT;
+
+	librptr_print_text(librptr_player_name_colored(target_player) + StringToText(" has been demoted by ") + librptr_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
