@@ -1404,7 +1404,7 @@ bool librptr_command_label(bool testConds, bool runActions) {
 	string label = librptr_player[EventPlayer()].chat_msg;
 	label = StringSub( label, StringFind(label, " ", c_stringCase) + 1, StringLength(label)); // The remainder of the chat message.
 	
-	if( StringLength(label) > 128 ) {
+	if( StringLength(label) > 512 ) {
 		librptr_print_error("Your label length is too long.", EventPlayer());
 		return true;
 	}

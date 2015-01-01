@@ -283,6 +283,29 @@ bool librptr_command_rotate(bool testConds, bool runActions) {
 	return true;
 }
 
+// librptr_command_statbars
+// ==================
+// sets a unit's statbars 
+// by default, turns statbars off. 
+// turns on if user specifies by "@statbars on"
+bool librptr_command_statbars(bool testConds, bool runActions) {
+	unitgroup g = librptr_player[EventPlayer()].context;
+	bool state = false;
+	
+	if(StringEqual(StringWord(librptr_player[EventPlayer()].chat_msg, 2), "on", false)) {
+		state = true;
+	}
+	
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetState(UnitGroupLoopCurrent(), c_unitStateStatusBar, state);
+		librptr_unit_cache_update(UnitGroupLoopCurrent(), "@statbars", librptr_player[EventPlayer()].chat_msg);		
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	return true;
+}
+
 // libcrtx_command_actormessage
 // =======================
 // Sends an ActorMessage to a unit (main or a actor reference) or to a global reference

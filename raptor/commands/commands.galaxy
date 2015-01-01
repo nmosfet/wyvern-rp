@@ -96,6 +96,7 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@play", "librptr_command_play");
 	librptr_chat_command_create("@animspeed", "librptr_command_animspeed");
 	librptr_chat_command_create("@rotate", "librptr_command_rotate");
+	librptr_chat_command_create("@statbars", "librptr_command_statbars");
 	librptr_chat_command_create("@actormsg", "librptr_command_actormessage");
 	librptr_chat_command_create("@attach", "librptr_command_attach");
 	
