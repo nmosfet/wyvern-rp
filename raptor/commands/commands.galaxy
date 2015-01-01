@@ -87,6 +87,7 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("@effect", "librptr_command_effect");
 	librptr_chat_command_create("@kills", "librptr_command_kills");
 	librptr_chat_command_create("@level", "librptr_command_level");
+	librptr_chat_command_create("@label", "librptr_command_label");
 	
 	// unit visual (actor) commands
 	librptr_chat_command_create("@scale", "librptr_command_scale");

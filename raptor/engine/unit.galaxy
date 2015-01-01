@@ -27,6 +27,8 @@ const int LIBRPTR_UNIT_INDEX_FLAG_ROTATE = 9;		// flag for @rotate has been used
 
 const int LIBRPTR_UNIT_INDEX_WAYGATE = 15;		// flag for region waygates
 
+const int LIBRPTR_UNIT_INDEX_TEXTTAG = 15;		// flag for text tag set
+
 // Each unit given a unique id. Each time unit created, counter increments
 int librptr_unit_id_counter = 1;
 
@@ -172,7 +174,8 @@ text librptr_unit_get_name(unit u) {
 // librptr_unit_data_remove
 // ======================
 // iterates through the unit's caches in data table and removes them
-// if unit had a custom setname or setnamecolor, remove these as well
+// -> if unit had a custom setname or setnamecolor, remove these as well
+// -> destroy any text tags (labels) associated with unit
 void librptr_unit_data_remove(unit u) {
 	string unit_id = FixedToString(UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_ID), 0);
 	int i = 1;
@@ -189,6 +192,11 @@ void librptr_unit_data_remove(unit u) {
 	}
 	if( DataTableValueExists(true, unit_id + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER) ) {
 		DataTableValueRemove(true, unit_id + LIBRPTR_UNIT_NAME_COLOR_DATA_TABLE_IDENTIFIER);
+	}
+	
+	// destroy any associated text tags
+	if( UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_TEXTTAG) != 0.0 ) {
+		TextTagDestroy( FixedToInt( UnitGetCustomValue(u, LIBRPTR_UNIT_INDEX_TEXTTAG) ) );
 	}
 }
 

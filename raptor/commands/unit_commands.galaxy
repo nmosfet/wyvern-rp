@@ -1392,3 +1392,46 @@ bool librptr_command_level(bool testConds, bool runActions) {
 
 	return true;
 }
+
+// librptr_command_label
+// =================
+// creates and attaches a text tag to unit
+// labels are destroyed when units removed/killed
+bool librptr_command_label(bool testConds, bool runActions) {
+	int tag_id;
+	bool remove_tag = false;
+	unitgroup g = librptr_player[EventPlayer()].context;
+	string label = librptr_player[EventPlayer()].chat_msg;
+	label = StringSub( label, StringFind(label, " ", c_stringCase) + 1, StringLength(label)); // The remainder of the chat message.
+	
+	if( StringLength(label) > 128 ) {
+		librptr_print_error("Your label length is too long.", EventPlayer());
+		return true;
+	}
+	
+	if( label == "" ) {
+		remove_tag = true;
+	}
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		if( remove_tag || UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_TEXTTAG) != 0.0 ) {
+			tag_id = FixedToInt( UnitGetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_TEXTTAG) );
+			TextTagDestroy(tag_id);
+			UnitSetCustomValue( UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_TEXTTAG, 0.0 );
+		}
+		
+		if( !remove_tag ) {
+			tag_id = TextTagCreate( TextWithColor( StringToText(label), ColorFromIndex( PlayerGetColorIndex(EventPlayer(), false), c_teamColorDiffuse ) ),
+									40, UnitGetPosition(UnitGroupLoopCurrent()), 1.0, true, true, PlayerGroupAll() );
+			TextTagSetTextShadow(tag_id, true);
+			TextTagAttachToUnit(tag_id, UnitGroupLoopCurrent(), 1.0);
+		
+			UnitSetCustomValue(UnitGroupLoopCurrent(), LIBRPTR_UNIT_INDEX_TEXTTAG, IntToFixed(tag_id));
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	return true;
+}
