@@ -34,6 +34,7 @@ void librptr_commands_initialize() {
 	librptr_chat_command_create("\\supply", "librptr_command_supply");
 	librptr_chat_command_create("\\zoom", "librptr_command_zoom");
 	librptr_chat_command_create("\\light", "librptr_command_light");
+	librptr_chat_command_create("\\blacklist", "librptr_command_blacklist");
 
 	// admin commands
 	librptr_chat_command_create("\\ban", "librptr_command_ban");

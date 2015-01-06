@@ -742,3 +742,87 @@ bool librptr_command_light(bool testConds, bool runActions) {
 
 	return true;
 }
+
+// librptr_command_blacklist
+// =================
+// handles blacklist functions 
+// (add, remove, removeall, list) as subcommands
+bool librptr_command_blacklist(bool testConds, bool runActions) {
+	string sub_command;
+	string sub_parameter;
+	int player;
+	string player_handle;
+	
+	sub_command = StringWord( librptr_player[EventPlayer()].chat_msg, 2 );
+	sub_parameter = StringWord( librptr_player[EventPlayer()].chat_msg, 3 );
+
+	//add player name and handle to blacklist
+	if( sub_command == "add" ) {
+		if(sub_parameter == "-h") { // syntax: "blacklist add -h [handle] [name]", directly add handle and name
+			player_handle = StringWord( librptr_player[EventPlayer()].chat_msg, 4 );
+			librptr_blacklist_add( EventPlayer(), player_handle, StringToText(StringWord( librptr_player[EventPlayer()].chat_msg, 5 )) );
+			librptr_print_output( StringWord( librptr_player[EventPlayer()].chat_msg, 5 ) + " (" + player_handle + ") was added to blacklist", EventPlayer() );
+			return true;
+		}
+		
+		// else, add player from color to blacklist
+		player = librptr_color_to_player(StringWord( librptr_player[EventPlayer()].chat_msg, 3 ));
+		if( player == -1 || PlayerType(player) != c_playerTypeUser ) {
+			librptr_print_error("Invalid player", EventPlayer());
+			return false;
+		}
+		else if( player == EventPlayer() ) {
+			librptr_print_error("Cannot blacklist yourself", EventPlayer());
+			return false;
+		}
+		
+		player_handle = PlayerHandle(player);
+		
+		if( BankKeyExists(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST, player_handle) ) {
+			librptr_print_error("Player already exists on blacklist!", EventPlayer());
+			return false;
+		}
+		
+		librptr_blacklist_add(EventPlayer(), player_handle, StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player));
+		librptr_print_text( StringToText("> ") + librptr_player_name_colored(player) + StringToText(" (" + PlayerHandle(player) + ") was added to blacklist"), PlayerGroupSingle(EventPlayer()) );
+
+		return true;
+	}
+	// remove player name and handle from blacklist
+	// syntax is "blacklist remove ID"
+	// (ID input is given by sub_parameter)
+	else if( sub_command == "remove" ) {
+		if( BankKeyCount(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST) == 0 ) {
+			librptr_print_error("No players on blacklist.", EventPlayer());
+			return false;
+		}
+
+		if( StringToInt(sub_parameter) <= BankKeyCount(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST) &&
+			StringToInt(sub_parameter) != 0 ) {
+			player_handle = BankKeyName(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST, StringToInt(sub_parameter) - 1); // (id - 1) because index starts at 0
+			librptr_print_text( StringToText("> ") + BankValueGetAsText(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST, player_handle) + StringToText(" was removed from blacklist"), PlayerGroupSingle(EventPlayer()) );
+			librptr_blacklist_remove(EventPlayer(), player_handle);
+			return true;
+		}
+		else {
+			librptr_print_error("Invalid blacklist index", EventPlayer());
+			return false;
+		}
+	}
+	else if( sub_command == "removeall" ) { // removes blacklist section from bank
+		BankSectionRemove(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST);
+		BankSave(librptr_player[EventPlayer()].bank_storage);
+		librptr_print_output("All blacklist entries removed", EventPlayer());
+	}
+	else if(sub_command == "list") { // lists blacklist in table in format ( [ID:] + Handle + Name )
+		if( BankKeyCount(librptr_player[EventPlayer()].bank_storage, LIBRPTR_BANK_SECTION_BLACKLIST) == 0 ) {
+			librptr_print_error("No players on blacklist.", EventPlayer());
+			return false;
+		}
+		
+		librptr_blacklist_list(EventPlayer());
+		return true;
+	}
+
+	return true;
+}

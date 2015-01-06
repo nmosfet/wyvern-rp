@@ -82,6 +82,14 @@ include "raptor/engine/gamesetups.galaxy"
 // e.g. player moves mouse, unit enters region
 include "raptor/engine/events/events.galaxy"
 
+// blacklist
+// =============
+// contains functions for blacklist system
+// -> blacklist runs at start of game for host,
+//    disables any player on host's blacklist
+// player usage of blacklist handled by blacklist in general_commands
+include "raptor/engine/blacklist.galaxy"
+
 // debug
 // =============
 // tools for debugging
@@ -108,8 +116,10 @@ void librptr_engine_initialize() {
 			librptr_chat_initialize_player(player);
 			
 			// give admin to first active player (assumes player 1 is lobby host and should be default admin)
+			// then run admin's blacklist
 			if( !admin_set ) {
 				librptr_player[player].permission_level = LIBRPTR_PERMISSIONS_LEVEL_ADMIN;
+				librptr_blacklist_run(player);
 				admin_set = true;
 			}
 		}
