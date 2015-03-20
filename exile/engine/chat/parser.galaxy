@@ -1,0 +1,141 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+const string LIBXIL_CHAT_COMMAND_DATA_TABLE_PREFIX = "libxil_command_";
+
+// libxil_chat_command_create
+// ==================
+// creates a chat command by storing as a trigger in data table
+// [key: command string] : [value: command trigger]
+// when a command needs to be run, if command exists as a key in the data table,
+// the trigger is run as a command function
+void libxil_chat_command_create(string command, string function) {
+	trigger t = TriggerCreate(function);
+	if (t == null) {
+		libxil_print("FAILED TO LOAD COMMAND: " + command, PlayerGroupAll());
+	} else {
+		DataTableSetTrigger(true, LIBXIL_CHAT_COMMAND_DATA_TABLE_PREFIX + command, t);
+		libxil_settings.commands = libxil_settings.commands +  ", " + command;
+	}
+}
+
+// libxil_chat_parse
+// =================
+// parses a chat message string for commands (each command separated by ";" )
+// built-in commands are "alias", "template", and "var" which affect parsing
+// hence these are treated separately than all other commands
+void libxil_chat_parse(string msg, int player, unitgroup target) {
+	string current = msg;
+	string current_alias_subbed;
+	int semicolon_index;
+	int next_semicolon_index;
+	
+	libxil_player[player].context = target;
+	
+	while ( msg != "" ) {
+		// update player's chat_msg current cache
+		libxil_player[player].chat_msg = msg;
+		
+		// get a chunk of the msg by finding ";" separater
+		// -> to allow players to still use ";" in chat, "\;" is parsed as an escape sequence
+		// -> "\;" will print out a ";" in the chat, so we must find "\;" in a message
+		semicolon_index = StringFind(msg, ";", c_stringNoCase);
+		while( true ) {
+			if( semicolon_index ) {
+				// if this is an escaped semicolon "\;", find the next semicolon
+				if( StringSub(msg, semicolon_index - 1, semicolon_index - 1) == "\\" ) {
+					next_semicolon_index = StringFind( StringSub( msg, semicolon_index + 1, StringLength(msg) ), ";", c_stringNoCase );
+					if( next_semicolon_index > 0 ) {
+						// must add because next_semicolon_index is relative to a substring
+						semicolon_index = semicolon_index + next_semicolon_index; 
+						continue;
+					}
+					else { // at end of msg
+						current = msg;
+						msg = "";
+						break;
+					}
+				}
+				else {
+					current = libxil_string_trim( StringSub(msg, 1, semicolon_index - 1) );
+					msg = StringSub( msg, semicolon_index + 1, StringLength(msg) );
+					break;
+				}
+			}
+			else { // at end of msg
+				current = msg;
+				msg = "";
+				break;
+			}
+			
+		}
+		// after getting current, replace escape sequence for semicolon: "\;" -> ";"
+		current = StringReplaceWord(current, "\\;", ";", c_stringReplaceAll, false);
+		
+		// go no further with parsing if current string is empty
+		// (this occurs if player types a string of ";;;;;")
+		if( current == "" ) {
+			continue;
+		}
+		
+		// check if performing reserved keyword commands (alias, template, var)
+		if ( StringEqual( StringWord(current, 1), "alias", c_stringNoCase) ) {
+			// returns true if using "alias create":
+			// in this case, the rest of msg is used up AS IS, so parsing considered finished
+			if( libxil_alias_command_redirect(current, player) ) { 
+				break;
+			}
+			continue; // skip OOC printing
+		}
+		else if ( StringEqual( StringWord(current, 1), "template", c_stringNoCase) ) {
+			// returns true if using "template create":
+			// in this case, the rest of msg is used up AS IS, so parsing considered finished
+			if( libxil_template_command_redirect(current, player) ) { 
+				break;
+			}
+			continue; // skip OOC printing
+		}
+		else if ( StringEqual( StringWord(current, 1), "var", c_stringNoCase) ) {
+			// TODO: ADD VARIABLE SYSTEM
+		}
+		
+		// replace aliases (returns true if aliases):
+		// if aliases subbed, affix to front of msg and reparse 
+		current_alias_subbed = libxil_alias_sub(current, player, 0);
+		if( current_alias_subbed != current ) {
+			msg = current_alias_subbed + ";" + msg;
+			continue;
+		}
+		
+		// if template exists, append evaluated template to msg and parse
+		if( BankKeyExists( libxil_player[player].bank_storage, LIBXIL_BANK_SECTION_TEMPLATE, StringWord(current, 1) ) ) {
+			msg = libxil_template(current, player) + ";" + msg;
+			continue;
+		}
+		
+		
+		// TODO: replace variables
+
+		
+		// run command (if exists and permissions for player valid)
+		if( DataTableValueExists(true, LIBXIL_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ) {
+			
+			// if does, run wrapper function to run a command (does permissions checks etc)
+			
+			//libxil_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
+			
+			libxil_player[player].chat_msg = current;
+			TriggerExecute( DataTableGetTrigger(true, LIBXIL_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ), false, true);
+		}
+		else if ( !libxil_player[player].muted ) {
+			libxil_chat_print_OOC( current, player );
+		}
+		
+	}
+}
+

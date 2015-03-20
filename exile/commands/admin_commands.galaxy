@@ -1,0 +1,204 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// libxil_command_ban
+// ====================
+// bans a player (removes all player's units from map too)
+bool libxil_command_ban(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	unitgroup g;
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_MOD ) {
+		libxil_print_error("Only moderators and admins can use \\ban", EventPlayer());
+		return false;
+	}
+	if( libxil_player[EventPlayer()].permission_level <= libxil_player[target_player].permission_level ) {
+		libxil_print_error("You cannot ban someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	GameOver( target_player, c_gameOverDefeat, false, true );
+	
+	// remove all of a player's units
+	g = UnitGroup( null, target_player, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0 );
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitRemove( UnitGroupLoopCurrent() );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been banned by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+	
+	return true;
+}
+
+// libxil_command_disable
+// ====================
+// prevents player from using commands
+// all chat instead routed directly to OOC
+bool libxil_command_disable(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_MOD ) {
+		libxil_print_error("Only moderators and admins can use \\disable", EventPlayer());
+		return false;
+	}
+	if( libxil_player[EventPlayer()].permission_level <= libxil_player[target_player].permission_level ) {
+		libxil_print_error("You cannot disable/enable someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+
+	libxil_player[target_player].disabled = true;
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been disabled by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libxil_command_enable
+// ====================
+// "enables" a player; allows commands to be used
+bool libxil_command_enable(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_MOD ) {
+		libxil_print_error("Only moderators and admins can use \\enable", EventPlayer());
+		return false;
+	}
+	if( libxil_player[EventPlayer()].permission_level <= libxil_player[target_player].permission_level ) {
+		libxil_print_error("You cannot disable/enable someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	libxil_player[target_player].disabled = false;
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been enabled by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libxil_command_mute
+// ====================
+// prevents player's messages appearing in chat
+bool libxil_command_mute(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_MOD ) {
+		libxil_print_error("Only moderators and admins can use \\mute", EventPlayer());
+		return false;
+	}
+	if( libxil_player[EventPlayer()].permission_level <= libxil_player[target_player].permission_level ) {
+		libxil_print_error("You cannot mute/unmute someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+
+	libxil_player[target_player].muted = true;
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been muted by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libxil_command_unmute
+// ====================
+// unmutes a player (messages can appear in chat)
+bool libxil_command_unmute(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_MOD ) {
+		libxil_print_error("Only moderators and admins can use \\unmute", EventPlayer());
+		return false;
+	}
+	if( libxil_player[EventPlayer()].permission_level <= libxil_player[target_player].permission_level ) {
+		libxil_print_error("You cannot mute/unmute someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	libxil_player[target_player].muted = false;
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been unmuted by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libxil_command_promote
+// ================
+// promotes a player to moderator status
+bool libxil_command_promote(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser || 
+		target_player == EventPlayer() || libxil_player[target_player].permission_level == LIBXIL_PERMISSIONS_LEVEL_ADMIN) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_ADMIN ) {
+		libxil_print_error("Only admins can promote/demote moderators", EventPlayer());
+		return false;
+	}
+	
+	libxil_player[target_player].permission_level = LIBXIL_PERMISSIONS_LEVEL_MOD;
+
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been promoted to moderator by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libxil_command_demote
+// ================
+// sets a player to default status
+bool libxil_command_demote(bool testConds, bool runActions) {
+	int target_player = libxil_color_to_player( StringWord(libxil_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser || 
+		target_player == EventPlayer() || libxil_player[target_player].permission_level == LIBXIL_PERMISSIONS_LEVEL_ADMIN) {
+		libxil_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libxil_player[EventPlayer()].permission_level < LIBXIL_PERMISSIONS_LEVEL_ADMIN ) {
+		libxil_print_error("Only admins can promote/demote moderators", EventPlayer());
+		return false;
+	}
+	
+	libxil_player[target_player].permission_level = LIBXIL_PERMISSIONS_LEVEL_DEFAULT;
+
+	libxil_print_text(libxil_player_name_colored(target_player) + StringToText(" has been demoted by ") + libxil_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}

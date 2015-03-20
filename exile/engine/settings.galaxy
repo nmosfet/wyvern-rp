@@ -1,0 +1,50 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+
+// libxil_settings_definition
+// ============================
+// contains a games parameters
+struct libxil_settings_definition {
+	int flags;
+	
+	// map_revealed
+	// ========
+	// flag for whether the map is revealed
+	bool map_revealed;
+	
+	// commands
+	// ========
+	// string containing all of the game's commands, separated by commas ", "
+	string commands;
+	
+	// min_scale / max_scale
+	// ===============
+	// minimum and max scale of a unit that player can use from @scale
+	// (not actually that useful because @actrmsg will allow arbitrary scale)
+	fixed min_scale;
+	fixed max_scale;
+	
+	// max_spawn_count
+	// =============
+	// max units a player can spawn in one instance
+	int max_spawn_count;
+};
+
+// create instance of settings:
+libxil_settings_definition libxil_settings;
+
+// initializes default settings
+void libxil_settings_initialize() {
+	libxil_settings.map_revealed = true;
+	libxil_settings.commands = "alias, template, var";
+	libxil_settings.min_scale = 0.001;
+	libxil_settings.max_scale = 10.0;
+	
+	libxil_settings.max_spawn_count = 20;
+}

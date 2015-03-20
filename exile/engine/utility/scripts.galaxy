@@ -1,0 +1,9 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+include "exile/engine/utility/string.galaxy"

@@ -1,0 +1,191 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// libxil_command_region_create
+// ====================
+// creates a region and sets it into the global data table
+// regions are stored in format:
+// "reg [player] [name]"
+bool libxil_command_region_create(bool testConds, bool runActions) {
+	region r;
+	fixed radius;
+	string name = StringWord(libxil_player[EventPlayer()].chat_msg, 2);
+	
+	if( name == "" ) {
+		libxil_print_error("Invalid region name", EventPlayer());
+		return false;
+	}
+	
+	radius = StringToFixed(StringWord(libxil_player[EventPlayer()].chat_msg, 3));
+	if( radius == 0.0 ) {
+		radius = 2;
+	}
+
+	if( DataTableGetRegion( true, libxil_region_get_name(name, EventPlayer()) ) ) {
+		libxil_print_error("A region with that name already exists!", EventPlayer());
+		return false;
+	}
+
+	r = RegionCircle( libxil_player[EventPlayer()].mouse_position, radius );
+	
+	DataTableSetRegion( true, libxil_region_get_name(name, EventPlayer()), r );
+	libxil_print_output("Region (circle) \"" + name + "\" has been created.", EventPlayer());
+	
+	return true;
+}
+
+// libxil_command_region_remove
+// ==================
+// removes a region and any linking to other regions
+// (for linking, see libxil_command_region_teleport below)
+bool libxil_command_region_remove(bool testConds, bool runActions) {
+	string name = StringWord(libxil_player[EventPlayer()].chat_msg, 2);
+	region rgn = DataTableGetRegion( true, libxil_region_get_name(name, EventPlayer()) );
+
+	if( rgn == null ) {
+		libxil_print_error("Region does not exist", EventPlayer());
+		return true;
+	}
+	
+	// first remove any linking data (for teleports) related to this region
+	libxil_region_remove_links(name, EventPlayer());
+
+	// remove region
+	DataTableValueRemove( true, libxil_region_get_name(name, EventPlayer()) );
+	libxil_print_output("Region \"" + name + "\" has been removed", EventPlayer());
+	
+	return true;
+}
+
+// libxil_command_region_removeall
+// ======================
+// removes all regions and links
+bool libxil_command_region_removeall(bool testConds, bool runActions) {
+	int index = 1;
+	int removed = 0;
+	string rgn_identifier = libxil_region_get_name("", EventPlayer());
+	
+	while( index <= DataTableValueCount(true) ) {
+		if( StringContains(DataTableValueName(true, index), rgn_identifier, c_stringBegin, c_stringNoCase) ) {
+			libxil_region_remove_links( StringWord(DataTableGetString(true, DataTableValueName(true, index)), 3), EventPlayer() );
+			DataTableValueRemove(true, DataTableValueName(true, index));
+			removed += 1;
+		}
+		index += 1;
+	}
+	
+	if(removed > 0) {
+		libxil_print_output("All your regions have been removed", EventPlayer());
+	}
+	else {
+		libxil_print_output("You have no regions to remove", EventPlayer());
+	}
+	
+	return true;
+}
+// libxil_command_region_list
+// ======================
+// lists a player's regions from the data table
+// because region creation is not case sensitive, 
+// these will always be in lowercase
+bool libxil_command_region_list(bool testConds, bool runActions) {
+	int i = 1;
+	string region_list = "";
+	
+	while( i < DataTableValueCount(true) ) {
+		if( StringWord( DataTableValueName(true, i), 1 ) == LIBXIL_REGION_DATA_TABLE_IDENTIFIER &&
+			StringToInt( StringWord( DataTableValueName(true, i), 2) ) == EventPlayer() ) {
+			region_list = region_list + ", " + StringWord( DataTableValueName(true, i), 3);
+		}
+		i += 1;
+	}
+	
+	if( region_list != "" ) {
+		region_list = StringSub(region_list, 3, StringLength(region_list)); // get rid of leading ", "
+		libxil_print_output("Your regions:\n" + region_list, EventPlayer());
+	}
+	else {
+		libxil_print_output("You have no regions", EventPlayer());
+	}
+	
+	return true;
+}
+
+// libxil_command_region_teleport
+// =========================
+// creates a "waygate" between two regions, allowing (any) player
+// to press a dialog button to teleport selected units between
+// regions. (see engine/regions.galaxy to see how regions are linked,
+// events/region_waygates.galaxy to see how waygates function)
+// (heavily modified from Cortex engine)
+bool libxil_command_region_teleport(bool testConds, bool runActions) {
+	string param_rgn_1 = StringWord(libxil_player[EventPlayer()].chat_msg, 2);
+	string param_rgn_2 = StringWord(libxil_player[EventPlayer()].chat_msg, 3);
+	region rgn_1;
+	region rgn_2;
+	trigger t;
+
+	rgn_1 = DataTableGetRegion( true, libxil_region_get_name(param_rgn_1, EventPlayer()) );
+	rgn_2 = DataTableGetRegion( true, libxil_region_get_name(param_rgn_2, EventPlayer()) );
+	if( rgn_1 == null || rgn_2 == null ) {
+		libxil_print_error("One or more invalid regions were entered.", EventPlayer());
+		return true;
+	}
+	
+	// remove existing links for the regions
+	libxil_region_remove_links(param_rgn_1, EventPlayer());
+	libxil_region_remove_links(param_rgn_2, EventPlayer());
+	
+	// create link between these two regions
+	libxil_link_regions(param_rgn_1, param_rgn_2, EventPlayer());
+
+	t = TriggerCreate("libxil_region_entered");
+	TriggerAddEventUnitRegion( t, null, rgn_1, true );
+	TriggerAddEventUnitRegion( t, null, rgn_1, false );
+	TriggerAddEventUnitRegion( t, null, rgn_2, true );
+	TriggerAddEventUnitRegion( t, null, rgn_2, false );
+	
+	libxil_print_output("Teleport created between regions " + param_rgn_1 + " and " + param_rgn_2, EventPlayer());
+	
+	return true;
+}
+
+// libxil_command_region_attach
+// =================
+// attaches a region to a unit
+bool libxil_command_region_attach(bool checkConds, bool runActions) {
+	string name = StringWord(libxil_player[EventPlayer()].chat_msg, 2);
+	region rgn = null;
+	unitgroup g = libxil_player[EventPlayer()].context;
+	point offset;
+	
+	name = libxil_region_get_name(name, EventPlayer());
+	
+	rgn = DataTableGetRegion(true, name);
+	if(rgn == null) {
+		libxil_print_error("No region with that name exists!", EventPlayer());
+		return true;
+	}
+
+	offset = Point( StringToFixed(StringWord(libxil_player[EventPlayer()].chat_msg, 3)),
+					StringToFixed(StringWord(libxil_player[EventPlayer()].chat_msg, 4)) );
+
+	if(UnitGroupCount(g, c_unitCountAll) == 0) {
+		RegionAttachToUnit(rgn, null, offset);
+		libxil_print_success("Region unattached successfully.", EventPlayer());
+	}
+	else if(UnitGroupCount(g, c_unitCountAll) == 1) {
+		RegionAttachToUnit(rgn, UnitGroupUnit(g, 1), offset);
+		libxil_print_success("Region attached successfully.", EventPlayer());
+	}
+	else {
+		libxil_print_error("You can't attach the same region to multiple units!", EventPlayer());
+	}
+
+	return true;
+}

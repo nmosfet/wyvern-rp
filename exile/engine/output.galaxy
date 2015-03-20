@@ -1,0 +1,73 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+const string LIBXIL_OUTPUT_SOUND_SUCCESS = "UI_CampaignNPCSelect";
+const string LIBXIL_OUTPUT_SOUND_ERROR = "UI_GenericError";
+
+// libxil_print
+// ===========================
+// prints a (string) message to all for the custom overrided chat
+void libxil_print(string msg, playergroup players) {
+	UIDisplayMessage( players, c_messageAreaDebug, StringToText(msg) );
+}
+
+// libxil_print_text
+// ===========================
+// prints a (text) message to the chat
+void libxil_print_text(text msg, playergroup players) {
+	UIDisplayMessage( players, c_messageAreaDebug, msg );
+}
+
+// libxil_print_output
+// ===========================
+// prints a message proceeded by "> " to single player
+// (used for various function output)
+void libxil_print_output(string msg, int player) {
+	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, StringToText("> " + msg) );
+}
+
+// libxil_print_success
+// ===========================
+// prints an success message to the chat
+// (green tinted message)
+void libxil_print_success(string msg, int player) {
+	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> " + msg), Color(0,250,0)) );
+	SoundPlay(SoundLink(LIBXIL_OUTPUT_SOUND_SUCCESS, -1), PlayerGroupSingle(player), 100.0, 0.0);
+}
+
+// libxil_print_error
+// ===========================
+// prints an error message to the chat
+// (red tinted message)
+void libxil_print_error(string msg, int player) {
+	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> [ERR] " + msg), Color(250,0,0)) );
+	SoundPlay(SoundLink(LIBXIL_OUTPUT_SOUND_ERROR, -1), PlayerGroupSingle(player), 100.0, 0.0);
+}
+
+// libxil_print_warning
+// ===========================
+// prints a warning message to the chat
+// (yellow tinted message)
+void libxil_print_warning(string msg, int player) {
+	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> [WARN] " + msg), Color(250,250,0)) );
+	//SoundPlay(SoundLink(LIBXIL_OUTPUT_SOUND_ERROR, -1), PlayerGroupSingle(player), 100.0, 0.0);
+}
+
+// libxil_chat_print_OOC
+// ===========================
+// prints an "out-of-character" message for all players in format
+// "[OOC] [Clan-tag] [Player-Name]: [msg]"
+void libxil_chat_print_OOC(string msg, int player) {
+	text output;
+	
+	if( libxil_player[player].muted ) { return; }
+	
+	output = StringToText("[OOC] ") + libxil_player_name_colored(player) + StringToText(": ") + StringToText(msg);
+	UIDisplayMessage( PlayerGroupAll(), c_messageAreaDebug, output );
+}
+

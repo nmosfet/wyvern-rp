@@ -1,0 +1,130 @@
+//=========================================================
+//		Exile Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// LOAD ENGINE DEPENDENCIES:
+// (dependency order matters)
+
+// scripts
+// =============
+// Contains various utility functions used throughout engine
+include "exile/engine/utility/scripts.galaxy"
+
+// ui_helper
+// =============
+// Contains various helper functions for creating ui dialogs
+include "exile/engine/ui_helper.galaxy"
+
+// player
+// =============
+// Contains any important player specific variables during
+// runtime of the engine (e.g. player mouse position, chat lines,...)
+// Contains string name for player bank
+include "exile/engine/player.galaxy"
+
+// permissions
+// =============
+// Contains functions for player permissions related functions
+// and unit permissions
+include "exile/engine/permissions.galaxy"
+
+// output
+// =============
+// All functions for output to the custom chat frame
+include "exile/engine/output.galaxy"
+
+// data
+// =============
+// defines SCII data catalog constants used for certain commands,
+// and include data catalog search and catalog alias functions
+include "exile/engine/data/data.galaxy"
+
+// settings
+// =============
+// Contains ingame global settings
+include "exile/engine/settings.galaxy"
+
+// bank
+// =============
+// Contains custom functions for writing to player banks
+include "exile/engine/bank.galaxy"
+
+// chat
+// =============
+// All player chat/commands events framework and parsing
+// Also includes frameworks for variables, aliases, and templates.
+include "exile/engine/chat/chat.galaxy"
+
+// unit
+// =============
+// Unit spawn related functions, unit death/creation data management,
+// unit command caching functionality
+include "exile/engine/unit.galaxy"
+
+// regions
+// =============
+// Contains helper functions for managing regions and linking
+// regions for waygate (teleport) functionality
+include "exile/engine/regions.galaxy"
+
+// gamesetups
+// =============
+// Saving/loading units and their command history into player banks
+// -> allows creation of "gamesetups" (act like game saves)
+include "exile/engine/gamesetups.galaxy"
+
+// events
+// =============
+// Events that require triggers to run and update things
+// e.g. player moves mouse, unit enters region
+include "exile/engine/events/events.galaxy"
+
+// blacklist
+// =============
+// contains functions for blacklist system
+// -> blacklist runs at start of game for host,
+//    disables any player on host's blacklist
+// player usage of blacklist handled by blacklist in general_commands
+include "exile/engine/blacklist.galaxy"
+
+// debug
+// =============
+// tools for debugging
+include "exile/engine/debug.galaxy"
+
+// engine version
+const int LIBXIL_BUILD_VERSION = 0;
+const int LIBXIL_BUILD_SUB_VERSION = 1;
+const string LIBXIL_BUILD_VERSION_MODIFIER = "-alpha";
+
+void libxil_engine_initialize() {
+	int player = 1;
+	bool admin_set = false;
+
+	// intialize engine
+	libxil_settings_initialize();
+	libxil_preplaced_unit_initialize();
+	librtpr_events_initialize();
+
+	// initialize players
+	while ( player < LIBXIL_MAX_PLAYERS ) {
+		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
+			libxil_player_initialize(player);
+			libxil_chat_initialize_player(player);
+
+			// give admin to first active player (assumes player 1 is lobby host and should be default admin)
+			// then run admin's blacklist
+			if( !admin_set ) {
+				libxil_player[player].permission_level = LIBXIL_PERMISSIONS_LEVEL_ADMIN;
+				libxil_blacklist_run(player);
+				admin_set = true;
+			}
+		}
+		player += 1;
+	}
+
+}
