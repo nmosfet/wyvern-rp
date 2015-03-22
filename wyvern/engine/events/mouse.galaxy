@@ -1,0 +1,44 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+bool libwyv_mouse_moved(bool testConds, bool runActions) {
+	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld());
+	
+	// update spawn splat
+	if( libwyv_player[EventPlayer()].is_placing_unit  ) {
+		UnitSetPosition(libwyv_player[EventPlayer()].spawn_splat, libwyv_player[EventPlayer()].mouse_position, false);
+	}
+	// TODO: update doodad splat
+	else if( libwyv_player[EventPlayer()].is_placing_doodad ) {
+	
+	}
+	
+	return true;
+}
+
+bool librtpr_mouse_left_clicked_down(bool testConds, bool runActions) {
+	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+
+	if( libwyv_player[EventPlayer()].is_placing_unit ) {
+		libwyv_unit_create( UnitGetType(libwyv_player[EventPlayer()].spawn_splat), EventPlayer(), libwyv_player[EventPlayer()].mouse_position, 270.0);
+	}
+	
+	return true;
+}
+
+bool librtpr_mouse_right_clicked_down(bool testConds, bool runActions) {
+	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+
+	if( libwyv_player[EventPlayer()].is_placing_unit ) {
+		libwyv_player[EventPlayer()].is_placing_unit = false;
+		UnitRemove(libwyv_player[EventPlayer()].spawn_splat);
+		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, true);
+	}
+	
+	return true;
+}

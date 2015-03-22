@@ -1,0 +1,58 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// creates, removes key/values from a section in player bank
+// !!! BankSave required to ensure the changes persist
+void libwyv_bank_create(string section, string key, string content, int player) {
+	BankValueSetFromString(libwyv_player[player].bank_storage, section, key, content);
+	BankSave(libwyv_player[player].bank_storage);
+}
+
+void libwyv_bank_remove(string section, string key, int player) {
+	BankKeyRemove(libwyv_player[player].bank_storage, section, key);
+	BankSave(libwyv_player[player].bank_storage);
+}
+
+void libwyv_bank_section_remove_all(string section, int player) {
+	BankSectionRemove(libwyv_player[player].bank_storage, section);
+	BankSave(libwyv_player[player].bank_storage);
+}
+
+// libwyv_bank_key_content_dump
+// =================
+// prints out content of bank value
+void libwyv_bank_key_content_dump(string section, string key, int player) {
+	if( BankKeyExists(libwyv_player[player].bank_storage, section, key) ) {
+		libwyv_print_output(StringCase(section, true) + ": " + key, player);
+		libwyv_print_output("CONTENT: " + BankValueGetAsString(libwyv_player[player].bank_storage, section, key), player);
+	}
+	else {
+		libwyv_print_error(StringCase(section, true) + " " + key + " DOES NOT EXIST", player);
+	}
+}
+
+// libwyv_bank_section_dump
+// =================
+// lists all of a player's aliases/templates
+void libwyv_bank_section_dump(string section, int player) {
+	int count = BankKeyCount(libwyv_player[player].bank_storage, section);
+	string keys = "[";
+
+	if( count ) {
+		while(count) {
+			keys = keys + "\'" + BankKeyName(libwyv_player[player].bank_storage, section, count - 1) + "\',";
+			count -= 1;
+		}
+		// remove extra ','
+		keys = StringSub(keys, 1, StringLength(keys) - 1) + "]";
+		libwyv_print_output(StringCase(section, true) + ":\n" + keys, player);
+	}
+	else {
+		libwyv_print_output("You have no " + section, player);
+	}
+}

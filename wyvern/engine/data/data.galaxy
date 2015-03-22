@@ -1,0 +1,86 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// special data entries used for certain commands
+// (TODO: replace with custom abilities in a mod file)
+const string LIBWYV_BEHAVIOR_SUPPRESS_COLLISION = "SuppressCollision";
+
+// Veterancy behavior (levels)
+const string LIBWYV_BEHAVIOR_LEVELS = "WyvernLevels";
+
+// Behaviors to add/subtract damage
+const string LIBWYV_BEHAVIOR_ADD_DAMAGE_1 = "WyvernDamageAdd1";
+const string LIBWYV_BEHAVIOR_ADD_DAMAGE_10 = "WyvernDamageAdd10";
+const string LIBWYV_BEHAVIOR_ADD_DAMAGE_100 = "WyvernDamageAdd100";
+const string LIBWYV_BEHAVIOR_ADD_DAMAGE_1000 = "WyvernDamageAdd1000";
+const string LIBWYV_BEHAVIOR_SUBTRACT_DAMAGE_1 = "WyvernDamageSubtract1";
+const string LIBWYV_BEHAVIOR_SUBTRACT_DAMAGE_10 = "WyvernDamageSubtract10";
+const string LIBWYV_BEHAVIOR_SUBTRACT_DAMAGE_100 = "WyvernDamageSubtract100";
+const string LIBWYV_BEHAVIOR_SUBTRACT_DAMAGE_1000 = "WyvernDamageSubtract1000";
+
+// Behavior to add/subtract armor (life and shields separate)
+const string LIBWYV_BEHAVIOR_ADD_LIFEARMOR_P1 = "WyvernLifeArmorAddP1";
+const string LIBWYV_BEHAVIOR_ADD_LIFEARMOR_1 = "WyvernLifeArmorAdd1";
+const string LIBWYV_BEHAVIOR_ADD_LIFEARMOR_10 = "WyvernLifeArmorAdd10";
+const string LIBWYV_BEHAVIOR_SUBTRACT_LIFEARMOR_P1 = "WyvernLifeArmorSubtractP1";
+const string LIBWYV_BEHAVIOR_SUBTRACT_LIFEARMOR_1 = "WyvernLifeArmorSubtract1";
+const string LIBWYV_BEHAVIOR_SUBTRACT_LIFEARMOR_10 = "WyvernLifeArmorSubtract10";
+const string LIBWYV_BEHAVIOR_ADD_SHIELDSARMOR_P1 = "WyvernShieldsArmorAddP1";
+const string LIBWYV_BEHAVIOR_ADD_SHIELDSARMOR_1 = "WyvernShieldsArmorAdd1";
+const string LIBWYV_BEHAVIOR_ADD_SHIELDSARMOR_10 = "WyvernShieldsArmorAdd10";
+const string LIBWYV_BEHAVIOR_SUBTRACT_SHIELDSARMOR_P1 = "WyvernShieldsArmorSubtractP1";
+const string LIBWYV_BEHAVIOR_SUBTRACT_SHIELDSARMOR_1 = "WyvernShieldsArmorSubtract1";
+const string LIBWYV_BEHAVIOR_SUBTRACT_SHIELDSARMOR_10 = "WyvernShieldsArmorSubtract10";
+
+// Behaviors to add/subtract weapon range
+const string LIBWYV_BEHAVIOR_ADD_RANGE_1 = "WyvernRangeAdd1";
+const string LIBWYV_BEHAVIOR_ADD_RANGE_10 = "WyvernRangeAdd10";
+const string LIBWYV_BEHAVIOR_SUBTRACT_RANGE_1 = "WyvernRangeSubtract1";
+const string LIBWYV_BEHAVIOR_SUBTRACT_RANGE_10 = "WyvernRangeSubtract10";
+
+// Behaviors to increase/decrease weapon speed
+const string LIBWYV_BEHAVIOR_WEAPONSPEED_MULT_1P1 = "WyvernWeaponSpeedMultiplier1P1";
+const string LIBWYV_BEHAVIOR_WEAPONSPEED_MULT_P9 = "WyvernWeaponSpeedMultiplierP9";
+
+// used for unit chat related commands
+const string LIBWYV_TALK_ICON_ACTOR = "TalkIconBubble";
+const string LIBWYV_TALK_SOUND = "";
+
+
+// librtpr_catalog_get
+// ====================
+// takes the given word and finds it in the catalog.
+// if it is not in the catalog, returns null.
+string libwyv_catalog_get(int catalog, string word) {
+	int i;
+	string test;
+
+	if(CatalogEntryIsValid(catalog, word)) {
+		return word;
+	}
+	
+	i = CatalogEntryCount(catalog);
+	while(i > 0) {
+		test = CatalogEntryGet(catalog, i);
+		if(StringEqual(test, word, c_stringNoCase)) {
+			return test;
+		}
+		i -= 1;
+	}
+
+	i = CatalogEntryCount(catalog);
+	while(i > 0) {
+		test = CatalogEntryGet(catalog, i);
+		if(StringContains(test, word, c_stringBegin, c_stringNoCase)) {
+			return test;
+		}
+		i -= 1;
+	}
+
+	return null;
+}

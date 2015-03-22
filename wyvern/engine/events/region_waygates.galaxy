@@ -1,0 +1,147 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// libwyv_region_entered
+// ===================
+// if region entered has linked regions, set unit
+// custom value to ID of linked region (for teleporting)
+// created on demand when waygates are created via 
+// #teleport (see region_commands.galaxy)
+// (Modified from Cortex)
+bool libwyv_region_entered(bool testConds, bool runActions) {
+	int waygate_id = 1;
+	region r;
+	string s;
+		
+	// get the region from data table
+	while( waygate_id < libwyv_region_waygate_counter ) {
+		s = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
+		r = DataTableGetRegion(true, s);
+		if( r == EventUnitRegion() ) {
+			break;
+		}
+
+		waygate_id += 1;
+		
+		// reached max waygate counters: not in a waygate
+		if( waygate_id == libwyv_region_waygate_counter ) { 
+			return true;
+		}
+	}
+	
+	// check if entering or leaving region
+	if( libNtve_gf_UnitInRegion( EventUnit(), EventUnitRegion() ) ) {
+		// Do we have a linked region? (prolly, if we're here!)
+		waygate_id = DataTableGetInt(true, LIBWYV_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + s );
+		UnitSetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE, IntToFixed(waygate_id));
+	} else { // leaving this region. 
+		UnitSetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE, 0);
+	}
+	return true;
+}
+
+// libwyv_waygate_dialog_manager
+// ===================
+// called periodically (set in events.galaxy) to 
+// create/destroy the player waygate button
+bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
+	unitgroup g;
+	int index;
+	unit u;
+	int waygate_id;
+	int player = 1;
+	
+	while( player < LIBWYV_MAX_PLAYERS ) {
+		if( libwyv_player[player].waygate_dialog != 0 ) {
+			DialogDestroy(libwyv_player[player].waygate_dialog);
+			libwyv_player[player].waygate_dialog = 0;
+		}
+
+		g = UnitGroupSelected(player);
+		if(g == null || UnitGroupCount(g, c_unitCountAlive) == 0 ) {
+			player += 1;
+			continue;
+		}
+
+		index = 1;
+		while( index <= UnitGroupCount(g, c_unitCountAlive) ) {
+			u = UnitGroupUnit(g, index);
+			// Check if this unit isn't a structure
+			if( UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) ) {
+				index += 1;
+				continue;
+			}
+			
+			waygate_id = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE));
+			if( waygate_id == 0 ) {
+				index += 1;
+				continue;
+			}
+			else if( DataTableValueExists(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString( waygate_id )) ) {
+				// Draw our dialogs!
+				libwyv_player[player].waygate_dialog = libwyv_create_dialog(250, 100, c_anchorRight, 25, 120);
+				DialogSetVisible(libwyv_player[player].waygate_dialog, PlayerGroupSingle(player), true);
+				libwyv_player[player].waygate_dialog_control_btn = libwyv_create_dialog_control_btn(libwyv_player[player].waygate_dialog, 220, 70, c_anchorCenter, 0, 0, "Click to teleport these unit(s).", "Enter");
+				DialogControlSetVisible( libwyv_player[player].waygate_dialog_control_btn, PlayerGroupSingle(player), true);
+				break;
+			}
+			
+			index += 1;
+		}
+
+		player += 1;
+	}
+	return true;
+}
+
+// libwyv_waygate_dialog_clicked
+// ===========================
+// runs whenever a dialog control is clicked
+// if the control is the waygate dialog, warp
+// any selected units between waygate regions
+bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
+	unitgroup g;
+	int index;
+	int waygate_id;
+	unit u;
+	region r;
+	string s;
+
+	// Waygate teleport system
+	if( EventDialogControl() == libwyv_player[EventPlayer()].waygate_dialog_control_btn ) {
+		g = UnitGroupSelected(EventPlayer());
+		g = libwyv_enforce_unit_permissions(g, EventPlayer());
+		
+		if( UnitGroupCount(g, c_unitCountAlive) > 0 ) {
+			index = 1;
+			while( index <= UnitGroupCount(g, c_unitCountAlive) ) {
+				u = UnitGroupUnit(g, index);
+				if( UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) ) {
+					index += 1;
+					continue;
+				}
+				
+				waygate_id = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE));
+
+				if( waygate_id != 0 ) { // Lookup this region by waygate id
+					s = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
+					if( s != "" ) {
+						r = DataTableGetRegion(true, s);
+						if( r != null ) { // move units to linked region
+							UnitSetPosition( u, RegionGetCenter( r ),false );
+						}
+					}
+				}
+				
+				index += 1;
+			}
+		}
+	}
+
+	return true;
+}

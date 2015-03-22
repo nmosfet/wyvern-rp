@@ -1,0 +1,204 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// libwyv_command_ban
+// ====================
+// bans a player (removes all player's units from map too)
+bool libwyv_command_ban(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	unitgroup g;
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD ) {
+		libwyv_print_error("Only moderators and admins can use \\ban", EventPlayer());
+		return false;
+	}
+	if( libwyv_player[EventPlayer()].permission_level <= libwyv_player[target_player].permission_level ) {
+		libwyv_print_error("You cannot ban someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	GameOver( target_player, c_gameOverDefeat, false, true );
+	
+	// remove all of a player's units
+	g = UnitGroup( null, target_player, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0 );
+	UnitGroupLoopBegin(g);
+	while( !UnitGroupLoopDone() ) {
+		UnitRemove( UnitGroupLoopCurrent() );
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+	
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been banned by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+	
+	return true;
+}
+
+// libwyv_command_disable
+// ====================
+// prevents player from using commands
+// all chat instead routed directly to OOC
+bool libwyv_command_disable(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD ) {
+		libwyv_print_error("Only moderators and admins can use \\disable", EventPlayer());
+		return false;
+	}
+	if( libwyv_player[EventPlayer()].permission_level <= libwyv_player[target_player].permission_level ) {
+		libwyv_print_error("You cannot disable/enable someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+
+	libwyv_player[target_player].disabled = true;
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been disabled by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libwyv_command_enable
+// ====================
+// "enables" a player; allows commands to be used
+bool libwyv_command_enable(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD ) {
+		libwyv_print_error("Only moderators and admins can use \\enable", EventPlayer());
+		return false;
+	}
+	if( libwyv_player[EventPlayer()].permission_level <= libwyv_player[target_player].permission_level ) {
+		libwyv_print_error("You cannot disable/enable someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	libwyv_player[target_player].disabled = false;
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been enabled by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libwyv_command_mute
+// ====================
+// prevents player's messages appearing in chat
+bool libwyv_command_mute(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD ) {
+		libwyv_print_error("Only moderators and admins can use \\mute", EventPlayer());
+		return false;
+	}
+	if( libwyv_player[EventPlayer()].permission_level <= libwyv_player[target_player].permission_level ) {
+		libwyv_print_error("You cannot mute/unmute someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+
+	libwyv_player[target_player].muted = true;
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been muted by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libwyv_command_unmute
+// ====================
+// unmutes a player (messages can appear in chat)
+bool libwyv_command_unmute(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser ) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD ) {
+		libwyv_print_error("Only moderators and admins can use \\unmute", EventPlayer());
+		return false;
+	}
+	if( libwyv_player[EventPlayer()].permission_level <= libwyv_player[target_player].permission_level ) {
+		libwyv_print_error("You cannot mute/unmute someone of equal or greater rank than you", EventPlayer());
+		return false;
+	}
+	
+	libwyv_player[target_player].muted = false;
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been unmuted by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libwyv_command_promote
+// ================
+// promotes a player to moderator status
+bool libwyv_command_promote(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser || 
+		target_player == EventPlayer() || libwyv_player[target_player].permission_level == LIBWYV_PERMISSIONS_LEVEL_ADMIN) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_ADMIN ) {
+		libwyv_print_error("Only admins can promote/demote moderators", EventPlayer());
+		return false;
+	}
+	
+	libwyv_player[target_player].permission_level = LIBWYV_PERMISSIONS_LEVEL_MOD;
+
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been promoted to moderator by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}
+
+// libwyv_command_demote
+// ================
+// sets a player to default status
+bool libwyv_command_demote(bool testConds, bool runActions) {
+	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	
+	// check if player is valid
+	if( target_player == -1 || PlayerType(target_player) != c_playerTypeUser || 
+		target_player == EventPlayer() || libwyv_player[target_player].permission_level == LIBWYV_PERMISSIONS_LEVEL_ADMIN) {
+		libwyv_print_error("Invalid player", EventPlayer());
+		return false;
+	}
+	
+	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_ADMIN ) {
+		libwyv_print_error("Only admins can promote/demote moderators", EventPlayer());
+		return false;
+	}
+	
+	libwyv_player[target_player].permission_level = LIBWYV_PERMISSIONS_LEVEL_DEFAULT;
+
+	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been demoted by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
+
+	return true;
+}

@@ -1,0 +1,51 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+include "wyvern/engine/chat/alias.galaxy"
+include "wyvern/engine/chat/templates.galaxy"
+include "wyvern/engine/chat/variables.galaxy"
+include "wyvern/engine/chat/parser.galaxy"
+
+// prototypes
+bool libwyv_process_chat_event(bool testConds, bool runActions);
+
+// initializes the chat engine for a player
+void libwyv_chat_initialize_player(int player) {
+	TriggerAddEventChatMessage( TriggerCreate("libwyv_process_chat_event") , player, "", false );
+}
+
+// libwyv_process_chat_event
+// ============================
+// redirects processing as needed:
+// IF message begins with "<<" , directly output the message
+// ELSE, parse message
+bool libwyv_process_chat_event(bool testConds, bool runActions) {
+	unitgroup target = null;
+	libwyv_player[EventPlayer()].chat_msg = libwyv_string_trim(EventChatMessage(false));
+	
+	// "<< " directly dumps message to OOC (if player not muted)
+	if ( StringWord( libwyv_player[EventPlayer()].chat_msg, 1) == "<<" &&  !libwyv_player[EventPlayer()].muted ) {
+		libwyv_player[EventPlayer()].chat_msg = libwyv_string_trim( StringSub(libwyv_player[EventPlayer()].chat_msg, 3, StringLength(libwyv_player[EventPlayer()].chat_msg)) );
+		libwyv_chat_print_OOC( libwyv_player[EventPlayer()].chat_msg , EventPlayer());
+	}
+	else if( !libwyv_player[EventPlayer()].disabled ) {
+		// if player is not mouse-click spawning, set context to selected units
+		if( !libwyv_player[EventPlayer()].is_placing_unit ) {
+			target = UnitGroupSelected(EventPlayer());
+			target = libwyv_enforce_unit_permissions(target, EventPlayer());
+		}
+		libwyv_chat_parse(libwyv_player[EventPlayer()].chat_msg, EventPlayer(), target);
+	}
+	else if( !libwyv_player[EventPlayer()].muted ){
+		libwyv_chat_print_OOC( libwyv_player[EventPlayer()].chat_msg , EventPlayer());
+	}
+	
+	// TODO: chat message logging 
+
+	return false;
+}

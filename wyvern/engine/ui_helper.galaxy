@@ -1,0 +1,37 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// default image path used for ui dialogs (for consistency)
+const string LIBWYV_UI_DIALOG_BACKGROUND = "Assets\\Textures\\ui_battlenet_settings_windowframe_sub01.dds";
+const string LIBWYV_UI_DIALOG_BORDER = "Assets\\Textures\\ui_battle_frame_summary_metal_protoss.dds";
+const string LIBWYV_UI_DIALOG_BUTTON = "Assets\\Textures\\ui_mission_hackingbuttonglow_normaloverpressedover_protoss.dds"; // for normal and hover
+const string LIBWYV_UI_PORTRAIT_FRAME = "Assets\\Textures\\ui_battlenet_challenge_frame_achievement.dds"; // for normal and hover
+
+// libwyv_create_dialog
+// ================
+// creates a dialog and sets to default ui frame
+int libwyv_create_dialog(int width, int height, int anchor, int offset_x, int offset_y ) {
+	int frame = DialogCreate(width, height, anchor, offset_x, offset_y, true);
+    
+	// set frame appearance
+	DialogSetImage(frame, LIBWYV_UI_DIALOG_BACKGROUND);
+    libNtve_gf_CreateDialogItemImage(frame, width, height, c_anchorCenter, 0, 0, StringToText(""), LIBWYV_UI_DIALOG_BORDER, c_triggerImageTypeHorizontalBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+
+	return frame;
+}
+
+int libwyv_create_dialog_control_btn(int dialog, int width, int height, int anchor, int offset_x, int offset_y, string tooltip, string btn_text ) {
+	int btn = libNtve_gf_CreateDialogItemButton(dialog, width, height, anchor, offset_x, offset_y, StringToText(tooltip), StringToText(btn_text), "");
+    
+    libNtve_gf_SetDialogItemImage(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
+    libNtve_gf_SetDialogItemImage2(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
+    libNtve_gf_SetDialogItemColor(btn, Color(80, 80, 80), PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(btn, c_triggerImageTypeEndCap, PlayerGroupAll());
+
+	return btn;
+}

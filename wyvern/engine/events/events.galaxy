@@ -1,0 +1,27 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+include "wyvern/engine/events/mouse.galaxy"
+include "wyvern/engine/events/player_leaves.galaxy"
+include "wyvern/engine/events/region_waygates.galaxy"
+
+void librtpr_events_initialize() {
+	TriggerAddEventMouseMoved( TriggerCreate("libwyv_mouse_moved"), c_playerAny );
+	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_left_clicked_down"), c_playerAny, c_mouseButtonLeft, true );
+	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_right_clicked_down"), c_playerAny, c_mouseButtonRight, true );
+	TriggerAddEventPlayerLeft( TriggerCreate("libwyv_player_leaves"), c_playerAny, c_gameResultUndecided );
+	
+	// unit initialization events (functions found in unit.galaxy)
+    TriggerAddEventUnitCreated( TriggerCreate("libwyv_unit_initialize"), null, null, null );
+    TriggerAddEventUnitRemoved( TriggerCreate("libwyv_unit_death_data_remove"), null );
+    TriggerAddEventUnitDied( TriggerCreate("libwyv_unit_death_data_remove"), null) ;
+	
+	// region waygate and waygate dialog events
+	TriggerAddEventTimePeriodic( TriggerCreate("libwyv_waygate_dialog_manager"), 1.0, c_timeGame );
+	TriggerAddEventDialogControl( TriggerCreate("libwyv_waygate_dialog_clicked"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
+}
