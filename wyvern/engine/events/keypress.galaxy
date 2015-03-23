@@ -1,0 +1,24 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+
+bool libwyv_key_pressed_down(bool testConds, bool runActions) {
+	if( EventKeyPressed() == c_keyControl ) {
+		libwyv_player[EventPlayer()].key_ctrl = true;
+	}
+
+	return true;
+}
+
+bool libwyv_key_pressed_up(bool testConds, bool runActions) {
+	if( EventKeyPressed() == c_keyControl ) {
+		libwyv_player[EventPlayer()].key_ctrl = false;
+	}
+
+	return true;
+}

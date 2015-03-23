@@ -21,32 +21,39 @@ struct libwyv_player_properties {
 	// =================
 	// Location of player mouse.
 	point mouse_position;
-	
+
+	// key_ctrl
+	// ================
+	// flag for whether control key pressed down:
+	// false - up
+	// true - down
+	bool key_ctrl;
+
 	// chat_msg
 	// ================
 	// player chat message for parsing
 	// when running a command, chat_msg is set to the command being run
 	string chat_msg;
-	
+
 	// permission_level
 	// =================
 	// Permission level of a player (default - 0, mod - 1, admin - 2)
 	int permission_level;
-	
+
 	// permission_allow
 	// =================
-	// String that contains single game instance of commands, 
+	// String that contains single game instance of commands,
 	// delineated by spaces, of commands player CAN use
 	// For a single game instance, these will transfer even if admin changes
 	string permissions_allow;
-	
+
 	// permission_block
 	// =================
-	// String that contains single game instance of commands, 
+	// String that contains single game instance of commands,
 	// delineated by spaces, of commands player CANNOT use
 	// For a single game instance, these will transfer even if admin changes
 	string permissions_block;
-	
+
 	// general permissions flags
 	// ==================
 	bool disabled;			// can player use any commands
@@ -58,17 +65,17 @@ struct libwyv_player_properties {
 	// ===============
 	// unitgroup target for running commands
 	unitgroup context;
-	
+
 	// is_placing_unit
 	// ===============
 	// flag for using @spawn mouse-click style
 	bool is_placing_unit;
-	
+
 	// spawn_splat
 	// ==============
 	// hovers under cursor for mouse-click @spawn placement
 	unit spawn_splat;
-	
+
 	// spawn instance variables
 	// ============
 	// these record a player's previous usage of @spawn
@@ -78,28 +85,28 @@ struct libwyv_player_properties {
 	int spawn_instance_count;		// # spawned
 	int spawn_instance_player;		// player units spawned for
 	region spawn_instance_location;	// location spawned
-	
+
 	// is_placing_unit
 	// ===============
 	// flag for using _doodad
 	bool is_placing_doodad;
-	
+
 	// doodad_splat
 	// ==============
 	// hovers under cursor for mouse-click _doodad placement
 	actor doodad_splat;
-	
+
 	// bank_storage
 	// ===============
 	// player's bank containing things that persist between games
 	// (aliases, templates, setups, etc...)
 	bank bank_storage;
-	
+
 	// map_revealer
 	// ===============
 	// map revealer for entire map (revealers player specific)
 	revealer map_revealer;
-	
+
 	// search_ variables
 	// ==============
 	// used to mark player's search catalog, index, and query
@@ -107,7 +114,7 @@ struct libwyv_player_properties {
 	int search_catalog;			// current search catalog
 	int search_index;			// current search index (> 0)
 	string search_last_query;	// current search term
-	
+
 	// waygate_dialog
 	// ============
 	// dialog and button for using region waygates (teleport)
@@ -129,12 +136,12 @@ void libwyv_player_initialize(int player) {
 	libwyv_player[player].map_revealer = VisRevealerCreate(player, RegionEntireMap());
 	libwyv_player[player].mouse_position = RegionGetCenter( RegionEntireMap() );
 	libwyv_player[player].permission_level = 0;
-	
+
 	libwyv_player[player].spawn_splat = null;
 	libwyv_player[player].doodad_splat = null;
-	
+
 	libwyv_player[player].waygate_dialog = 0;
-	
+
 	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
 }
 
@@ -142,7 +149,7 @@ void libwyv_player_initialize(int player) {
 // ===========================
 // returns a text string of player name with color
 text libwyv_player_name_colored(int player) {
-	return TextWithColor( StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player), ColorFromIndex( PlayerGetColorIndex(player, false), c_teamColorDiffuse) );	
+	return TextWithColor( StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player), ColorFromIndex( PlayerGetColorIndex(player, false), c_teamColorDiffuse) );
 }
 
 // libwyv_color_to_player_default
@@ -180,9 +187,9 @@ int libwyv_color_to_player_default(string colour) {
 	} else if( colour == "lightgreen" ) {
 		return 13;
 	} else if( colour == "darkgrey" ) {
-		return 14; 
+		return 14;
 	} else if( colour == "darkgray" ) {
-		return 14; 
+		return 14;
 	} else if( colour == "pink" ) {
 		return 15;
 	}
@@ -196,7 +203,7 @@ int libwyv_color_to_player_default(string colour) {
 // (since Blizzard has no function to get color of a player as a string)
 int libwyv_color_to_player(string colour) {
 	int player = LIBWYV_MAX_PLAYERS - 1;
-	
+
 	// special color keywords
 	if( colour == "hostile" ) {
 		return LIBWYV_PLAYER_HOSTILE;
@@ -205,14 +212,14 @@ int libwyv_color_to_player(string colour) {
 	} else if( colour == "me" ) {
 		return EventPlayer();
 	}
-	
+
 	while( player >= 0) {
 		if( PlayerGetColorIndex( player, false ) == libwyv_color_to_player_default(colour) && PlayerStatus(player) != c_playerStatusUnused) {
 			return player;
 		}
 		player -= 1;
 	}
-	
+
 	return -1;
 }
 
@@ -261,7 +268,7 @@ string libwyv_color_from_player_default(int plr) {
 // libwyv_color_from_player
 // ======================
 // Returns the string name of the color a player currently is (Ported from Cortex)
-// (since Blizzard PlayerColorName returns as text, which 
+// (since Blizzard PlayerColorName returns as text, which
 // cant be used for comparisons or anything useful)
 string libwyv_color_from_player(int plr) {
 	return libwyv_color_from_player_default(PlayerGetColorIndex(plr, false));
