@@ -108,8 +108,13 @@ void libwyv_unit_create(string type, int player, point p, fixed facing) {
 	UnitSetFacing( UnitLastCreated(), facing, 0.0 ); // since structures cant spawn with non default facing
 
 	if( libwyv_player[player].is_placing_unit ) {
-		splat_unit_id = FixedToString( UnitGetCustomValue( libwyv_player[player].spawn_splat, LIBWYV_UNIT_INDEX_ID), 0 );
+		// initialize unit id/cache
+		// (unit init event does not occurr till function already finished)
+		libwyv_unit_set_id(UnitLastCreated());
+		UnitSetCustomValue(UnitLastCreated(), LIBWYV_UNIT_INDEX_CACHE_COUNT, 1);
 
+		splat_unit_id = FixedToString( UnitGetCustomValue( libwyv_player[player].spawn_splat, LIBWYV_UNIT_INDEX_ID), 0 );
+		
 		// apply spawn splat cache onto spawned unit
 		while( DataTableValueExists(true, splat_unit_id + "." + IntToString(index)) ) {
 			cache = DataTableGetString(true, splat_unit_id + "." + IntToString(index));
@@ -136,6 +141,11 @@ void libwyv_spawn_create_splat(string type, int player) {
 
 	UnitCreate(1, type, 0, player, libwyv_player[player].mouse_position, 270.0);
 	libwyv_player[player].spawn_splat = UnitLastCreated();
+
+	// initialize splat unit id/cache
+	// (unit init event does not occurr till function already finished)
+	libwyv_unit_set_id(UnitLastCreated());
+	UnitSetCustomValue(UnitLastCreated(), LIBWYV_UNIT_INDEX_CACHE_COUNT, 1);
 
 	// set visuals
 	UnitSetState(libwyv_player[player].spawn_splat, c_unitStateInvulnerable, true);
