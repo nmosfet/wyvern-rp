@@ -97,9 +97,9 @@ include "wyvern/engine/blacklist.galaxy"
 include "wyvern/engine/debug.galaxy"
 
 // engine version
-const int LIBWYV_BUILD_VERSION = 0;
-const int LIBWYV_BUILD_SUB_VERSION = 1;
-const string LIBWYV_BUILD_VERSION_MODIFIER = "-alpha";
+const int LIBWYV_BUILD_VERSION = 1;
+const int LIBWYV_BUILD_SUB_VERSION = 0;
+const string LIBWYV_BUILD_VERSION_MODIFIER = "-beta";
 
 void libwyv_engine_initialize() {
 	int player = 1;

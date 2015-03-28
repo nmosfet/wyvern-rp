@@ -44,10 +44,10 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create("\\unmute", "libwyv_command_unmute");
 	libwyv_chat_command_create("\\promote", "libwyv_command_promote");
 	libwyv_chat_command_create("\\demote", "libwyv_command_demote");
-	
+
 	// spawn command
 	libwyv_chat_command_create("@spawn", "libwyv_command_spawn");
-	
+
 	// unit commands
 	libwyv_chat_command_create("@kill", "libwyv_command_kill");
 	libwyv_chat_command_create("@remove", "libwyv_command_remove");
@@ -89,7 +89,8 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create("@kills", "libwyv_command_kills");
 	libwyv_chat_command_create("@level", "libwyv_command_level");
 	libwyv_chat_command_create("@label", "libwyv_command_label");
-	
+	libwyv_chat_command_create("@radius", "libwyv_command_radius");
+
 	// unit visual (actor) commands
 	libwyv_chat_command_create("@scale", "libwyv_command_scale");
 	libwyv_chat_command_create("@tint", "libwyv_command_tint");
@@ -100,7 +101,7 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create("@statbars", "libwyv_command_statbars");
 	libwyv_chat_command_create("@actormsg", "libwyv_command_actormessage");
 	libwyv_chat_command_create("@attach", "libwyv_command_attach");
-	
+
 	// chat commands
 	libwyv_chat_command_create("\\narrate", "libwyv_command_narrate");
 	libwyv_chat_command_create("@say", "libwyv_command_say");
