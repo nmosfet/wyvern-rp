@@ -30,7 +30,7 @@ bool libwyv_command_players(bool testConds, bool runActions) {
 	int player = 0;
 	text player_info;
 	text output = StringToText("> Listing players: ");
-	
+
 	while( player < LIBWYV_MAX_PLAYERS ) {
 		if( PlayerStatus(player) != c_playerStatusUnused ) {
 			if( PlayerStatus(player) == c_playerStatusActive || PlayerType(player) != c_playerTypeUser ) {
@@ -38,7 +38,7 @@ bool libwyv_command_players(bool testConds, bool runActions) {
 			} else { // player left: print info in grey
 				player_info = TextWithColor( PlayerName(player) + StringToText(" (") + PlayerColorName(PlayerGetColorIndex(player, false)) + StringToText(") (Left)"), Color(35,35,35) );
 			}
-			
+
 			// display mod or admin status
 			if( libwyv_player[player].permission_level == LIBWYV_PERMISSIONS_LEVEL_MOD ) {
 				player_info = player_info + StringToText(" (Mod)");
@@ -46,7 +46,7 @@ bool libwyv_command_players(bool testConds, bool runActions) {
 			else if( libwyv_player[player].permission_level == LIBWYV_PERMISSIONS_LEVEL_ADMIN ) {
 				player_info = player_info + StringToText(" (Admin)");
 			}
-			
+
 			output = output + StringToText("\n") + player_info;
 		}
 		player += 1;
@@ -67,17 +67,17 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 	region rgn = RegionEntireMap();
 	int i;
 	string gamesetup_list = "";
-	
+
 	if(StringWord(libwyv_player[EventPlayer()].chat_msg, 2) == "") {
 		return true;
 	}
-	
+
 	param = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
-	
+
 	if(StringEqual(param, "save", c_stringNoCase)) {
 		gamesetup_name = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
 		if(gamesetup_name == "") {
-			libwyv_print_error("Invalid game setup name", EventPlayer());			
+			libwyv_print_error("Invalid game setup name", EventPlayer());
 			return true;
 		}
 		// TODO: PROPER REGIONS
@@ -85,9 +85,9 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 			if(StringSub(StringWord(libwyv_player[EventPlayer()].chat_msg, 4), 1, 1) == "#") {
 				rgnName = StringWord(libwyv_player[EventPlayer()].chat_msg, 4);
 				rgnName = StringSub(rgnName, 2, StringLength(rgnName)); // remove the #
-				
+
 				// TODO: Get region from rgnName
-				
+
 				if(rgn == null) {
 					libwyv_print_error("No region with that name exists!", EventPlayer());
 					return true;
@@ -96,17 +96,17 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 			}
 			else {
 				libwyv_print_error("Region name must be prefixed with '#' (e.g. a region named \"rgn\" must be entered as #rgn", EventPlayer());
-				return true;				
+				return true;
 			}
 		}
-		
+
 		libwyv_gamesetup_save(EventPlayer(), gamesetup_name, rgn);
 		return true;
 	}
-	
+
 	if(StringEqual(param, "load", c_stringNoCase)) {
 		gamesetup_name = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
-		
+
 		if(BankSectionExists(libwyv_player[EventPlayer()].bank_storage, LIBWYV_BANK_GAMESETUP_PREFIX + gamesetup_name)) {
 			libwyv_print_text( libwyv_player_name_colored(EventPlayer()) + StringToText(" is loading a gamesetup..."), PlayerGroupAll() );
 			libwyv_gamesetup_load(EventPlayer(), gamesetup_name);
@@ -117,10 +117,10 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 			return true;
 		}
 	}
-	
+
 	if(StringEqual(param, "remove", c_stringNoCase)) {
 		gamesetup_name = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
-		
+
 		if( libwyv_gamesetup_remove(EventPlayer(), gamesetup_name) ) {
 			libwyv_print_success("Game setup \"" + gamesetup_name + "\" has been deleted", EventPlayer());
 			return true;
@@ -130,10 +130,10 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 			return true;
 		}
 	}
-	
+
 	if(StringEqual(param, "removeall", c_stringNoCase)) {
 		i = BankSectionCount(libwyv_player[EventPlayer()].bank_storage) - 1;
-		
+
 		while( i >= 0 ) {
 			if( StringContains(BankSectionName(libwyv_player[EventPlayer()].bank_storage, i), LIBWYV_BANK_GAMESETUP_PREFIX, c_stringBegin, c_stringNoCase) ) {
 				BankSectionRemove(libwyv_player[EventPlayer()].bank_storage, BankSectionName(libwyv_player[EventPlayer()].bank_storage, i));
@@ -142,10 +142,10 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 		}
 		BankSave(libwyv_player[EventPlayer()].bank_storage);
 		libwyv_print_success("All game setups have been deleted", EventPlayer());
-	
+
 		return true;
 	}
-	
+
 	if(StringEqual(param, "list", c_stringNoCase)) {
 		i = BankSectionCount(libwyv_player[EventPlayer()].bank_storage) - 1;
 
@@ -156,20 +156,20 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 			}
 			i -= 1;
 		}
-		
+
 		if(gamesetup_list == "") {
 			libwyv_print_output("You have no saved game setups", EventPlayer());
 			return true;
 		}
-		
+
 		//remove the first comma
 		gamesetup_list = StringSub(gamesetup_list, 3, StringLength(gamesetup_list));
-		
+
 		libwyv_print_output("Listing gamesetups:\n" + gamesetup_list, EventPlayer());
-		
+
 		return true;
 	}
-	
+
 	return true;
 }
 
@@ -177,8 +177,8 @@ bool libwyv_command_gamesetup(bool testConds, bool runActions) {
 // ==================
 // gives a player control over another player's units (modified from Cortex Engine)
 bool libwyv_command_control(bool testConds, bool runActions) {
-	string player = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
-	string target_player = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+	string player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false );
+	string target_player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 3), false );
 	string original = player;
 	int i = 1;
 	int context = EventPlayer();	// a player to be controlled/given control
@@ -188,11 +188,11 @@ bool libwyv_command_control(bool testConds, bool runActions) {
 		context = libwyv_color_to_player(player);
 		player = target_player;
 	}
-	
+
 	if( context == -1 ) { // Invalid player.
 		return true;
 	}
-	
+
 	// check permissions on context player
 	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && libwyv_player[EventPlayer()].permission_level <= libwyv_player[context].permission_level ) {
 		return true;
@@ -208,20 +208,20 @@ bool libwyv_command_control(bool testConds, bool runActions) {
 		}
 		return true;
 	}
-	
-	
+
+
 	// apply alliance control/spending
-	while( i != LIBWYV_MAX_PLAYERS ) { 
+	while( i != LIBWYV_MAX_PLAYERS ) {
 		if( i == context || (libwyv_color_to_player(player) != i && player != "all") ) {
 			i += 1;
 			continue;
 		}
 
-		if( PlayerType(i) != c_playerTypeUser ) { 
+		if( PlayerType(i) != c_playerTypeUser ) {
 			PlayerSetAlliance( context, c_allianceIdControl, i, true );
 			PlayerSetAlliance( context, c_allianceIdSpend, i, true );
 			PlayerSetAlliance( i, c_allianceIdControl, context, true );
-			PlayerSetAlliance( i, c_allianceIdSpend, context, true );			
+			PlayerSetAlliance( i, c_allianceIdSpend, context, true );
 		}
 		else {
 			PlayerSetAlliance( context, c_allianceIdControl, i, true );
@@ -229,13 +229,13 @@ bool libwyv_command_control(bool testConds, bool runActions) {
 			// Now check, do we have permission to modify this player's alliances, too?
 			if( EventPlayer() == i || libwyv_player[EventPlayer()].permission_level > libwyv_player[i].permission_level ) {
 				PlayerSetAlliance( i, c_allianceIdControl, context, true );
-				PlayerSetAlliance( i, c_allianceIdSpend, context, true );	
+				PlayerSetAlliance( i, c_allianceIdSpend, context, true );
 			}
 		}
 
 		i += 1;
 	}
-	
+
 	return true;
 }
 
@@ -243,8 +243,8 @@ bool libwyv_command_control(bool testConds, bool runActions) {
 // ======================
 // stops unit spending/control between two players (Modified from Cortex Engine)
 bool libwyv_command_uncontrol(bool testConds, bool runActions) {
-	string player = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
-	string target_player = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+	string player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false );
+	string target_player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 3), false );
 	string original = player;
 	int i = 1;
 	int context = EventPlayer();	// a player to be controlled/given control
@@ -254,17 +254,17 @@ bool libwyv_command_uncontrol(bool testConds, bool runActions) {
 		context = libwyv_color_to_player(player);
 		player = target_player;
 	}
-	
+
 	if( context == -1 ) { // Invalid player.
 		return true;
 	}
-	
+
 	// check permissions on context player
 	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && libwyv_player[EventPlayer()].permission_level <= libwyv_player[context].permission_level ) {
 		return true;
 	}
 
-	// if original player was "all", set control by 
+	// if original player was "all", set control by
 	// parsing command for each player
 	if( original == "all" ) {
 		while( i != LIBWYV_MAX_PLAYERS ) {
@@ -277,17 +277,17 @@ bool libwyv_command_uncontrol(bool testConds, bool runActions) {
 
 
 	// apply alliance control/spending
-	while( i != LIBWYV_MAX_PLAYERS ) { 
+	while( i != LIBWYV_MAX_PLAYERS ) {
 		if( i == context || (libwyv_color_to_player(player) != i && player != "all") ) {
 			i += 1;
 			continue;
 		}
 
-		if( PlayerType(i) != c_playerTypeUser ) { 
+		if( PlayerType(i) != c_playerTypeUser ) {
 			PlayerSetAlliance( context, c_allianceIdControl, i, false );
 			PlayerSetAlliance( context, c_allianceIdSpend, i, false );
 			PlayerSetAlliance( i, c_allianceIdControl, context, false );
-			PlayerSetAlliance( i, c_allianceIdSpend, context, false );			
+			PlayerSetAlliance( i, c_allianceIdSpend, context, false );
 		}
 		else {
 			PlayerSetAlliance( context, c_allianceIdControl, i, false );
@@ -295,13 +295,13 @@ bool libwyv_command_uncontrol(bool testConds, bool runActions) {
 			// Now check, do we have permission to modify this player's alliances, too?
 			if( EventPlayer() == i || libwyv_player[EventPlayer()].permission_level > libwyv_player[i].permission_level ) {
 				PlayerSetAlliance( i, c_allianceIdControl, context, false );
-				PlayerSetAlliance( i, c_allianceIdSpend, context, false );	
+				PlayerSetAlliance( i, c_allianceIdSpend, context, false );
 			}
 		}
 
 		i += 1;
 	}
-	
+
 	return true;
 }
 
@@ -310,8 +310,8 @@ bool libwyv_command_uncontrol(bool testConds, bool runActions) {
 // allies another player, and if your permissions are greater
 // than target player, also forces them to ally you
 bool libwyv_command_ally(bool testConds, bool runActions) {
-	string player = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
-	string target_player = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+	string player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false );
+	string target_player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 3), false );
 	string original = player;
 	int i = 1;
 	int context = EventPlayer();	// a player to be controlled/given control
@@ -321,11 +321,11 @@ bool libwyv_command_ally(bool testConds, bool runActions) {
 		context = libwyv_color_to_player(player);
 		player = target_player;
 	}
-	
+
 	if( context == -1 ) { // Invalid player.
 		return true;
 	}
-	
+
 	// check permissions on context player
 	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && libwyv_player[EventPlayer()].permission_level <= libwyv_player[context].permission_level ) {
 		return true;
@@ -341,16 +341,16 @@ bool libwyv_command_ally(bool testConds, bool runActions) {
 		}
 		return true;
 	}
-	
-	
+
+
 	// apply alliance control/spending
-	while( i != LIBWYV_MAX_PLAYERS ) { 
+	while( i != LIBWYV_MAX_PLAYERS ) {
 		if( i == context || (libwyv_color_to_player(player) != i && player != "all") ) {
 			i += 1;
 			continue;
 		}
 
-		if( PlayerType(i) != c_playerTypeUser ) { 
+		if( PlayerType(i) != c_playerTypeUser ) {
 			libNtve_gf_SetAllianceOneWay( context, i, 1);
 			libNtve_gf_SetAllianceOneWay( i, context, 1);
 		}
@@ -364,7 +364,7 @@ bool libwyv_command_ally(bool testConds, bool runActions) {
 
 		i += 1;
 	}
-	
+
 	return true;
 }
 
@@ -373,8 +373,8 @@ bool libwyv_command_ally(bool testConds, bool runActions) {
 // unallies another player. other player automatically
 // will unally you also
 bool libwyv_command_unally(bool testConds, bool runActions) {
-	string player = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
-	string target_player = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+	string player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false );
+	string target_player = StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 3), false );
 	string original = player;
 	int i = 1;
 	int context = EventPlayer();	// a player to be controlled/given control
@@ -384,11 +384,11 @@ bool libwyv_command_unally(bool testConds, bool runActions) {
 		context = libwyv_color_to_player(player);
 		player = target_player;
 	}
-	
+
 	if( context == -1 ) { // Invalid player.
 		return true;
 	}
-	
+
 	// check permissions on context player
 	else if( context != EventPlayer() && PlayerType(context) == c_playerTypeUser && libwyv_player[EventPlayer()].permission_level <= libwyv_player[context].permission_level ) {
 		return true;
@@ -404,10 +404,10 @@ bool libwyv_command_unally(bool testConds, bool runActions) {
 		}
 		return true;
 	}
-	
-	
+
+
 	// apply alliance control/spending
-	while( i != LIBWYV_MAX_PLAYERS ) { 
+	while( i != LIBWYV_MAX_PLAYERS ) {
 		if( i == context || (libwyv_color_to_player(player) != i && player != "all") ) {
 			i += 1;
 			continue;
@@ -417,7 +417,7 @@ bool libwyv_command_unally(bool testConds, bool runActions) {
 
 		i += 1;
 	}
-	
+
 	return true;
 }
 
@@ -425,23 +425,23 @@ bool libwyv_command_unally(bool testConds, bool runActions) {
 // ===================
 // removes all of a specific players units from the map
 bool libwyv_command_remove_player(bool testConds, bool runActions) {
-	int target_player = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) ); //GET PLAYER COLOR FROM STRING.
+	int target_player = libwyv_color_to_player( StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false ) ); //GET PLAYER COLOR FROM STRING.
 	unitgroup g;
-	
+
 	if( target_player == -1 ) {
 		libwyv_print_error("Invalid player", EventPlayer());
 		return false;
 	}
-	
+
 	// if target_player is not yourself or a non-user, do permissions check
 	if ( target_player != EventPlayer() && PlayerType(target_player) == c_playerTypeUser ) {
-		if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD && 
+		if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD &&
 			libwyv_player[EventPlayer()].permission_level <= libwyv_player[target_player].permission_level ) {
 			libwyv_print_error("You cannot remove someone of equal or greater rank than you (while not a moderator or admin)", EventPlayer());
 			return false;
 		}
 	}
-	
+
 	// remove all of target player's units
 	g = UnitGroup( null, target_player, RegionEntireMap(), UnitFilter(0, 0, 0, 0), 0 );
 	UnitGroupLoopBegin(g);
@@ -450,7 +450,7 @@ bool libwyv_command_remove_player(bool testConds, bool runActions) {
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	
+
 	libwyv_print_text(libwyv_player_name_colored(target_player) + StringToText(" has been removed by ") + libwyv_player_name_colored(EventPlayer()), PlayerGroupAll());
 
 	return true;
@@ -513,7 +513,7 @@ bool libwyv_command_search(bool testConds, bool runActions) {
 		libwyv_print_output("Usage: \\search [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [what to search for]", EventPlayer());
 		return true;
 	}
-	
+
 	i = CatalogEntryCount(catalog);
 
 	// Allow for multi-page query results
@@ -530,7 +530,7 @@ bool libwyv_command_search(bool testConds, bool runActions) {
 
 	libwyv_print(" ", PlayerGroupSingle(EventPlayer())); // newline for readability
 	libwyv_print_output("<h>Results for the word \"" + query + "\"</h>:", EventPlayer());
-	
+
 	count = SEARCH_LIST_COUNT;
 	while(i != 0 && count != 0) {
 		result = CatalogEntryGet(catalog, i);
@@ -553,7 +553,7 @@ bool libwyv_command_search(bool testConds, bool runActions) {
 	else {
 		libwyv_player[EventPlayer()].search_index = -1;
 	}
-	
+
 	return true;
 }
 
@@ -569,12 +569,12 @@ bool libwyv_command_replace(bool testConds, bool runActions) {
 	string source = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
 	string replace = StringWord(libwyv_player[EventPlayer()].chat_msg, 4);
 	unitgroup g = libwyv_player[EventPlayer()].context;
-	
+
 	if( source == "" || replace == "" ) {
 		libwyv_print_output("Usage: \\replace [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [SOURCE] [REPLACEMENT]", EventPlayer());
 		return true;
 	}
-	
+
 	if(type == "ability" || type == "abilities") {
 		catalog = c_gameCatalogAbil;
 	}
@@ -618,7 +618,7 @@ bool libwyv_command_replace(bool testConds, bool runActions) {
 		libwyv_print_output("Usage: \\replace [ability|actor|behavior|weapon|validator|upgrade|unit|turret|light|footprint|model|decal] [SOURCE] [REPLACEMENT]", EventPlayer());
 		return true;
 	}
-	
+
 	// get source and replace actual data names
 	source = libwyv_catalog_get(catalog, source);
 	replace = libwyv_catalog_get(catalog, replace);
@@ -626,7 +626,7 @@ bool libwyv_command_replace(bool testConds, bool runActions) {
 		libwyv_print_error("Invalid [source] or [replace] entry", EventPlayer());
 		return true;
 	}
-	
+
 	// so \replace works on other players (owner of any selected units)
 	if( UnitGroupCount(g, c_unitCountAlive) > 0 ) {
 		UnitGroupLoopBegin(g);
@@ -644,7 +644,7 @@ bool libwyv_command_replace(bool testConds, bool runActions) {
 		libwyv_print_output("Replacing catalog entry in " + type + ": " + source + " -> " + replace, EventPlayer() );
 		CatalogLinkReplace(EventPlayer(), catalog, source, replace);
 	}
-	
+
 	return true;
 }
 
@@ -696,7 +696,7 @@ bool libwyv_command_supply(bool testConds, bool runActions) {
 // Zooms out a player's camera (max distance: 128)
 bool libwyv_command_zoom(bool testConds, bool runActions) {
 	int height = StringToInt( StringWord(libwyv_player[EventPlayer()].chat_msg, 2 ));
-	
+
 	if( height == 0 ) { // reset camera for player
 		CameraApplyInfo( EventPlayer(), CameraInfoDefault(), 2.0, -1, 10, false );
 	}
@@ -719,15 +719,15 @@ bool libwyv_command_zoom(bool testConds, bool runActions) {
 bool libwyv_command_light(bool testConds, bool runActions) {
 	string light = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
 	fixed blend_time = StringToFixed(StringWord(libwyv_player[EventPlayer()].chat_msg, 3));
-	
+
 	if( libwyv_player[EventPlayer()].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD  ) {
 		return true;
 	}
-	
+
 	if(light == "") { // get default lighting for terrain set
 		light = CatalogFieldValueGet(c_gameCatalogTerrain,  GameTerrainSet(), "Lighting", EventPlayer());
 	}
-	
+
 	light = libwyv_catalog_get(c_gameCatalogLight, light);
 	if(light == null) {
 		libwyv_print_error("<c val=\"ff0000\">Unable to change lighting</c>: No such light exists.", EventPlayer());
@@ -745,14 +745,14 @@ bool libwyv_command_light(bool testConds, bool runActions) {
 
 // libwyv_command_blacklist
 // =================
-// handles blacklist functions 
+// handles blacklist functions
 // (add, remove, removeall, list) as subcommands
 bool libwyv_command_blacklist(bool testConds, bool runActions) {
 	string sub_command;
 	string sub_parameter;
 	int player;
 	string player_handle;
-	
+
 	sub_command = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
 	sub_parameter = StringWord( libwyv_player[EventPlayer()].chat_msg, 3 );
 
@@ -764,7 +764,7 @@ bool libwyv_command_blacklist(bool testConds, bool runActions) {
 			libwyv_print_output( StringWord( libwyv_player[EventPlayer()].chat_msg, 5 ) + " (" + player_handle + ") was added to blacklist", EventPlayer() );
 			return true;
 		}
-		
+
 		// else, add player from color to blacklist
 		player = libwyv_color_to_player(StringWord( libwyv_player[EventPlayer()].chat_msg, 3 ));
 		if( player == -1 || PlayerType(player) != c_playerTypeUser ) {
@@ -775,14 +775,14 @@ bool libwyv_command_blacklist(bool testConds, bool runActions) {
 			libwyv_print_error("Cannot blacklist yourself", EventPlayer());
 			return false;
 		}
-		
+
 		player_handle = PlayerHandle(player);
-		
+
 		if( BankKeyExists(libwyv_player[EventPlayer()].bank_storage, LIBWYV_BANK_SECTION_BLACKLIST, player_handle) ) {
 			libwyv_print_error("Player already exists on blacklist!", EventPlayer());
 			return false;
 		}
-		
+
 		libwyv_blacklist_add(EventPlayer(), player_handle, StringToText("<d Player=\"" + IntToString(player) + "\" GameValue=\"PlayerClanTag\"/> ") + PlayerName(player));
 		libwyv_print_text( StringToText("> ") + libwyv_player_name_colored(player) + StringToText(" (" + PlayerHandle(player) + ") was added to blacklist"), PlayerGroupSingle(EventPlayer()) );
 
@@ -819,7 +819,7 @@ bool libwyv_command_blacklist(bool testConds, bool runActions) {
 			libwyv_print_error("No players on blacklist.", EventPlayer());
 			return false;
 		}
-		
+
 		libwyv_blacklist_list(EventPlayer());
 		return true;
 	}

@@ -94,7 +94,7 @@ bool libwyv_command_cache(bool testConds, bool runActions) {
 // gives another player units
 bool libwyv_command_give(bool testConds, bool runActions) {
 	unitgroup g = libwyv_player[EventPlayer()].context;
-	int new_owner = libwyv_color_to_player( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) );
+	int new_owner = libwyv_color_to_player( StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false ) );
 
 	if(new_owner == -1) { // invalid entry by user
 		return true;
