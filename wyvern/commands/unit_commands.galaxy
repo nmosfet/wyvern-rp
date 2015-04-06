@@ -1214,8 +1214,6 @@ bool libwyv_command_copy(bool testConds, bool runActions) {
 			UnitTestState(source, c_unitStateFidget));
 		UnitSetState(target, c_unitStateTargetable,
 			UnitTestState(source, c_unitStateTargetable));
-		UnitSetState(target, c_unitStateStatusBar,
-			UnitTestState(source, c_unitStateStatusBar));
 		UnitSetState(target, c_unitStateTooltipable,
 			UnitTestState(source, c_unitStateTooltipable));
 		UnitSetState(target, c_unitStateCursorable,

@@ -36,7 +36,7 @@ bool libwyv_gamesetup_remove(int player, string gamesetup_name) {
 
 // libwyv_gamesetup_save
 // ==================
-// saves all units (in region rgn) and their command caches into a 
+// saves all units (in region rgn) and their command caches into a
 // gamesetup bank section of input name
 void libwyv_gamesetup_save(int player, string gamesetup_name, region rgn) {
 	int i;
@@ -49,15 +49,15 @@ void libwyv_gamesetup_save(int player, string gamesetup_name, region rgn) {
 
 	// remove previous instance of gamesetup of same name
 	libwyv_gamesetup_remove(player, gamesetup_name);
-	
+
 	//save units
 	g = UnitGroup(null, player, rgn, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
 	UnitGroupRemove(g, libwyv_player[player].spawn_splat); // remove spawn splat if it exists
-	
+
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		unit_game_id = FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0);
-		
+
 		//create the unit properties string
 		unit_properties = "";
 		//unit type
@@ -65,7 +65,7 @@ void libwyv_gamesetup_save(int player, string gamesetup_name, region rgn) {
 		//position
 		unit_properties += " " + FixedToString(PointGetX(UnitGetPosition(UnitGroupLoopCurrent())), 4);
 		unit_properties += " " + FixedToString(PointGetY(UnitGetPosition(UnitGroupLoopCurrent())), 4);
-		unit_properties += " " + FixedToString(UnitGetFacing(UnitGroupLoopCurrent()), 2);		
+		unit_properties += " " + FixedToString(UnitGetFacing(UnitGroupLoopCurrent()), 2);
 		//hp, shields, energy
 		unit_properties += " " + FixedToString(UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLife, true), 0);
 		unit_properties += " " + FixedToString(UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropLifeMax, true), 0);
@@ -86,7 +86,7 @@ void libwyv_gamesetup_save(int player, string gamesetup_name, region rgn) {
 		unit_properties += " " + FixedToString(UnitGetPropertyFixed(UnitGroupLoopCurrent(), c_unitPropXP, true), 3);
 
 		BankValueSetFromString(libwyv_player[player].bank_storage, gamesetup_section, IntToString(unit_save_id) + ".0", unit_properties);
-		
+
 		//create the unit caches
 		i = 1;
 		while(DataTableValueExists(true, unit_game_id + "." + IntToString(i))) {
@@ -94,15 +94,15 @@ void libwyv_gamesetup_save(int player, string gamesetup_name, region rgn) {
 			BankValueSetFromString(libwyv_player[player].bank_storage, gamesetup_section, IntToString(unit_save_id) + "." + IntToString(i), cache);
 			i += 1;
 		}
-		
+
 		unit_save_id += 1;
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	
+
 	//finally, save bank
 	BankSave(libwyv_player[player].bank_storage);
-	
+
 	libwyv_print_success("Game setup saved as \"" + gamesetup_name + "\"", player);
 }
 
@@ -117,15 +117,15 @@ void libwyv_gamesetup_load(int player, string gamesetup_name) {
 	string unit_properties;
 	string commands;
 	unitgroup g;
-	
+
 	//load units
 	while( BankKeyExists(libwyv_player[player].bank_storage, gamesetup_section, id + ".0" ) ) {
 		unit_properties = BankValueGetAsString(libwyv_player[player].bank_storage, gamesetup_section, id + ".0");
-		
+
 		//create unit
 		UnitCreate(1, StringWord(unit_properties, 1), c_unitCreateIgnorePlacement, player, Point(StringToFixed(StringWord(unit_properties, 2)), StringToFixed(StringWord(unit_properties, 3))), 270.0);
 		UnitSetFacing(UnitLastCreated(), StringToFixed(StringWord(unit_properties, 4)), 0);
-		
+
 		// must manually set unit data here
 		// (UnitCreatedEvent doesn't pick up created unit until already function finishes)
 		libwyv_unit_set_id(UnitLastCreated());
@@ -168,7 +168,7 @@ void libwyv_gamesetup_load(int player, string gamesetup_name) {
 			libwyv_chat_parse( libwyv_gamesetup_alias_commands_unpack(commands), player, g );
 			index += 1;
 		}
-		
+
 		id = IntToString( StringToInt(id) + 1 );
 	}
 
@@ -187,6 +187,7 @@ string libwyv_gamesetup_alias_commands(string s) {
 	aliased = StringReplaceWord(aliased, "@modelswap", "@ms", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@animspeed", "@as", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@play", "@pl", c_stringReplaceAll, false);
+	aliased = StringReplaceWord(aliased, "@subtitle", "@st", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@statbars", "@sb", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@actormsg", "@amsg", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@addbehavior", "@ab", c_stringReplaceAll, false);
@@ -202,7 +203,6 @@ string libwyv_gamesetup_alias_commands(string s) {
 	aliased = StringReplaceWord(aliased, "@invulnerable", "@inv", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@setname", "@snm", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@setnamecolor", "@snc", c_stringReplaceAll, false);
-	aliased = StringReplaceWord(aliased, "@subtitle", "@st", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@renameall", "@rn", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@color", "@col", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@tooltip", "@tt", c_stringReplaceAll, false);
@@ -222,6 +222,7 @@ string libwyv_gamesetup_alias_commands_unpack(string aliased) {
 	unpacked = StringReplaceWord(unpacked, "@ms", "@modelswap", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@as", "@animspeed", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@pl", "@play", c_stringReplaceAll, false);
+	unpacked = StringReplaceWord(unpacked, "@st", "@subtitle", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@sb", "@statbars", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@amsg", "@actormsg", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@ad", "@adddamage", c_stringReplaceAll, false);
@@ -237,7 +238,6 @@ string libwyv_gamesetup_alias_commands_unpack(string aliased) {
 	unpacked = StringReplaceWord(unpacked, "@inv", "@invulnerable", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@snm", "@setname", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@snc", "@setnamecolor", c_stringReplaceAll, false);
-	unpacked = StringReplaceWord(unpacked, "@st", "@subtitle", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@rn", "@renameall", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@col", "@color", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@tt", "@tooltip", c_stringReplaceAll, false);
