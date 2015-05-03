@@ -114,7 +114,7 @@ void libwyv_unit_create(string type, int player, point p, fixed facing) {
 		UnitSetCustomValue(UnitLastCreated(), LIBWYV_UNIT_INDEX_CACHE_COUNT, 1);
 
 		splat_unit_id = FixedToString( UnitGetCustomValue( libwyv_player[player].spawn_splat, LIBWYV_UNIT_INDEX_ID), 0 );
-		
+
 		// apply spawn splat cache onto spawned unit
 		while( DataTableValueExists(true, splat_unit_id + "." + IntToString(index)) ) {
 			cache = DataTableGetString(true, splat_unit_id + "." + IntToString(index));
@@ -536,7 +536,8 @@ void libwyv_unit_cache_update(unit subject, string command, string user_command)
 			 command == "@removebehavior" ||
 			 command == "@addweapon" ||
 			 command == "@removeweapon" ||
-			 command == "@effect"
+			 command == "@effect" ||
+			 command == "@state"
 			 ) {
 		libwyv_unit_cache_update_add(subject, unit_id, user_command);
 		return;

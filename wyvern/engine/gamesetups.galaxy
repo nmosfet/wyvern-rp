@@ -170,6 +170,9 @@ void libwyv_gamesetup_load(int player, string gamesetup_name) {
 		}
 
 		id = IntToString( StringToInt(id) + 1 );
+
+		// wait 0.0s creates some delay and reducing lag during load
+		Wait(0.0, c_timeReal);
 	}
 
 	//loading complete!
@@ -208,6 +211,7 @@ string libwyv_gamesetup_alias_commands(string s) {
 	aliased = StringReplaceWord(aliased, "@tooltip", "@tt", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@weaponspeedall", "@wpa", c_stringReplaceAll, false);
 	aliased = StringReplaceWord(aliased, "@weaponspeed", "@wp", c_stringReplaceAll, false);
+	aliased = StringReplaceWord(aliased, "@state", "@se", c_stringReplaceAll, false);
 	return aliased;
 }
 
@@ -243,5 +247,6 @@ string libwyv_gamesetup_alias_commands_unpack(string aliased) {
 	unpacked = StringReplaceWord(unpacked, "@tt", "@tooltip", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@wpa", "@weaponspeedall", c_stringReplaceAll, false);
 	unpacked = StringReplaceWord(unpacked, "@wp", "@weaponspeed", c_stringReplaceAll, false);
+	unpacked = StringReplaceWord(unpacked, "@se", "@state", c_stringReplaceAll, false);
 	return unpacked;
 }

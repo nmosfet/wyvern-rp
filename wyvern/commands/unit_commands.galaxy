@@ -1474,3 +1474,72 @@ bool libwyv_command_radius(bool testConds, bool runActions) {
 
 	return true;
 }
+
+// libwyv_command_state
+// ====================
+// allows a user to adjust various default unit status settings:
+// these are settings built-in to the game unit type itself.
+// each setting can either be on (true) or off (false).
+//        syntax: @state [state-name] [on/off]
+// for [on/off], any input that isnt "on" is parsed as "off" (false)
+bool libwyv_command_state(bool testConds, bool runActions) {
+	string param = StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ), false );
+	int state;
+	bool status = false;
+	unitgroup g = libwyv_player[EventPlayer()].context;
+
+	// get 1st parameter as the state option
+	if( param == "fidget" ) {
+		state = c_unitStateFidget;
+	} else if( param == "highlightable" ) {
+		state = c_unitStateHighlightable;
+	} else if( param == "highlighted" ) {
+		state = c_unitStateHighlighted;
+	} else if( param == "ignoreterrainheight" ) {
+		state = c_unitStateIgnoreTerrainZ;
+	} else if( param == "invulnerable" ) {
+		state = c_unitStateInvulnerable;
+	} else if( param == "hidden" ) {
+		state = c_unitStateHidden;
+	} else if( param == "paused" ) {
+		state = c_unitStatePaused;
+	} else if( param == "selectable" ) {
+		state = c_unitStateSelectable;
+	} else if( param == "statusbar" ) {
+		state = c_unitStateStatusBar;
+	} else if( param == "targetable" ) {
+		state = c_unitStateTargetable;
+	} else if( param == "tooltips" ) {
+		state = c_unitStateTooltipable;
+	} else if( param == "cursor" ) {
+		state = c_unitStateCursorable;
+	} else if( param == "movable" ) {
+		state = c_unitStateMoveSuppressed;
+	} else if( param == "turnable" ) {
+		state = c_unitStateTurnSuppressed;
+	} else if( param == "usessupply" ) {
+		state = c_unitStateUsingSupply;
+	} else {
+		libwyv_print_error( "Usage: @radius [state] [on/off]\n" +
+							"States: fidget, highlightable, highlighted, ignoreterrainheight, invulnerable, hidden, paused, selectable, statusbar, targetable, tooltips, cursor, movable, turnable, usessupply"
+							, EventPlayer() );
+		return false;
+	}
+
+	// status as 2nd parameter
+	if( StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 3 ), false ) == "on" ) {
+		status = true;
+	}
+
+	libwyv_print( "Setting state " + param + ": " + libNtve_gf_ConvertBooleanToString(status), PlayerGroupSingle(EventPlayer()) );
+
+	UnitGroupLoopBegin(g);
+	while(!UnitGroupLoopDone()) {
+		UnitSetState( UnitGroupLoopCurrent(), state, status );
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@state", libwyv_player[EventPlayer()].chat_msg);
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
