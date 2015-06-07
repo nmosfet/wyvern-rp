@@ -10,6 +10,7 @@ include "wyvern/engine/events/mouse.galaxy"
 include "wyvern/engine/events/keypress.galaxy"
 include "wyvern/engine/events/player_leaves.galaxy"
 include "wyvern/engine/events/region_waygates.galaxy"
+include "wyvern/engine/events/unit_events.galaxy"
 
 void librtpr_events_initialize() {
 	// mouse related events
@@ -24,8 +25,8 @@ void librtpr_events_initialize() {
 
 	// unit initialization events (functions found in unit.galaxy)
 	TriggerAddEventUnitCreated( TriggerCreate("libwyv_unit_initialize"), null, null, null );
-	TriggerAddEventUnitRemoved( TriggerCreate("libwyv_unit_death_data_remove"), null );
-	TriggerAddEventUnitDied( TriggerCreate("libwyv_unit_death_data_remove"), null) ;
+	TriggerAddEventUnitRemoved( TriggerCreate("libwyv_unit_death_cleanup"), null );
+	TriggerAddEventUnitDied( TriggerCreate("libwyv_unit_death_cleanup"), null) ;
 
 	// region waygate and waygate dialog events
 	TriggerAddEventTimePeriodic( TriggerCreate("libwyv_waygate_dialog_manager"), 1.0, c_timeGame );

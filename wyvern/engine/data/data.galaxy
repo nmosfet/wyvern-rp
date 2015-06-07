@@ -51,6 +51,9 @@ const string LIBWYV_BEHAVIOR_WEAPONSPEED_MULT_P9 = "WyvernWeaponSpeedMultiplierP
 const string LIBWYV_TALK_ICON_ACTOR = "TalkIconBubble";
 const string LIBWYV_TALK_SOUND = "";
 
+// unit used as the default region waygate dialog anchor
+// (see regions.galaxy)
+const string LIBWYV_WAYGATE_DIALOG_ANCHOR_UNIT = "Beacon_Zerg";
 
 // librtpr_catalog_get
 // ====================
@@ -63,7 +66,7 @@ string libwyv_catalog_get(int catalog, string word) {
 	if(CatalogEntryIsValid(catalog, word)) {
 		return word;
 	}
-	
+
 	i = CatalogEntryCount(catalog);
 	while(i > 0) {
 		test = CatalogEntryGet(catalog, i);

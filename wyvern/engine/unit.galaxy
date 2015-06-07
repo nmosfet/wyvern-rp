@@ -25,9 +25,10 @@ const int LIBWYV_UNIT_INDEX_FLAG_PLAY = 7;			// flag for @play has been used
 const int LIBWYV_UNIT_INDEX_FLAG_STATBARS = 8;		// flag for @statbars has been used
 const int LIBWYV_UNIT_INDEX_FLAG_ROTATE = 9;		// flag for @rotate has been used
 
-const int LIBWYV_UNIT_INDEX_WAYGATE = 15;		// flag for region waygates
+const int LIBWYV_UNIT_INDEX_WAYGATE = 15;			// region ID for waygates
+const int LIBWYV_UNIT_INDEX_WAYGATE_DIALOG = 16;	// attached waygate dialog ID
 
-const int LIBWYV_UNIT_INDEX_TEXTTAG = 15;		// flag for text tag set
+const int LIBWYV_UNIT_INDEX_TEXTTAG = 20;		// flag for text tag set
 
 // Each unit given a unique id. Each time unit created, counter increments
 int libwyv_unit_id_counter = 1;
@@ -80,16 +81,6 @@ bool libwyv_unit_initialize(bool testConds, bool runActions) {
 
 	libwyv_unit_set_id(EventUnitCreatedUnit());
 	UnitSetCustomValue(EventUnitCreatedUnit(), LIBWYV_UNIT_INDEX_CACHE_COUNT, 1);
-	return true;
-}
-
-// libwyv_unit_death_data_remove
-// =======================
-// whenever unit is killed or is removed, must remove unit's cache
-// from the data table (to conserve data table memory usage)
-// along with custom name/name color
-bool libwyv_unit_death_data_remove(bool testConds, bool runActions) {
-	libwyv_unit_data_remove(EventUnit());
 	return true;
 }
 

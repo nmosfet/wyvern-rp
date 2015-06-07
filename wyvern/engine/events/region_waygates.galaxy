@@ -10,14 +10,14 @@
 // ===================
 // if region entered has linked regions, set unit
 // custom value to ID of linked region (for teleporting)
-// created on demand when waygates are created via 
+// created on demand when waygates are created via
 // #teleport (see region_commands.galaxy)
 // (Modified from Cortex)
 bool libwyv_region_entered(bool testConds, bool runActions) {
 	int waygate_id = 1;
 	region r;
 	string s;
-		
+
 	// get the region from data table
 	while( waygate_id < libwyv_region_waygate_counter ) {
 		s = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
@@ -27,19 +27,19 @@ bool libwyv_region_entered(bool testConds, bool runActions) {
 		}
 
 		waygate_id += 1;
-		
+
 		// reached max waygate counters: not in a waygate
-		if( waygate_id == libwyv_region_waygate_counter ) { 
+		if( waygate_id == libwyv_region_waygate_counter ) {
 			return true;
 		}
 	}
-	
+
 	// check if entering or leaving region
 	if( libNtve_gf_UnitInRegion( EventUnit(), EventUnitRegion() ) ) {
 		// Do we have a linked region? (prolly, if we're here!)
 		waygate_id = DataTableGetInt(true, LIBWYV_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + s );
 		UnitSetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE, IntToFixed(waygate_id));
-	} else { // leaving this region. 
+	} else { // leaving this region.
 		UnitSetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE, 0);
 	}
 	return true;
@@ -47,15 +47,16 @@ bool libwyv_region_entered(bool testConds, bool runActions) {
 
 // libwyv_waygate_dialog_manager
 // ===================
-// called periodically (set in events.galaxy) to 
+// called periodically (set in events.galaxy) to
 // create/destroy the player waygate button
 bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
 	unitgroup g;
+	int nalive; // number of units in g
 	int index;
 	unit u;
 	int waygate_id;
 	int player = 1;
-	
+
 	while( player < LIBWYV_MAX_PLAYERS ) {
 		if( libwyv_player[player].waygate_dialog != 0 ) {
 			DialogDestroy(libwyv_player[player].waygate_dialog);
@@ -63,20 +64,21 @@ bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
 		}
 
 		g = UnitGroupSelected(player);
-		if(g == null || UnitGroupCount(g, c_unitCountAlive) == 0 ) {
+		nalive = UnitGroupCount(g, c_unitCountAlive);
+		if(g == null || nalive == 0 ) {
 			player += 1;
 			continue;
 		}
 
 		index = 1;
-		while( index <= UnitGroupCount(g, c_unitCountAlive) ) {
+		while( index <= nalive ) {
 			u = UnitGroupUnit(g, index);
 			// Check if this unit isn't a structure
 			if( UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) ) {
 				index += 1;
 				continue;
 			}
-			
+
 			waygate_id = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE));
 			if( waygate_id == 0 ) {
 				index += 1;
@@ -90,7 +92,7 @@ bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
 				DialogControlSetVisible( libwyv_player[player].waygate_dialog_control_btn, PlayerGroupSingle(player), true);
 				break;
 			}
-			
+
 			index += 1;
 		}
 
@@ -106,7 +108,8 @@ bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
 // any selected units between waygate regions
 bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
 	unitgroup g;
-	int index;
+	int nalive;	// number of units alive in g
+	int index = 1;
 	int waygate_id;
 	unit u;
 	region r;
@@ -116,16 +119,16 @@ bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
 	if( EventDialogControl() == libwyv_player[EventPlayer()].waygate_dialog_control_btn ) {
 		g = UnitGroupSelected(EventPlayer());
 		g = libwyv_enforce_unit_permissions(g, EventPlayer());
-		
-		if( UnitGroupCount(g, c_unitCountAlive) > 0 ) {
-			index = 1;
-			while( index <= UnitGroupCount(g, c_unitCountAlive) ) {
+		nalive = UnitGroupCount(g, c_unitCountAlive);
+
+		if( nalive > 0 ) {
+			while( index <= nalive ) {
 				u = UnitGroupUnit(g, index);
 				if( UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) ) {
 					index += 1;
 					continue;
 				}
-				
+
 				waygate_id = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE));
 
 				if( waygate_id != 0 ) { // Lookup this region by waygate id
@@ -137,7 +140,7 @@ bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
 						}
 					}
 				}
-				
+
 				index += 1;
 			}
 		}
