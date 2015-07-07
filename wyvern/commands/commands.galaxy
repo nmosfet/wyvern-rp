@@ -55,6 +55,7 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create("@cache", "libwyv_command_cache");
 	libwyv_chat_command_create("@give", "libwyv_command_give");
 	libwyv_chat_command_create("@renameall", "libwyv_command_renameall");
+	libwyv_chat_command_create("@behaviors", "libwyv_command_behaviors");
 	libwyv_chat_command_create("@addbehavior", "libwyv_command_addbehavior");
 	libwyv_chat_command_create("@removebehavior", "libwyv_command_removebehavior");
 	libwyv_chat_command_create("@addweapon", "libwyv_command_addweapon");

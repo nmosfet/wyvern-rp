@@ -129,13 +129,41 @@ bool libwyv_command_renameall(bool testConds, bool runActions) {
 	return true;
 }
 
+// libwyv_command_behaviors
+// ====================
+// prints a list of all unit behaviors and stack count (behaviors can stack)
+bool libwyv_command_behaviors(bool testConds, bool runActions) {
+	int count;
+	string behavior;
+
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	while(!UnitGroupLoopDone()) {
+		// print unit name and ID
+		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()), PlayerGroupSingle(EventPlayer()) );
+
+		count = UnitBehaviorCountAll(UnitGroupLoopCurrent());
+		if( count > 0 ) {
+			while( count > 0 ) {
+				behavior = UnitBehaviorGet(UnitGroupLoopCurrent(), count);
+				libwyv_print_output(behavior + " (" + IntToString( UnitBehaviorCount(UnitGroupLoopCurrent(), behavior) ) + ")", EventPlayer());
+				count -= 1;
+			}
+		}
+		else { // count == 0, no behaviors
+			libwyv_print_output("No behaviors", EventPlayer());
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
+
+	return true;
+}
+
+// libwyv_command_addbehavior
+// =====================
+// adds a behavior to units
 bool libwyv_command_addbehavior(bool testConds, bool runActions) {
-	string val;
-	int x;
-	int i;
-	string s;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	string val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
 
 	// get full behavior name from catalog
 	val = libwyv_catalog_get(c_gameCatalogBehavior, val);
@@ -144,7 +172,7 @@ bool libwyv_command_addbehavior(bool testConds, bool runActions) {
 		return true;
 	}
 
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		UnitBehaviorAdd( UnitGroupLoopCurrent(), val, UnitGroupLoopCurrent(), 1 );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addbehavior", libwyv_player[EventPlayer()].chat_msg);
@@ -155,22 +183,20 @@ bool libwyv_command_addbehavior(bool testConds, bool runActions) {
 	return true;
 }
 
+// libwyv_command_removebehavior
+// =======================
+// removes a behavior from units
 bool libwyv_command_removebehavior(bool testConds, bool runActions) {
-	string val;
-	string s;
-	int i;
-	int x;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	string val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
 
-	// Check for an invalid behavior name, and attempt to compensate.
+	// get catalog entry from user input
 	val = libwyv_catalog_get(c_gameCatalogBehavior, val);
 	if(val == null) {
 		libwyv_print_error("<c val=\"ff0000\">Unable to remove behavior</c>: No such behavior exists.", EventPlayer());
 		return true;
 	}
 
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		UnitBehaviorRemove( UnitGroupLoopCurrent(), val, 1 );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@removebehavior", libwyv_player[EventPlayer()].chat_msg);
@@ -181,15 +207,14 @@ bool libwyv_command_removebehavior(bool testConds, bool runActions) {
 	return true;
 }
 
+// libwyv_command_addweapon
+// ====================
+// adds a weapon to a given turret on a unit
+//  -> if turret specified does not exist, defaults to CTurret
+//     (default weapon turret)
 bool libwyv_command_addweapon(bool testConds, bool runActions) {
-	string weapon;
-	string turret;
-	int i;
-	int x;
-	string s;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	weapon = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
-	turret = StringWord( libwyv_player[EventPlayer()].chat_msg, 3 );
+	string weapon = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	string turret = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
 
 	if( turret == "" ) {
 		turret = "CTurret";
@@ -210,7 +235,7 @@ bool libwyv_command_addweapon(bool testConds, bool runActions) {
 		}
 	}
 
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while( !UnitGroupLoopDone() ) {
 		UnitWeaponAdd( UnitGroupLoopCurrent(), weapon, turret );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addweapon", libwyv_player[EventPlayer()].chat_msg);
@@ -221,21 +246,20 @@ bool libwyv_command_addweapon(bool testConds, bool runActions) {
 	return true;
 }
 
+// libwyv_command_removeweapon
+// ====================
+// removes a weapon from a unit
 bool libwyv_command_removeweapon(bool testConds, bool runActions) {
-	string weapon;
-	int i;
-	int x;
-	string s;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	weapon = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	string weapon = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
 
+	// get catalog entry for weapon and make sure weapon is valid
 	weapon = libwyv_catalog_get(c_gameCatalogWeapon, weapon);
 	if ( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
 		libwyv_print_error("<c val=\"ff0000\">Unable to remove weapon</c>: No such weapon exists.", EventPlayer());
 		return true;
 	}
 
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while( !UnitGroupLoopDone() ) {
 		UnitWeaponRemove( UnitGroupLoopCurrent(), weapon );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@removeweapon", libwyv_player[EventPlayer()].chat_msg);
@@ -736,8 +760,7 @@ bool libwyv_command_color(bool testConds, bool runActions) {
 // ====================
 // Makes a unit invulnerable or vulnerable
 bool libwyv_command_invulnerable(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		UnitSetState( UnitGroupLoopCurrent(), c_unitStateInvulnerable, true );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", libwyv_player[EventPlayer()].chat_msg);
@@ -747,8 +770,7 @@ bool libwyv_command_invulnerable(bool testConds, bool runActions) {
 	return true;
 }
 bool libwyv_command_vulnerable(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		UnitSetState( UnitGroupLoopCurrent(), c_unitStateInvulnerable, false );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", "");
@@ -765,7 +787,6 @@ bool libwyv_command_vulnerable(bool testConds, bool runActions) {
 bool libwyv_command_face(bool testConds, bool runActions) {
 	fixed angle;
 	string param;
-	unitgroup g = libwyv_player[EventPlayer()].context;
 	bool absolute = true;
 
 	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
@@ -777,7 +798,7 @@ bool libwyv_command_face(bool testConds, bool runActions) {
 		angle = StringToFixed( param );
 	}
 
-	UnitGroupLoopBegin(g);
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		if( param == "" ) { // face mouse
 			libNtve_gf_MakeUnitFacePoint( UnitGroupLoopCurrent(), libwyv_player[EventPlayer()].mouse_position, 0.0 );
