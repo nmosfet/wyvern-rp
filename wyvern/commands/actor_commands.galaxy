@@ -381,37 +381,71 @@ bool libwyv_command_modelswap(bool testConds, bool runActions) {
 // makes the main actor play an animation by applying an animgroup
 // "@play reset" stops the animation
 bool libwyv_command_play(bool testConds, bool runActions) {
-	string val;
-	int flags = 0;
 	unitgroup g = libwyv_player[EventPlayer()].context;
-	string animgroup = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
-	val = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	string val;
+	string flags = "";
+	string animgroup;
+	int param_offset = 0;
+	string target = LIBWYV_ACTOR_REF_MAIN;
+
+	// get actor reference target
+	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
+		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+		param_offset = 1;
+	}
+
+	val = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
 	val = StringCase(StringSub(val, 1, 1), true) + StringSub(val, 2, StringLength(val));
 
-	if( StringEqual(StringWord( libwyv_player[EventPlayer()].chat_msg, 3), "loop", false) ) {
-		flags = c_animFlagPlayForever;
-		animgroup = StringWord(libwyv_player[EventPlayer()].chat_msg, 4);
+	// if @play [anim] [loop] , then set the flags for anim to PlayForever
+	if( StringEqual(StringWord( libwyv_player[EventPlayer()].chat_msg, 3 + param_offset), "loop", c_stringNoCase) ) {
+		flags = "PlayForever";
+		animgroup = StringWord(libwyv_player[EventPlayer()].chat_msg, 4 + param_offset);
+	}
+	else {
+		animgroup = StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset);
 	}
 
 	animgroup = StringCase(StringSub(animgroup, 1, 1), true) + StringSub(animgroup, 2, StringLength(animgroup));
 
-	UnitGroupLoopBegin(g);
-	while(!UnitGroupLoopDone()) {
-		if( StringEqual(val, "reset", false) ) {
-			libNtve_gf_ClearAnimation( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "libwyv_command_play" );
-		}
-		else {
-			libNtve_gf_PlayAnimation( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "libwyv_command_play", val, flags, 1 );
-			if(animgroup != "") {
-				ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AnimGroupRemoveAll");
-				ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AnimGroupApply {" + animgroup + "}");
+	// apply animgroup actor msg to units
+	if( StringSub(target, 1, 2) == "->" ) {
+		target = StringSub(target, 3, StringLength(target));
+		UnitGroupLoopBegin(g);
+		while(!UnitGroupLoopDone()) {
+			if( StringEqual(val, "reset", c_stringNoCase) ) {
+				ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, "AnimClear " + "libwyv_command_play");
 			}
+			else {
+				ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, "AnimPlay libwyv_command_play " + val + " " + flags);
+				if(animgroup != "") {
+					ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, "AnimGroupRemoveAll");
+					ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, "AnimGroupApply {" + animgroup + "}");
+				}
+			}
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@play", libwyv_player[EventPlayer()].chat_msg);
+			UnitGroupLoopStep();
 		}
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@play", libwyv_player[EventPlayer()].chat_msg);
-		UnitGroupLoopStep();
+		UnitGroupLoopEnd();
 	}
-	UnitGroupLoopEnd();
-
+	else { // "__[ref]", target global
+		target = StringSub(target, 3, StringLength(target));
+		UnitGroupLoopBegin(g);
+		while(!UnitGroupLoopDone()) {
+			if( StringEqual(val, "reset", c_stringNoCase) ) {
+				ActorSend(ActorFrom(target), "AnimClear " + "libwyv_command_play");
+			}
+			else {
+				ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, "AnimPlay libwyv_command_play " + val + " " + flags);
+				if(animgroup != "") {
+					ActorSend(ActorFrom(target), "AnimGroupRemoveAll");
+					ActorSend(ActorFrom(target), "AnimGroupApply {" + animgroup + "}");
+				}
+			}
+			UnitGroupLoopStep();
+		}
+		UnitGroupLoopEnd();
+	}
 	return true;
 }
 
@@ -420,16 +454,26 @@ bool libwyv_command_play(bool testConds, bool runActions) {
 // changes the animation speed of any animations
 // a unit is playing (range is set as 0-10x default, 1)
 bool libwyv_command_animspeed(bool testConds, bool runActions) {
-	string speed = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	string speed;
 	fixed anm_speed;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	int param_offset = 0;
+	string target = LIBWYV_ACTOR_REF_MAIN;
 
+	// get actor reference target
+	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
+		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+		param_offset = 1;
+	}
+
+	// get animspeed time scale. if % at end, then apply a percent scale
+	speed = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
 	if( StringContains( speed, "%", c_stringEnd, c_stringCase ) ) {
 		anm_speed = StringToFixed( StringSub(speed, 1, StringLength(speed)-1) ) / 100;
 	} else {
 		anm_speed = StringToFixed( speed );
 	}
 
+	// apply bounds for animspeed between 0 and 10
 	if( anm_speed < 0 ) {
 		anm_speed = 0;
 	}
@@ -437,13 +481,9 @@ bool libwyv_command_animspeed(bool testConds, bool runActions) {
 		anm_speed = 10;
 	}
 
-	UnitGroupLoopBegin(g);
-	while(!UnitGroupLoopDone()) {
-		ActorSend( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), libNtve_gf_AnimSetTimeScaleGlobal(anm_speed) );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@animspeed", libwyv_player[EventPlayer()].chat_msg);
-		UnitGroupLoopStep();
-	}
-	UnitGroupLoopEnd();
+	// apply the animspeed
+	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@animspeed",
+						  libNtve_gf_AnimSetTimeScaleGlobal(anm_speed));
 
 	return true;
 }
@@ -454,27 +494,40 @@ bool libwyv_command_animspeed(bool testConds, bool runActions) {
 // (note: movement removes these rotations,
 // so only really useful for static props)
 bool libwyv_command_rotate(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	fixed yaw = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) );
-	fixed pitch = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 3) );
-	fixed roll = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 4) );
+	fixed yaw;
+	fixed pitch;
+	fixed roll;
+	fixed forwardX;
+	fixed forwardY;
+	fixed forwardZ;
+	fixed upX;
+	fixed upY;
+	fixed upZ;
+	int param_offset = 0;
+	string target = LIBWYV_ACTOR_REF_MAIN;
 
-	fixed forwardX = Sin(yaw);
-	fixed forwardY = -Sin(pitch) * Cos(yaw);
-	fixed forwardZ = Cos(pitch) * Cos(yaw);
-
-	fixed upX = -Cos(yaw) * Sin(roll);
-	fixed upY = -Sin(pitch) * Sin(yaw) * Sin(roll) + Cos(pitch) * Cos(roll);
-	fixed upZ = Cos(pitch) * Sin(yaw) * Sin(roll) + Sin(pitch) * Cos(roll);
-
-	UnitGroupLoopBegin(g);
-	while(!UnitGroupLoopDone()) {
-		ActorSend( libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), libNtve_gf_SetRotation(forwardX, forwardY, forwardZ, upX, upY, upZ) );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@rotate", libwyv_player[EventPlayer()].chat_msg);
-		UnitGroupLoopStep();
+	// get actor reference target
+	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
+		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+		param_offset = 1;
 	}
-	UnitGroupLoopEnd();
 
+	// calculate rotation vector parameters
+	yaw = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset) );
+	pitch = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset) );
+	roll = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 4 + param_offset) );
+
+	forwardX = Sin(yaw);
+	forwardY = -Sin(pitch) * Cos(yaw);
+	forwardZ = Cos(pitch) * Cos(yaw);
+
+	upX = -Cos(yaw) * Sin(roll);
+	upY = -Sin(pitch) * Sin(yaw) * Sin(roll) + Cos(pitch) * Cos(roll);
+	upZ = Cos(pitch) * Sin(yaw) * Sin(roll) + Sin(pitch) * Cos(roll);
+
+	// apply the rotation actor msgs
+	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@rotate",
+						  libNtve_gf_SetRotation(forwardX, forwardY, forwardZ, upX, upY, upZ));
 	return true;
 }
 
@@ -484,20 +537,24 @@ bool libwyv_command_rotate(bool testConds, bool runActions) {
 // by default, turns statbars off.
 // turns on if user specifies by "@statbars on"
 bool libwyv_command_statbars(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	bool state = false;
+	string state = "";
+	int param_offset = 0;
+	string target = LIBWYV_ACTOR_REF_MAIN;
 
-	if(StringEqual(StringWord(libwyv_player[EventPlayer()].chat_msg, 2), "on", false)) {
-		state = true;
+	// get actor reference target
+	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
+		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+		param_offset = 1;
 	}
 
-	UnitGroupLoopBegin(g);
-	while(!UnitGroupLoopDone()) {
-		UnitSetState(UnitGroupLoopCurrent(), c_unitStateStatusBar, state);
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@statbars", libwyv_player[EventPlayer()].chat_msg);
-		UnitGroupLoopStep();
+	// get statbars state ("on" -> turn on, anything else turns off)
+	if(StringEqual(StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset), "on", false)) {
+		state = " 1"; // 1 == on
 	}
-	UnitGroupLoopEnd();
+
+	// apply the statbars actor msgs
+	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@statbars",
+						  "SetShowStatusBar" + state);
 	return true;
 }
 
@@ -682,7 +739,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	}
 
 	// DEBUG: prints out actor message created
-	 libwyv_print_success("TEST: ACTORMSG = " + "\"" + actormsg + "\"", EventPlayer());
+	// libwyv_print_success("TEST: ACTORMSG = " + "\"" + actormsg + "\"", EventPlayer());
 
 	// apply attach actor msg to units
 	if( StringSub(target, 1, 2) == "->" ) {

@@ -466,10 +466,10 @@ void libwyv_unit_cache_update(unit subject, string command, string user_command)
 			return;
 		}
 	}
-	else if(command == "@modelswap") {
-		if(UnitGetCustomValue(subject, LIBWYV_UNIT_INDEX_FLAG_MS) != 1) {
+	else if(command == "@modelswap") { // special case: allow for 2 instances, needed for modelers
+		if(UnitGetCustomValue(subject, LIBWYV_UNIT_INDEX_FLAG_MS) != 2) {
 			libwyv_unit_cache_update_add(subject, unit_id, user_command);
-			UnitSetCustomValue(subject, LIBWYV_UNIT_INDEX_FLAG_MS, 1);
+			UnitSetCustomValue(subject, LIBWYV_UNIT_INDEX_FLAG_MS, UnitGetCustomValue(subject, LIBWYV_UNIT_INDEX_FLAG_MS) + 1);
 			return;
 		}
 		else {
