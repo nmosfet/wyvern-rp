@@ -10,7 +10,7 @@ include "wyvern/engine/engine.galaxy"
 include "wyvern/commands/commands.galaxy"
 
 // welcome message
-const string LIBWYV_SPLASH_MESSAGE = "Welcome to Wyvern Roleplay Engine, the successor to the Cortex Roleplay Engine. This is still in alpha, so there are a lot of features still being added. Type \"\\commands\" to get started!";
+const string LIBWYV_SPLASH_MESSAGE = "Welcome to Wyvern Roleplay Engine. This is still in beta, so there are a lot of features still being added. Type \">commands\" to get started!";
 
 void libwyv_initialize() {
 	libwyv_engine_initialize();

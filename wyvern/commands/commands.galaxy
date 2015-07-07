@@ -17,33 +17,33 @@ include "wyvern/commands/region_commands.galaxy"
 void libwyv_commands_initialize() {
 
 	// general commands
-	libwyv_chat_command_create("\\info", "libwyv_command_info");
-	libwyv_chat_command_create("\\commands", "libwyv_command_list_commands");
-	libwyv_chat_command_create("\\players", "libwyv_command_players");
-	libwyv_chat_command_create("\\gamesetup", "libwyv_command_gamesetup");
-	libwyv_chat_command_create("\\control", "libwyv_command_control");
-	libwyv_chat_command_create("\\uncontrol", "libwyv_command_uncontrol");
-	libwyv_chat_command_create("\\ally", "libwyv_command_ally");
-	libwyv_chat_command_create("\\unally", "libwyv_command_unally");
-	libwyv_chat_command_create("\\remove", "libwyv_command_remove_player");
-	libwyv_chat_command_create("\\search", "libwyv_command_search");
-	libwyv_chat_command_create("\\replace", "libwyv_command_replace");
-	libwyv_chat_command_create("\\minerals", "libwyv_command_minerals");
-	libwyv_chat_command_create("\\gas", "libwyv_command_gas");
-	libwyv_chat_command_create("\\terrazine", "libwyv_command_terrazine");
-	libwyv_chat_command_create("\\supply", "libwyv_command_supply");
-	libwyv_chat_command_create("\\zoom", "libwyv_command_zoom");
-	libwyv_chat_command_create("\\light", "libwyv_command_light");
-	libwyv_chat_command_create("\\blacklist", "libwyv_command_blacklist");
+	libwyv_chat_command_create(">info", "libwyv_command_info");
+	libwyv_chat_command_create(">commands", "libwyv_command_list_commands");
+	libwyv_chat_command_create(">players", "libwyv_command_players");
+	libwyv_chat_command_create(">gamesetup", "libwyv_command_gamesetup");
+	libwyv_chat_command_create(">control", "libwyv_command_control");
+	libwyv_chat_command_create(">uncontrol", "libwyv_command_uncontrol");
+	libwyv_chat_command_create(">ally", "libwyv_command_ally");
+	libwyv_chat_command_create(">unally", "libwyv_command_unally");
+	libwyv_chat_command_create(">remove", "libwyv_command_remove_player");
+	libwyv_chat_command_create(">search", "libwyv_command_search");
+	libwyv_chat_command_create(">replace", "libwyv_command_replace");
+	libwyv_chat_command_create(">minerals", "libwyv_command_minerals");
+	libwyv_chat_command_create(">gas", "libwyv_command_gas");
+	libwyv_chat_command_create(">terrazine", "libwyv_command_terrazine");
+	libwyv_chat_command_create(">supply", "libwyv_command_supply");
+	libwyv_chat_command_create(">zoom", "libwyv_command_zoom");
+	libwyv_chat_command_create(">light", "libwyv_command_light");
+	libwyv_chat_command_create(">blacklist", "libwyv_command_blacklist");
 
 	// admin commands
-	libwyv_chat_command_create("\\ban", "libwyv_command_ban");
-	libwyv_chat_command_create("\\disable", "libwyv_command_disable");
-	libwyv_chat_command_create("\\enable", "libwyv_command_enable");
-	libwyv_chat_command_create("\\mute", "libwyv_command_mute");
-	libwyv_chat_command_create("\\unmute", "libwyv_command_unmute");
-	libwyv_chat_command_create("\\promote", "libwyv_command_promote");
-	libwyv_chat_command_create("\\demote", "libwyv_command_demote");
+	libwyv_chat_command_create(">ban", "libwyv_command_ban");
+	libwyv_chat_command_create(">disable", "libwyv_command_disable");
+	libwyv_chat_command_create(">enable", "libwyv_command_enable");
+	libwyv_chat_command_create(">mute", "libwyv_command_mute");
+	libwyv_chat_command_create(">unmute", "libwyv_command_unmute");
+	libwyv_chat_command_create(">promote", "libwyv_command_promote");
+	libwyv_chat_command_create(">demote", "libwyv_command_demote");
 
 	// spawn command
 	libwyv_chat_command_create("@spawn", "libwyv_command_spawn");
@@ -93,6 +93,8 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create("@state", "libwyv_command_state");
 
 	// unit visual (actor) commands
+	libwyv_chat_command_create("@actormsg", "libwyv_command_actormessage");
+	libwyv_chat_command_create("@actoralias", "libwyv_command_actoralias");
 	libwyv_chat_command_create("@scale", "libwyv_command_scale");
 	libwyv_chat_command_create("@tint", "libwyv_command_tint");
 	libwyv_chat_command_create("@modelswap", "libwyv_command_modelswap");
@@ -100,11 +102,10 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create("@animspeed", "libwyv_command_animspeed");
 	libwyv_chat_command_create("@rotate", "libwyv_command_rotate");
 	libwyv_chat_command_create("@statbars", "libwyv_command_statbars");
-	libwyv_chat_command_create("@actormsg", "libwyv_command_actormessage");
 	libwyv_chat_command_create("@attach", "libwyv_command_attach");
 
 	// chat commands
-	libwyv_chat_command_create("\\narrate", "libwyv_command_narrate");
+	libwyv_chat_command_create(">narrate", "libwyv_command_narrate");
 	libwyv_chat_command_create("@say", "libwyv_command_say");
 	libwyv_chat_command_create("@setname", "libwyv_command_setname");
 	libwyv_chat_command_create("@setnamecolor", "libwyv_command_setnamecolor");

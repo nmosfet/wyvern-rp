@@ -528,7 +528,8 @@ void libwyv_unit_cache_update(unit subject, string command, string user_command)
 			 command == "@addweapon" ||
 			 command == "@removeweapon" ||
 			 command == "@effect" ||
-			 command == "@state"
+			 command == "@state" ||
+			 command == "@actoralias"
 			 ) {
 		libwyv_unit_cache_update_add(subject, unit_id, user_command);
 		return;
