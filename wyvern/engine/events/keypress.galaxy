@@ -11,6 +11,14 @@ bool libwyv_key_pressed_down(bool testConds, bool runActions) {
 	if( EventKeyPressed() == c_keyControl ) {
 		libwyv_player[EventPlayer()].key_ctrl = true;
 	}
+	// [Esc] key used to cancel spawn placing (if occuring)
+	else if( EventKeyPressed() == c_keyEscape ) {
+		if( libwyv_player[EventPlayer()].is_placing_unit ) {
+			libwyv_player[EventPlayer()].is_placing_unit = false;
+			UnitRemove(libwyv_player[EventPlayer()].spawn_splat);
+			UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, true);
+		}
+	}
 
 	return true;
 }

@@ -15,7 +15,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 	int count = StringToInt( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) );
 	string type = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
 	region location = null;
-	int player = EventPlayer(); 
+	int player = EventPlayer();
 	string parameter; 	// used for parsing a location or player parameter
 
 	// if no parameters specified, check last instance and try to repeat
@@ -27,13 +27,13 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 			if( libwyv_player[EventPlayer()].spawn_instance_location != null ) {
 				spawn_point = RegionGetCenter( libwyv_player[EventPlayer()].spawn_instance_location );
 			}
-			
+
 			libwyv_player[EventPlayer()].context = UnitGroupEmpty();
 			while (count > 0) {
 				libwyv_unit_create(type, player, spawn_point, 270.0);
 				count -= 1;
 			}
-			
+
 			return true;
 		}
 		else {
@@ -41,14 +41,14 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 			return false;
 		}
 	}
-	
+
 	// if count is 0, try checking 3rd index, swap unit type to 2nd index
 	// (this allows either @spawn # unit or @spawn unit #)
 	if( count == 0 ) {
 		count = StringToInt( StringWord(libwyv_player[EventPlayer()].chat_msg, 3) );
 		type = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
 	}
-	
+
 	// get unit type
 	if( type == "" ) {
 		libwyv_print_error("INVALID UNIT TYPE", EventPlayer());
@@ -62,18 +62,18 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 			return false;
 		}
 	}
-	
+
 	// if count is <= 0, then turn on mouse-click spawning
 	if( count <= 0 ) {
-		libwyv_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [Right Mouse] to cancel)", EventPlayer());
+		libwyv_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel)", EventPlayer());
 		libwyv_spawn_create_splat(type, EventPlayer());
 		libwyv_player[EventPlayer()].is_placing_unit = true;
 		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);
 		return true;
 	}
-	
+
 	// otherwise spawn a number of units:
-	
+
 	// check if a player or region is specified (4th and 5th index)
 	// -> region specified by "#[name]"
 	// -> player specified by "@[player-color]"
@@ -118,20 +118,20 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 				libwyv_print_error("Invalid player color, defaulting to self", EventPlayer() );
 			}
 		}
-	}	
+	}
 
 	// ensure spawn instance count is less than max count in settings
 	// TEMPORARY: until better spawn throttling is implemented
 	if( count > libwyv_settings.max_spawn_count ) {
 		count = libwyv_settings.max_spawn_count;
 	}
-	
+
 	// set player spawn instance (before spawning so count is preserved)
 	libwyv_player[EventPlayer()].spawn_instance_type = type;
 	libwyv_player[EventPlayer()].spawn_instance_count = count;
 	libwyv_player[EventPlayer()].spawn_instance_player = player;
 	libwyv_player[EventPlayer()].spawn_instance_location = location;
-	
+
 	// make spawned units
 	libwyv_player[EventPlayer()].context = UnitGroupEmpty();
 	while (count > 0) {

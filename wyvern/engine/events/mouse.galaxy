@@ -37,14 +37,10 @@ bool librtpr_mouse_left_clicked_down(bool testConds, bool runActions) {
 	return true;
 }
 
+// librtpr_mouse_right_clicked_down
+// =======================
+// currently not in use, kept because likely will be used in future
 bool librtpr_mouse_right_clicked_down(bool testConds, bool runActions) {
-	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
-
-	if( libwyv_player[EventPlayer()].is_placing_unit ) {
-		libwyv_player[EventPlayer()].is_placing_unit = false;
-		UnitRemove(libwyv_player[EventPlayer()].spawn_splat);
-		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, true);
-	}
-
+	//libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
 	return true;
 }

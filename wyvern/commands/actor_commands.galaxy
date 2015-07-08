@@ -234,13 +234,13 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 	string paramAlpha;
 	string paramHDR;
 	string paramT;
-
-	int red;
-	int green;
-	int blue;
-	fixed alpha;
-	fixed hdr;
-	fixed duration;
+	// default parameters for @tint without any inputs are below
+	int red = 255;
+	int green = 255;
+	int blue = 255;
+	fixed alpha = 1.0;
+	fixed hdr = 1.0;
+	fixed duration = 0;
 
 	unitgroup g = libwyv_player[EventPlayer()].context;
 	int param_offset = 0;
@@ -260,53 +260,52 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 	paramT = StringWord(libwyv_player[EventPlayer()].chat_msg, 7 + param_offset);
 
 	// get red input
-	if( StringContains(paramR, "%", c_stringEnd, false) ) {
-		paramR = StringSub(paramR, 1, StringLength(paramR)-1);
-		red = FixedToInt( 255.0 * StringToFixed(paramR)/100.0 );
-	} else {
-		red = StringToInt(paramR);
+	if( paramR != "" ) {
+		if( StringContains(paramR, "%", c_stringEnd, false) ) {
+			paramR = StringSub(paramR, 1, StringLength(paramR)-1);
+			red = FixedToInt( 255.0 * StringToFixed(paramR)/100.0 );
+		} else {
+			red = StringToInt(paramR);
+		}
 	}
 
 	// get green input
-	if( StringContains(paramG, "%", c_stringEnd, false) ) {
-		paramG = StringSub(paramG, 1, StringLength(paramG)-1);
-		green = FixedToInt( 255.0 * StringToFixed(paramG)/100.0 );
-	} else {
-		green = StringToInt(paramG);
+	if( paramG != "" ) {
+		if( StringContains(paramG, "%", c_stringEnd, false) ) {
+			paramG = StringSub(paramG, 1, StringLength(paramG)-1);
+			green = FixedToInt( 255.0 * StringToFixed(paramG)/100.0 );
+		} else {
+			green = StringToInt(paramG);
+		}
 	}
 
 	// get blue input
-	if( StringContains(paramB, "%", c_stringEnd, false) ) {
-		paramB = StringSub(paramB, 1, StringLength(paramB)-1);
-		blue = FixedToInt( 255.0 * StringToFixed(paramB)/100.0 );
-	} else {
-		blue = StringToInt(paramB);
+	if( paramB != "" ) {
+		if( StringContains(paramB, "%", c_stringEnd, false) ) {
+			paramB = StringSub(paramB, 1, StringLength(paramB)-1);
+			blue = FixedToInt( 255.0 * StringToFixed(paramB)/100.0 );
+		} else {
+			blue = StringToInt(paramB);
+		}
 	}
 
 	// get alpha (opacity), from 0 to 1
-	if( paramAlpha == "" ) { // Unspecified, default to 1.0
-		alpha = 1.0;
-	}
-	else if( StringContains(paramAlpha, "%", c_stringEnd, false) ) {
-		paramAlpha = StringSub(paramAlpha, 1, StringLength(paramAlpha)-1);
-		alpha = StringToFixed(paramAlpha)/100.0;
-	} else {
-		alpha = StringToFixed(paramAlpha);
+	if( paramAlpha != "" ) {
+		if( StringContains(paramAlpha, "%", c_stringEnd, false) ) {
+			paramAlpha = StringSub(paramAlpha, 1, StringLength(paramAlpha)-1);
+			alpha = StringToFixed(paramAlpha)/100.0;
+		} else {
+			alpha = StringToFixed(paramAlpha);
+		}
 	}
 
 	// get HDR
-	if( paramHDR == "" ) { // Unspecified, default to 1.0
-		hdr = 1.0;
-	}
-	else {
+	if( paramHDR != "" ) {
 		hdr = StringToFixed(paramHDR);
 	}
 
 	// get blend time
-	if( paramT == "" ) { // Unspecified, default to 0
-		duration = 0;
-	}
-	else {
+	if( paramT != "" ) {
 		duration = StringToFixed(paramT);
 	}
 
@@ -319,7 +318,7 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 						"SetTintColor {" + IntToString(red) + "," + IntToString(green) + "," + IntToString(blue) + " " +
 						FixedToString(hdr, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
 			ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target,
-						"SetOpacity {" + FixedToString(alpha, c_fixedPrecisionAny) + "} {" + "0 }");
+						"SetOpacity {" + FixedToString(alpha, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
 			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@tint", libwyv_player[EventPlayer()].chat_msg);
 			UnitGroupLoopStep();
 		}
@@ -333,7 +332,7 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 						"SetTintColor {" + IntToString(red) + "," + IntToString(green) + "," + IntToString(blue) + " " +
 						FixedToString(hdr, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
 			ActorSend(ActorFrom(target),
-						"SetOpacity {" + FixedToString(alpha, c_fixedPrecisionAny) + "} {" + "0 }");
+						"SetOpacity {" + FixedToString(alpha, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
 			UnitGroupLoopStep();
 		}
 		UnitGroupLoopEnd();
