@@ -17,6 +17,7 @@
 bool libwyv_unit_death_cleanup(bool testConds, bool runActions) {
 	int waygate_dialog = FixedToInt( UnitGetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE_DIALOG) );
 	string rgn_name;
+	int i;
 
 	// remove data table data (see unit.galaxy)
 	libwyv_unit_data_remove(EventUnit());
@@ -27,6 +28,14 @@ bool libwyv_unit_death_cleanup(bool testConds, bool runActions) {
 		// anchor dialog to position where unit died with a new unit
 		UnitCreate(1, LIBWYV_WAYGATE_DIALOG_ANCHOR_UNIT, c_unitCreateIgnorePlacement, 0, UnitGetPosition(EventUnit()), 270.0);
 		DataTableSetUnit(true, LIBWYV_WAYGATE_ANCHOR_DATA_TABLE_IDENTIFIER + " " + rgn_name, UnitLastCreated());
+
+		//ActorSend(libNtve_gf_MainActorofUnit(UnitLastCreated()), "SetOpacity {0.1}"); // set opacity to hide
+		// hide the beacons for all players
+		for( i = 1; i < LIBWYV_MAX_PLAYERS; i += 1 ) {
+			ActorSend(libNtve_gf_MainActorofUnit(UnitLastCreated()), "SetFilterPlayers " + IntToString(i));
+		}
+		UnitSetCustomValue(UnitLastCreated(), LIBWYV_UNIT_INDEX_WAYGATE_ANCHOR, 1.0);
+
 		DialogSetPositionRelativeToUnit(waygate_dialog, UnitLastCreated(), "Ref_Overhead", -60, 0);
 	}
 

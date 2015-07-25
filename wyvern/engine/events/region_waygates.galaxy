@@ -16,12 +16,14 @@
 bool libwyv_region_entered(bool testConds, bool runActions) {
 	int waygate_id = 1;
 	region r;
-	string s;
+	string rgn_name;
+	unitgroup units_in_rgn;
+	int nalive;
 
 	// get the region from data table
 	while( waygate_id < libwyv_region_waygate_counter ) {
-		s = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
-		r = DataTableGetRegion(true, s);
+		rgn_name = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
+		r = DataTableGetRegion(true, rgn_name);
 		if( r == EventUnitRegion() ) {
 			break;
 		}
@@ -30,17 +32,29 @@ bool libwyv_region_entered(bool testConds, bool runActions) {
 
 		// reached max waygate counters: not in a waygate
 		if( waygate_id == libwyv_region_waygate_counter ) {
-			return true;
+			return false;
 		}
 	}
 
 	// check if entering or leaving region
-	if( libNtve_gf_UnitInRegion( EventUnit(), EventUnitRegion() ) ) {
-		// Do we have a linked region? (prolly, if we're here!)
-		waygate_id = DataTableGetInt(true, LIBWYV_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + s );
+	if( libNtve_gf_UnitInRegion(EventUnit(), EventUnitRegion()) ) { // unit entered region
+		//libwyv_print_output("Region entered", UnitGetOwner(EventUnit()) );
+
+		// get linked region
+		waygate_id = DataTableGetInt(true, LIBWYV_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name );
 		UnitSetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE, IntToFixed(waygate_id));
+		//libwyv_print_output(FixedToString(UnitGetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE), 1), UnitGetOwner(EventUnit()) );
+
+		// turn on dialog "enter" button for region
+		DialogSetVisible(DataTableGetDialog(true, LIBWYV_WAYGATE_DIALOG_DATA_TABLE_IDENTIFIER + " " + rgn_name), PlayerGroupSingle(UnitGetOwner(EventUnit())), true);
 	} else { // leaving this region.
 		UnitSetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE, 0);
+
+		//units_in_rgn = UnitGroup(null, EventPlayer(), r, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+		//nalive = UnitGroupCount(units_in_rgn, c_unitCountAlive);
+		//if( nalive > 0 ) {
+		//	DialogSetVisible(DataTableGetDialog(true, LIBWYV_WAYGATE_DIALOG_DATA_TABLE_IDENTIFIER + " " + rgn_name), PlayerGroupSingle(UnitGetOwner(EventUnit())), true);
+		//}
 	}
 	return true;
 }
@@ -56,48 +70,46 @@ bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
 	unit u;
 	int waygate_id;
 	int player = 1;
+	string rgn_name;
+	region r;
+	unitgroup units_in_rgn;
 
-	while( player < LIBWYV_MAX_PLAYERS ) {
-		if( libwyv_player[player].waygate_dialog != 0 ) {
-			DialogDestroy(libwyv_player[player].waygate_dialog);
-			libwyv_player[player].waygate_dialog = 0;
-		}
-
-		g = UnitGroupSelected(player);
-		nalive = UnitGroupCount(g, c_unitCountAlive);
-		if(g == null || nalive == 0 ) {
-			player += 1;
+	// loop over all waygates and their regions
+	waygate_id = 1;
+	while( waygate_id < libwyv_region_waygate_counter ) {
+		// get waygate region (if it exists)
+		if( !DataTableValueExists(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id)) ) {
+			waygate_id += 1;
 			continue;
 		}
 
-		index = 1;
-		while( index <= nalive ) {
-			u = UnitGroupUnit(g, index);
-			// Check if this unit isn't a structure
-			if( UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) ) {
-				index += 1;
+		rgn_name = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
+		r = DataTableGetRegion(true, rgn_name);
+
+		// check if players have non-structure units alive inside the region
+		player = 1;
+		while( player < LIBWYV_MAX_PLAYERS ) {
+			if( PlayerType(player) != c_playerTypeUser || PlayerStatus(player) != c_playerStatusActive ) {
+				player += 1;
 				continue;
 			}
 
-			waygate_id = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE));
-			if( waygate_id == 0 ) {
-				index += 1;
-				continue;
-			}
-			else if( DataTableValueExists(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString( waygate_id )) ) {
-				// Draw our dialogs!
-				libwyv_player[player].waygate_dialog = libwyv_create_dialog(250, 100, c_anchorRight, 25, 120);
-				DialogSetVisible(libwyv_player[player].waygate_dialog, PlayerGroupSingle(player), true);
-				libwyv_player[player].waygate_dialog_control_btn = libwyv_create_dialog_control_btn(libwyv_player[player].waygate_dialog, 220, 70, c_anchorCenter, 0, 0, "Click to teleport these unit(s).", "Enter");
-				DialogControlSetVisible( libwyv_player[player].waygate_dialog_control_btn, PlayerGroupSingle(player), true);
-				break;
+			// get # of units alive in region for given player. if 0, turn off the
+			// waygate dialog for the player.
+			units_in_rgn = UnitGroup(null, player, r, UnitFilter(0, 0, (1 << c_targetFilterMissile), (1 << (c_targetFilterDead - 32)) | (1 << (c_targetFilterHidden - 32))), 0);
+			if( UnitGroupCount(units_in_rgn, c_unitCountAlive) == 0 ) {
+				DialogSetVisible(DataTableGetDialog(true, LIBWYV_WAYGATE_DIALOG_DATA_TABLE_IDENTIFIER + " " + rgn_name), PlayerGroupSingle(player), false);
 			}
 
-			index += 1;
+			player += 1;
 		}
 
-		player += 1;
+
+		// if yes, continue
+		// else
+		waygate_id += 1;
 	}
+
 	return true;
 }
 
@@ -106,7 +118,7 @@ bool libwyv_waygate_dialog_manager(bool testConds, bool runActions) {
 // runs whenever a dialog control is clicked
 // if the control is the waygate dialog, warp
 // any selected units between waygate regions
-bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
+bool libwyv_waygate_dialog_clicked_old(bool testConds, bool runActions) {
 	unitgroup g;
 	int nalive;	// number of units alive in g
 	int index = 1;
@@ -137,6 +149,56 @@ bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
 						r = DataTableGetRegion(true, s);
 						if( r != null ) { // move units to linked region
 							UnitSetPosition( u, RegionGetCenter( r ),false );
+						}
+					}
+				}
+
+				index += 1;
+			}
+		}
+	}
+
+	return true;
+}
+
+// libwyv_waygate_dialog_clicked
+// ===========================
+// runs whenever a dialog control is clicked
+// if the control is the waygate dialog, warp
+// any selected units between waygate regions
+bool libwyv_waygate_dialog_clicked(bool testConds, bool runActions) {
+	unitgroup g;
+	int nalive;	// number of units alive in g
+	int index = 1;
+	int waygate_id;
+	unit u;
+	region r;
+	string s;
+
+	// Waygate teleport system
+	if( DataTableValueExists(true, LIBWYV_WAYGATE_DIALOG_REG_DATA_TABLE_IDENTIFIER + " " + IntToString(DialogControlGetDialog(EventDialogControl()) ) ) ) {
+		g = UnitGroupSelected(EventPlayer());
+		g = libwyv_enforce_unit_permissions(g, EventPlayer());
+		nalive = UnitGroupCount(g, c_unitCountAlive);
+
+		if( nalive > 0 ) {
+			while( index <= nalive ) {
+				u = UnitGroupUnit(g, index);
+				if( UnitTypeTestAttribute(UnitGetType(u), c_unitAttributeStructure) ) {
+					index += 1;
+					continue;
+				}
+
+				waygate_id = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE));
+
+				if( waygate_id != 0 ) { // Lookup this region by waygate id
+					s = DataTableGetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(waygate_id));
+					if( s != "" ) {
+						r = DataTableGetRegion(true, s);
+						if( r != null ) { // move units to linked region
+							UnitSetPosition( u, RegionGetCenter( r ), false );
+							//libwyv_print_output("Leaving: " + FixedToString(UnitGetCustomValue(EventUnit(), LIBWYV_UNIT_INDEX_WAYGATE), 1), UnitGetOwner(u) );
+
 						}
 					}
 				}

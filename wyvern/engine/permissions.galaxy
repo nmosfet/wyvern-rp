@@ -25,15 +25,15 @@ const string LIBWYV_SUPERADMIN = "1-S2-1-698512 1-S2-1-938669";
 // libwyv_enforce_unit_permissions
 // ====================
 // applies permissions on a unitgroup:
-// -> player can only apply commands on units whose 
+// -> player can only apply commands on units whose
 //    owner is of lesser permissions level
 unitgroup libwyv_enforce_unit_permissions(unitgroup g, int player) {
 	unit u;
 	int count = UnitGroupCount(g, c_unitCountAlive);
-	
+
 	while(count) {
         u = UnitGroupUnit(g, count);
-		if( UnitGetOwner(u) != player && 
+		if( UnitGetOwner(u) != player &&
 			PlayerType(UnitGetOwner(u)) != c_playerTypeNone &&
 			PlayerType(UnitGetOwner(u)) != c_playerTypeComputer &&
 			PlayerType(UnitGetOwner(u)) != c_playerTypeHostile &&
@@ -41,9 +41,15 @@ unitgroup libwyv_enforce_unit_permissions(unitgroup g, int player) {
 			libwyv_player[player].permission_level <= libwyv_player[UnitGetOwner(u)].permission_level
 		) {
 			UnitGroupRemove(g, u);
-		}	
+		}
+		else if ( // LIBWYV_UNIT_INDEX_WAYGATE_ANCHOR = 16, magic number temporary
+			FixedToInt(UnitGetCustomValue(u, 17)) != 0 &&
+			PlayerType(UnitGetOwner(u)) == c_playerTypeNeutral
+		) {
+			UnitGroupRemove(g, u);
+		}
 		count -= 1;
 	}
-	
+
 	return g;
 }

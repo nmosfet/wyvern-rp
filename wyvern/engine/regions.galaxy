@@ -50,6 +50,7 @@ void libwyv_create_waygate_dialog(string rgn_name) {
 	point p = RegionGetCenter( DataTableGetRegion(true, rgn_name) );
 	int dialog = libwyv_create_dialog(120, 60, 0, 0, 0); // create the waygate dialog
 	unit anchor;
+	int i = 1;
 	libwyv_create_dialog_control_btn(dialog, 120, 50, c_anchorCenter, 0, 0, "Click to teleport these unit(s).", "Enter");
 	DataTableSetDialog(true, LIBWYV_WAYGATE_DIALOG_DATA_TABLE_IDENTIFIER + " " + rgn_name, dialog);
 	DataTableSetString(true, LIBWYV_WAYGATE_DIALOG_REG_DATA_TABLE_IDENTIFIER + " " + IntToString(dialog), rgn_name);
@@ -70,9 +71,16 @@ void libwyv_create_waygate_dialog(string rgn_name) {
 	}
 	// else, create a static unit anchor on ground
 	UnitCreate(1, LIBWYV_WAYGATE_DIALOG_ANCHOR_UNIT, c_unitCreateIgnorePlacement, 0, p, 270.0);
+	//ActorSend(libNtve_gf_MainActorofUnit(UnitLastCreated()), "SetOpacity {0.1}"); // set opacity to hide
+	// hide the beacons for all players
+	for( i = 1; i < LIBWYV_MAX_PLAYERS; i += 1 ) {
+		ActorSend(libNtve_gf_MainActorofUnit(UnitLastCreated()), "SetFilterPlayers " + IntToString(i));
+	}
+	UnitSetCustomValue(UnitLastCreated(), LIBWYV_UNIT_INDEX_WAYGATE_ANCHOR, 1.0);
 	DataTableSetUnit(true, LIBWYV_WAYGATE_ANCHOR_DATA_TABLE_IDENTIFIER + " " + rgn_name, UnitLastCreated());
+
 	DialogSetPositionRelativeToUnit(dialog, UnitLastCreated(), "Ref_Overhead", -60, 0);
-	DialogSetVisible(dialog, PlayerGroupAll(), true);
+	//DialogSetVisible(dialog, PlayerGroupAll(), true);
 }
 
 // libwyv_link_regions
@@ -81,7 +89,7 @@ void libwyv_create_waygate_dialog(string rgn_name) {
 // -> [region_name_from_ID] (string) : links a waygate by ID to a region name (for quick region check via loop)
 // -> [name_to_linked_region_id] (int) : stores the [region_name_from_ID] (an integer ID) of the linked region
 // (presumes input region names already in proper format with libwyv_region_get_name)
-void libwyv_link_regions(string rgn_name_1, string rgn_name_2, int player) {
+void libwyv_link_regions(string rgn_name_1, string rgn_name_2) {
 	// create a link from region_1 to region_2
 	DataTableSetString(true, LIBWYV_WAYGATE_DATA_TABLE_IDENTIFIER + " " + IntToString(libwyv_region_waygate_counter), rgn_name_1);
 	DataTableSetInt(true, LIBWYV_REGION_LINK_DATA_TABLE_IDENTIFIER + " " + rgn_name_1, libwyv_region_waygate_counter + 1);

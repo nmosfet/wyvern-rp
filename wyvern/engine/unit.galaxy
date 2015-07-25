@@ -27,6 +27,7 @@ const int LIBWYV_UNIT_INDEX_FLAG_ROTATE = 9;		// flag for @rotate has been used
 
 const int LIBWYV_UNIT_INDEX_WAYGATE = 15;			// region ID for waygates
 const int LIBWYV_UNIT_INDEX_WAYGATE_DIALOG = 16;	// attached waygate dialog ID
+const int LIBWYV_UNIT_INDEX_WAYGATE_ANCHOR = 17;	// flag for unit is waygate anchor
 
 const int LIBWYV_UNIT_INDEX_TEXTTAG = 20;		// flag for text tag set
 

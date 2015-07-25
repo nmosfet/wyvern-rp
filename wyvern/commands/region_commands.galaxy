@@ -156,7 +156,7 @@ bool libwyv_command_region_teleport(bool testConds, bool runActions) {
 	libwyv_region_remove_links(rgn_2_name, EventPlayer());
 
 	// create link between these two regions
-	libwyv_link_regions(rgn_1_name, rgn_2_name, EventPlayer());
+	libwyv_link_regions(rgn_1_name, rgn_2_name);
 
 	t = TriggerCreate("libwyv_region_entered");
 	TriggerAddEventUnitRegion( t, null, rgn_1, true );

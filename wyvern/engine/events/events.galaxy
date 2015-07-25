@@ -30,5 +30,7 @@ void librtpr_events_initialize() {
 
 	// region waygate and waygate dialog events
 	TriggerAddEventTimePeriodic( TriggerCreate("libwyv_waygate_dialog_manager"), 1.0, c_timeGame );
+	//TriggerAddEventDialogControl( TriggerCreate("libwyv_waygate_dialog_clicked_old"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
 	TriggerAddEventDialogControl( TriggerCreate("libwyv_waygate_dialog_clicked"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
+
 }
