@@ -19,15 +19,22 @@ struct libwyv_player_properties {
 
 	// mouse_position
 	// =================
-	// Location of player mouse.
-	point mouse_position;
+	// Location of player mouse
+	point mouse_position;		// x,y position in world
+	point mouse_position_ui;	// x,y position in the game UI
 
-	// key_ctrl
+	// keys + mouse flags
 	// ================
-	// flag for whether control key pressed down:
+	// flags for whether keys/mouse pressed up/down:
 	// false - up
 	// true - down
 	bool key_ctrl;
+	bool key_alt;
+	bool key_shift;
+	bool key_x;
+	bool key_y;
+	bool key_z;
+	bool mouse_right;
 
 	// chat_msg
 	// ================
@@ -75,6 +82,9 @@ struct libwyv_player_properties {
 	// ==============
 	// hovers under cursor for mouse-click @spawn placement
 	unit spawn_splat;
+	fixed spawn_splat_x;	// x scaling
+	fixed spawn_splat_y;	// y scaling
+	fixed spawn_splat_z;	// z scaling
 
 	// spawn instance variables
 	// ============
@@ -85,16 +95,6 @@ struct libwyv_player_properties {
 	int spawn_instance_count;		// # spawned
 	int spawn_instance_player;		// player units spawned for
 	region spawn_instance_location;	// location spawned
-
-	// is_placing_unit
-	// ===============
-	// flag for using _doodad
-	bool is_placing_doodad;
-
-	// doodad_splat
-	// ==============
-	// hovers under cursor for mouse-click _doodad placement
-	actor doodad_splat;
 
 	// bank_storage
 	// ===============
@@ -135,10 +135,10 @@ void libwyv_player_initialize(int player) {
 	libwyv_player[player].bank_storage = BankLoad( LIBWYV_PLAYER_BANK_NAME, player );
 	libwyv_player[player].map_revealer = VisRevealerCreate(player, RegionEntireMap());
 	libwyv_player[player].mouse_position = RegionGetCenter( RegionEntireMap() );
+	libwyv_player[player].mouse_position_ui = Point(0, 0);
 	libwyv_player[player].permission_level = 0;
 
 	libwyv_player[player].spawn_splat = null;
-	libwyv_player[player].doodad_splat = null;
 
 	libwyv_player[player].waygate_dialog = 0;
 

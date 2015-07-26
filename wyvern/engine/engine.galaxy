@@ -108,12 +108,13 @@ void libwyv_engine_initialize() {
 	// intialize engine
 	libwyv_settings_initialize();
 	libwyv_preplaced_unit_initialize();
-	librtpr_events_initialize();
+	libwyv_events_initialize();
 
 	// initialize players
 	while ( player < LIBWYV_MAX_PLAYERS ) {
 		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
 			libwyv_player_initialize(player);
+			libwyv_player_events_initialize(player);
 			libwyv_chat_initialize_player(player);
 
 			// give admin to first active player (assumes player 1 is lobby host and should be default admin)

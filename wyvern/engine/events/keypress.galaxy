@@ -6,7 +6,6 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-
 bool libwyv_key_pressed_down(bool testConds, bool runActions) {
 	if( EventKeyPressed() == c_keyControl ) {
 		libwyv_player[EventPlayer()].key_ctrl = true;
@@ -19,6 +18,21 @@ bool libwyv_key_pressed_down(bool testConds, bool runActions) {
 			UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, true);
 		}
 	}
+	else if( EventKeyPressed() == c_keyAlt ) {
+		libwyv_player[EventPlayer()].key_alt = true;
+	}
+	else if( EventKeyPressed() == c_keyShift ) {
+		libwyv_player[EventPlayer()].key_shift = true;
+	}
+	else if( EventKeyPressed() == c_keyX ) {
+		libwyv_player[EventPlayer()].key_x = true;
+	}
+	else if( EventKeyPressed() == c_keyY ) {
+		libwyv_player[EventPlayer()].key_y = true;
+	}
+	else if( EventKeyPressed() == c_keyZ ) {
+		libwyv_player[EventPlayer()].key_z = true;
+	}
 
 	return true;
 }
@@ -26,6 +40,21 @@ bool libwyv_key_pressed_down(bool testConds, bool runActions) {
 bool libwyv_key_pressed_up(bool testConds, bool runActions) {
 	if( EventKeyPressed() == c_keyControl ) {
 		libwyv_player[EventPlayer()].key_ctrl = false;
+	}
+	else if( EventKeyPressed() == c_keyAlt ) {
+		libwyv_player[EventPlayer()].key_alt = false;
+	}
+	else if( EventKeyPressed() == c_keyShift ) {
+		libwyv_player[EventPlayer()].key_shift = false;
+	}
+	else if( EventKeyPressed() == c_keyX ) {
+		libwyv_player[EventPlayer()].key_x = false;
+	}
+	else if( EventKeyPressed() == c_keyY ) {
+		libwyv_player[EventPlayer()].key_y = false;
+	}
+	else if( EventKeyPressed() == c_keyZ ) {
+		libwyv_player[EventPlayer()].key_z = false;
 	}
 
 	return true;

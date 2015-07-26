@@ -65,10 +65,12 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 
 	// if count is <= 0, then turn on mouse-click spawning
 	if( count <= 0 ) {
-		libwyv_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel)", EventPlayer());
+		libwyv_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel.\n" +
+							"Hold: [Ctrl] to rotate, [Shift] to scale, [Right Mouse] to lock)", EventPlayer());
 		libwyv_spawn_create_splat(type, EventPlayer());
 		libwyv_player[EventPlayer()].is_placing_unit = true;
 		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);
+		UnitClearSelection(EventPlayer());	// deselect player selected units
 		return true;
 	}
 
@@ -135,7 +137,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 	// make spawned units
 	libwyv_player[EventPlayer()].context = UnitGroupEmpty();
 	while (count > 0) {
-		libwyv_unit_create(type, player, spawn_point, 270.0);
+		UnitGroupAddUnitGroup(libwyv_player[player].context, libwyv_unit_create(type, player, spawn_point, 270.0));
 		count -= 1;
 	}
 

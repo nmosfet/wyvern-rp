@@ -34,9 +34,10 @@ const int LIBWYV_UNIT_INDEX_TEXTTAG = 20;		// flag for text tag set
 // Each unit given a unique id. Each time unit created, counter increments
 int libwyv_unit_id_counter = 1;
 
-// prototypes:
+// func prototypes:
 void libwyv_unit_set_id(unit u);
 void libwyv_unit_data_remove(unit u);
+void libwyv_unit_cache_update(unit subject, string command, string user_command);
 
 // libwyv_map_unit_init
 // ====================
@@ -90,7 +91,7 @@ bool libwyv_unit_initialize(bool testConds, bool runActions) {
 // function for creating units, adds unit to player's context
 // only add spawned unit to player's command context, if player not using
 // mouse-click @spawn (all commands directed to spawn splat when using @spawn)
-void libwyv_unit_create(string type, int player, point p, fixed facing) {
+unitgroup libwyv_unit_create(string type, int player, point p, fixed facing) {
 	unitgroup spawned;
 	string splat_unit_id;
 	string cache;
@@ -114,9 +115,8 @@ void libwyv_unit_create(string type, int player, point p, fixed facing) {
 			index += 1;
 		}
 	}
-	else { // if not using mouse-click, add group spawned to player context
-		UnitGroupAdd(libwyv_player[player].context, UnitLastCreated());
-	}
+
+	return spawned;
 }
 
 // libwyv_spawn_create_splat
@@ -131,8 +131,12 @@ void libwyv_spawn_create_splat(string type, int player) {
 		UnitRemove(libwyv_player[player].spawn_splat);
 	}
 
+	// create splat and set player splat state variables
 	UnitCreate(1, type, 0, player, libwyv_player[player].mouse_position, 270.0);
 	libwyv_player[player].spawn_splat = UnitLastCreated();
+	libwyv_player[player].spawn_splat_x = 1;
+	libwyv_player[player].spawn_splat_y = 1;
+	libwyv_player[player].spawn_splat_z = 1;
 
 	// initialize splat unit id/cache
 	// (unit init event does not occurr till function already finished)
@@ -152,6 +156,42 @@ void libwyv_spawn_create_splat(string type, int player) {
 	// set context to spawn splat, so commands applied to it
 	UnitGroupAdd(splat, libwyv_player[player].spawn_splat);
 	libwyv_player[player].context = splat;
+}
+
+
+const fixed LIBWYV_INCR_RATE = 0.01;
+
+// libwyv_spawn_splat_update
+// =====================
+// TODO: allow shift + x, shift + y, shift + z to scale axis components
+// TODO: add [alt] for height shift
+bool libwyv_spawn_splat_update(bool testConds, bool runActions)  {
+	bool scale_incr = true;
+	string event_type = StringWord(EventGenericName(), 1);
+	int player = StringToInt(StringWord(EventGenericName(), 2));
+
+	if( event_type == "EVENT_MOUSEPOS_Y_INC" ) {
+		scale_incr = false;
+	} else if ( event_type == "EVENT_MOUSEPOS_Y_DEC" ) {
+		scale_incr = true;
+	}
+
+	// libwyv_print_output(IntToString(player), 1); // debug
+
+	if( libwyv_player[player].is_placing_unit  ) {
+		// if shift held down and incr is true, scale model
+		if( libwyv_player[player].key_shift ) {
+			if( scale_incr ) {
+				libwyv_player[player].spawn_splat_x += LIBWYV_INCR_RATE;
+			} else { // decrement scale
+				libwyv_player[player].spawn_splat_x -= LIBWYV_INCR_RATE;
+			}
+			ActorSendTo(libNtve_gf_MainActorofUnit(libwyv_player[player].spawn_splat), "::Main", "SetScale " + FixedToString(libwyv_player[player].spawn_splat_x, 2));
+			libwyv_unit_cache_update(libwyv_player[player].spawn_splat, "@scale", "@scale " + FixedToString(libwyv_player[player].spawn_splat_x, 2));
+		}
+	}
+
+	return true;
 }
 
 // libwyv_unit_set_name

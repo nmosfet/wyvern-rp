@@ -6,8 +6,24 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+const string LIBWYV_EVENT_MOUSEPOS_Y_INC = "EVENT_MOUSEPOS_Y_INC";
+const string LIBWYV_EVENT_MOUSEPOS_Y_DEC = "EVENT_MOUSEPOS_Y_DEC";
+
 bool libwyv_mouse_moved(bool testConds, bool runActions) {
+	// update mouse in world position
 	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld());
+
+	// update mouse in UI position, emit signals if the position in
+	// Y plane (mouse up/down) increases or decreases
+	if( EventMouseMovedPosYUI() > PointGetY(libwyv_player[EventPlayer()].mouse_position_ui) ) {
+		TriggerSendEvent(LIBWYV_EVENT_MOUSEPOS_Y_INC + " " + IntToString(EventPlayer()));
+	} else {
+		TriggerSendEvent(LIBWYV_EVENT_MOUSEPOS_Y_DEC + " " + IntToString(EventPlayer()));
+	}
+	libwyv_player[EventPlayer()].mouse_position_ui = Point(EventMouseMovedPosXUI(), EventMouseMovedPosYUI());
+
+	// debug
+	//libwyv_print_output("x,y = " + FixedToString(EventMouseMovedPosXUI(), 1) + "," + FixedToString(EventMouseMovedPosYUI(), 1), EventPlayer());
 
 	// update spawn splat
 	if( libwyv_player[EventPlayer()].is_placing_unit  ) {
@@ -15,13 +31,11 @@ bool libwyv_mouse_moved(bool testConds, bool runActions) {
 		if( libwyv_player[EventPlayer()].key_ctrl ) {
 			libNtve_gf_MakeUnitFacePoint( libwyv_player[EventPlayer()].spawn_splat, libwyv_player[EventPlayer()].mouse_position, 0.0);
 		}
-		else { // else, update splat position
+		// else, update splat position if position not locked
+		else if ( !libwyv_player[EventPlayer()].key_shift && 	// shift key (scale) lock
+				  !libwyv_player[EventPlayer()].mouse_right ) { // right mouse lock
 			UnitSetPosition(libwyv_player[EventPlayer()].spawn_splat, libwyv_player[EventPlayer()].mouse_position, false);
 		}
-	}
-	// TODO: update doodad splat
-	else if( libwyv_player[EventPlayer()].is_placing_doodad ) {
-
 	}
 
 	return true;
@@ -31,16 +45,24 @@ bool librtpr_mouse_left_clicked_down(bool testConds, bool runActions) {
 	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
 
 	if( libwyv_player[EventPlayer()].is_placing_unit ) {
-		libwyv_unit_create( UnitGetType(libwyv_player[EventPlayer()].spawn_splat), EventPlayer(), libwyv_player[EventPlayer()].mouse_position, UnitGetFacing(libwyv_player[EventPlayer()].spawn_splat) );
+		libwyv_unit_create( UnitGetType(libwyv_player[EventPlayer()].spawn_splat),
+							EventPlayer(),
+							UnitGetPosition(libwyv_player[EventPlayer()].spawn_splat),
+							UnitGetFacing(libwyv_player[EventPlayer()].spawn_splat)
+						  );
 	}
 
 	return true;
 }
 
-// librtpr_mouse_right_clicked_down
+// librtpr_mouse_right_clicked_
 // =======================
-// currently not in use, kept because likely will be used in future
+// toggles player right mouse button down/up flag
 bool librtpr_mouse_right_clicked_down(bool testConds, bool runActions) {
-	//libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
+	libwyv_player[EventPlayer()].mouse_right = true;
+	return true;
+}
+bool librtpr_mouse_right_clicked_up(bool testConds, bool runActions) {
+	libwyv_player[EventPlayer()].mouse_right = false;
 	return true;
 }
