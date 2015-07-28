@@ -6,30 +6,41 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+// libwyv_mouse_moved
+// ==================
+// Updates player's mouse position when mouse moves.
+// If player is using mouse-click spawning, updates the spawn splat's
+// properties (position, facing, scale, height, etc...) based on player's
+// mouse movements.
 bool libwyv_mouse_moved(bool testConds, bool runActions) {
 	// update mouse in world position
 	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld());
 
-	// update mouse in UI position, emit signals if the position in
-	// Y plane (mouse up/down) increases or decreases
-	if( EventMouseMovedPosYUI() > PointGetY(libwyv_player[EventPlayer()].mouse_position_ui) ) {
-		TriggerSendEvent(LIBWYV_SIG_MOUSE_Y_INC + " " + IntToString(EventPlayer()));
-	} else {
-		TriggerSendEvent(LIBWYV_SIG_MOUSE_Y_DEC + " " + IntToString(EventPlayer()));
-	}
-	libwyv_player[EventPlayer()].mouse_position_ui = Point(EventMouseMovedPosXUI(), EventMouseMovedPosYUI());
-
-	// debug
-	//libwyv_print_output("x,y = " + FixedToString(EventMouseMovedPosXUI(), 1) + "," + FixedToString(EventMouseMovedPosYUI(), 1), EventPlayer());
-
-	// update spawn splat
-	if( libwyv_player[EventPlayer()].is_placing_unit  ) {
+	// If player mouse-click spawning, perform splat updates:
+	// Y plane (mouse up/down) increases or decreases -> adjust splat properties
+	// note: Y = 0 is at TOP OF SCREEN, so moving mouse down is a Y increase
+	// therefore the scale increment is inverted compared to the Y values
+	if( libwyv_player[EventPlayer()].is_placing_unit ) {
+		// update vertical movement splat properties (scale, height)
+		if( EventMouseMovedPosYUI() > PointGetY(libwyv_player[EventPlayer()].mouse_position_ui) ) {
+			libwyv_spawn_splat_update_props(EventPlayer(), false);
+		} else { // moving up, so scale up
+			libwyv_spawn_splat_update_props(EventPlayer(), true);
+		}
+		// update position and facing angle
 		libwyv_spawn_splat_update_pos();
 	}
+	// update mouse in UI position:
+	libwyv_player[EventPlayer()].mouse_position_ui = Point(EventMouseMovedPosXUI(), EventMouseMovedPosYUI());
 
 	return true;
 }
 
+// librtpr_mouse_left_clicked_down
+// ========================
+// Sets mouse position when player presses left mouse button down.
+// If player is using mouse-click spawning, creates a copy of the spawn splat
+// at the location in the world that was clicked on
 bool librtpr_mouse_left_clicked_down(bool testConds, bool runActions) {
 	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseClickedPosXWorld(), EventMouseClickedPosYWorld());
 

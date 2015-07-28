@@ -21,13 +21,6 @@ include "wyvern/engine/utility/scripts.galaxy"
 // the theme for all dialogs
 include "wyvern/engine/ui_helper.galaxy"
 
-// signals
-// =============
-// Contains definitions for custom event signal string identifiers used
-// for communication between the Events module and event triggers
-// contained in other modules
-include "wyvern/engine/signals.galaxy"
-
 // player
 // =============
 // Contains any important player specific variables during

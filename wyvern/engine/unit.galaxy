@@ -126,6 +126,9 @@ unitgroup libwyv_unit_create(string type, int player, point p, fixed facing) {
 			libwyv_chat_parse( cache, player, spawned );
 			index += 1;
 		}
+
+		// set player owner to the splat's player owner
+		UnitSetOwner(u, UnitGetOwner(libwyv_player[player].spawn_splat), true);
 	}
 
 	return spawned;
@@ -197,48 +200,31 @@ void libwyv_spawn_splat_update_pos() {
 // properties. This function responds to player mouse changes in the Y axis,
 // which is used uniquely for scale and height changing.
 //
-// The "event_types" signals are declared in signals.galaxy
-//
 // TODO: allow shift + x, shift + y, shift + z to scale axis components
-bool libwyv_spawn_splat_update_props(bool testConds, bool runActions)  {
-	bool scale_incr = true;
-	string event_type = StringWord(EventGenericName(), 1);
-	int player = StringToInt(StringWord(EventGenericName(), 2));
-
-	// Y position origin is at TOP OF SCREEN, so Y increase is player
-	// moving mouse down, which is defined as decreasing the splat scale
-	// or height property that is being adjusted
-	if( event_type == LIBWYV_SIG_MOUSE_Y_INC ) { // mouse moving down
-		scale_incr = false;
-	} else if ( event_type == LIBWYV_SIG_MOUSE_Y_DEC ) { // mouse moving up
-		scale_incr = true;
+void libwyv_spawn_splat_update_props(int player, bool scale_incr)  {
+	// if shift held down, scale model with Y mouse movement
+	if( libwyv_player[player].key_shift ) {
+		if( scale_incr ) { // increase size
+			libwyv_player[player].spawn_splat_x += LIBWYV_SPLAT_INCR_RATE;
+		} else { // decrease size
+			libwyv_player[player].spawn_splat_x -= LIBWYV_SPLAT_INCR_RATE;
+		}
+		ActorSendTo(libNtve_gf_MainActorofUnit(libwyv_player[player].spawn_splat), "::Main", "SetScale " + FixedToString(libwyv_player[player].spawn_splat_x, 2));
+		libwyv_unit_cache_update(libwyv_player[player].spawn_splat, "@scale", "@scale " + FixedToString(libwyv_player[player].spawn_splat_x, 2));
 	}
 
-	if( libwyv_player[player].is_placing_unit  ) {
-		// if shift held down, scale model with Y mouse movement
-		if( libwyv_player[player].key_shift ) {
-			if( scale_incr ) { // increase size
-				libwyv_player[player].spawn_splat_x += LIBWYV_SPLAT_INCR_RATE;
-			} else { // decrease size
-				libwyv_player[player].spawn_splat_x -= LIBWYV_SPLAT_INCR_RATE;
-			}
-			ActorSendTo(libNtve_gf_MainActorofUnit(libwyv_player[player].spawn_splat), "::Main", "SetScale " + FixedToString(libwyv_player[player].spawn_splat_x, 2));
-			libwyv_unit_cache_update(libwyv_player[player].spawn_splat, "@scale", "@scale " + FixedToString(libwyv_player[player].spawn_splat_x, 2));
-		}
-
-		// if alt held down, change unit height with Y mouse movement
-		if( libwyv_player[player].key_alt ) {
-			if( scale_incr ) { // move up
-				UnitSetHeight(libwyv_player[player].spawn_splat,
-							  UnitGetHeight(libwyv_player[player].spawn_splat) + LIBWYV_SPLAT_INCR_RATE, 0);
-			} else { // move down
-				UnitSetHeight(libwyv_player[player].spawn_splat,
-							  UnitGetHeight(libwyv_player[player].spawn_splat) - LIBWYV_SPLAT_INCR_RATE, 0);
-			}
+	// if alt held down, change unit height with Y mouse movement
+	if( libwyv_player[player].key_alt ) {
+		if( scale_incr ) { // move up
+			UnitSetHeight(libwyv_player[player].spawn_splat,
+						  UnitGetHeight(libwyv_player[player].spawn_splat) + LIBWYV_SPLAT_INCR_RATE, 0);
+		} else { // move down
+			UnitSetHeight(libwyv_player[player].spawn_splat,
+						  UnitGetHeight(libwyv_player[player].spawn_splat) - LIBWYV_SPLAT_INCR_RATE, 0);
 		}
 	}
 
-	return true;
+
 }
 
 // libwyv_unit_set_name
