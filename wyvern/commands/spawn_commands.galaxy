@@ -66,7 +66,8 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 	// if count is <= 0, then turn on mouse-click spawning
 	if( count <= 0 ) {
 		libwyv_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel.\n" +
-							"Hold: [Ctrl] to rotate, [Shift] to scale, [Right Mouse] to lock)", EventPlayer());
+							"Hold: [Ctrl] to rotate, [Shift] to scale, [Alt] to change height,\n" +
+							"Hold: [Right Mouse] to lock position)", EventPlayer());
 		libwyv_spawn_create_splat(type, EventPlayer());
 		libwyv_player[EventPlayer()].is_placing_unit = true;
 		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);

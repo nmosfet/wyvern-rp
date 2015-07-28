@@ -16,8 +16,17 @@ include "wyvern/engine/utility/scripts.galaxy"
 
 // ui_helper
 // =============
-// Contains various helper functions for creating ui dialogs
+// Contains various helper functions for creating ui dialogs:
+// use helper functions instead of Blizzard natives in order to unify
+// the theme for all dialogs
 include "wyvern/engine/ui_helper.galaxy"
+
+// signals
+// =============
+// Contains definitions for custom event signal string identifiers used
+// for communication between the Events module and event triggers
+// contained in other modules
+include "wyvern/engine/signals.galaxy"
 
 // player
 // =============
@@ -34,7 +43,7 @@ include "wyvern/engine/permissions.galaxy"
 
 // output
 // =============
-// All functions for output to the custom chat frame
+// All functions for outputting text to the custom chat frame
 include "wyvern/engine/output.galaxy"
 
 // data
@@ -99,16 +108,16 @@ include "wyvern/engine/debug.galaxy"
 // engine version
 const int LIBWYV_BUILD_VERSION = 1;
 const int LIBWYV_BUILD_SUB_VERSION = 2;
-const string LIBWYV_BUILD_VERSION_MODIFIER = ".2-beta";
+const string LIBWYV_BUILD_VERSION_MODIFIER = ".3-beta";
 
 void libwyv_engine_initialize() {
 	int player = 1;
 	bool admin_set = false;
 
 	// intialize engine
-	libwyv_settings_initialize();
-	libwyv_preplaced_unit_initialize();
-	libwyv_events_initialize();
+	libwyv_settings_initialize();		// initializes map settings
+	libwyv_preplaced_unit_initialize();	// assigns unit IDs to preplaced units
+	libwyv_events_initialize();			// creates event triggers
 
 	// initialize players
 	while ( player < LIBWYV_MAX_PLAYERS ) {

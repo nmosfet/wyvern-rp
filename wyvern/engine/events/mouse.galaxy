@@ -6,9 +6,6 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-const string LIBWYV_EVENT_MOUSEPOS_Y_INC = "EVENT_MOUSEPOS_Y_INC";
-const string LIBWYV_EVENT_MOUSEPOS_Y_DEC = "EVENT_MOUSEPOS_Y_DEC";
-
 bool libwyv_mouse_moved(bool testConds, bool runActions) {
 	// update mouse in world position
 	libwyv_player[EventPlayer()].mouse_position = Point(EventMouseMovedPosXWorld(), EventMouseMovedPosYWorld());
@@ -16,9 +13,9 @@ bool libwyv_mouse_moved(bool testConds, bool runActions) {
 	// update mouse in UI position, emit signals if the position in
 	// Y plane (mouse up/down) increases or decreases
 	if( EventMouseMovedPosYUI() > PointGetY(libwyv_player[EventPlayer()].mouse_position_ui) ) {
-		TriggerSendEvent(LIBWYV_EVENT_MOUSEPOS_Y_INC + " " + IntToString(EventPlayer()));
+		TriggerSendEvent(LIBWYV_SIG_MOUSE_Y_INC + " " + IntToString(EventPlayer()));
 	} else {
-		TriggerSendEvent(LIBWYV_EVENT_MOUSEPOS_Y_DEC + " " + IntToString(EventPlayer()));
+		TriggerSendEvent(LIBWYV_SIG_MOUSE_Y_DEC + " " + IntToString(EventPlayer()));
 	}
 	libwyv_player[EventPlayer()].mouse_position_ui = Point(EventMouseMovedPosXUI(), EventMouseMovedPosYUI());
 
@@ -27,15 +24,7 @@ bool libwyv_mouse_moved(bool testConds, bool runActions) {
 
 	// update spawn splat
 	if( libwyv_player[EventPlayer()].is_placing_unit  ) {
-		// if control held down, make spawn splat face cursor
-		if( libwyv_player[EventPlayer()].key_ctrl ) {
-			libNtve_gf_MakeUnitFacePoint( libwyv_player[EventPlayer()].spawn_splat, libwyv_player[EventPlayer()].mouse_position, 0.0);
-		}
-		// else, update splat position if position not locked
-		else if ( !libwyv_player[EventPlayer()].key_shift && 	// shift key (scale) lock
-				  !libwyv_player[EventPlayer()].mouse_right ) { // right mouse lock
-			UnitSetPosition(libwyv_player[EventPlayer()].spawn_splat, libwyv_player[EventPlayer()].mouse_position, false);
-		}
+		libwyv_spawn_splat_update_pos();
 	}
 
 	return true;

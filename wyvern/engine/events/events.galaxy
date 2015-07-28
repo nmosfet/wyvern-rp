@@ -43,6 +43,6 @@ void libwyv_events_initialize() {
 // events that need to be initialized individually for each player
 void libwyv_player_events_initialize(int player) {
 	// unit splat update events (from mouse movement)
-	TriggerAddEventGeneric( TriggerCreate("libwyv_spawn_splat_update"), LIBWYV_EVENT_MOUSEPOS_Y_INC + " " + IntToString(player) );
-	TriggerAddEventGeneric( TriggerCreate("libwyv_spawn_splat_update"), LIBWYV_EVENT_MOUSEPOS_Y_DEC + " " + IntToString(player) );
+	TriggerAddEventGeneric( TriggerCreate("libwyv_spawn_splat_update_props"), LIBWYV_SIG_MOUSE_Y_INC + " " + IntToString(player) );
+	TriggerAddEventGeneric( TriggerCreate("libwyv_spawn_splat_update_props"), LIBWYV_SIG_MOUSE_Y_DEC + " " + IntToString(player) );
 }
