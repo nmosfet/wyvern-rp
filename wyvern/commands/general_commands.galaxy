@@ -826,3 +826,42 @@ bool libwyv_command_blacklist(bool testConds, bool runActions) {
 
 	return true;
 }
+
+// libwyv_command_doodads
+// ===================
+// Command syntax: >doodads #region/[radius] on/off
+// Sets the doodads in a region either on (visible) or off (invisible)
+// If the input param begins with #[name], assumes the area is an existing
+// regions. Else, convert the input param to a radius around player mouse
+bool libwyv_command_doodads(bool testConds, bool runActions) {
+	string param = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	string state = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+	region r;
+
+	if( param == "" ) { // no input param,
+		libwyv_print_output("Command syntax: >doodads [#region]/[radius] on/off", EventPlayer());
+		return false;
+	}
+
+	// get the region of interest
+	if( StringSub(param, 1, 1) == "#" ) { // if input param begins with #, assume it is a region
+		r = libwyv_region( StringSub(param, 2, StringLength(param)), EventPlayer() );
+		if( r == null ) {
+			libwyv_print_error("Region " + StringSub(param, 2, StringLength(param)) + " does not exist.", EventPlayer());
+			return false;
+		}
+	}
+	else {
+		r = RegionCircle(libwyv_player[EventPlayer()].mouse_position, StringToFixed(param));
+	}
+
+	// toggle doodads
+	if( state == "on" ) {
+		libNtve_gf_ShowHideDoodadsInRegion(true, r, null);
+	}
+	else {
+		libNtve_gf_ShowHideDoodadsInRegion(false, r, null);
+	}
+
+	return true;
+}

@@ -35,10 +35,23 @@ string libwyv_region_get_name(string name, int player) {
 
 // libwyv_region_get_public_name
 // ==================
-// returns the public (user inputted) name for the region
-// basically just returns the third word in the region data table name
+// Returns the public (user inputted) name for the region
+// (the third word in the region data table name)
 string libwyv_region_get_public_name(string data_table_name) {
 	return StringWord(data_table_name, 3);
+}
+
+// libwyv_region
+// ===============
+// Returns the region associated with the input PUBLIC NAME for a given
+// player. If the region does not exist, returns null.
+region libwyv_region(string name, int player) {
+	region r = null;
+	string rgn_dtable_name = libwyv_region_get_name(name, player);
+	if( DataTableValueExists(true, rgn_dtable_name) ) {
+		r = DataTableGetRegion(true, rgn_dtable_name);
+	}
+	return r;
 }
 
 // libwyv_create_waygate_dialogs

@@ -35,6 +35,7 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create(">zoom", "libwyv_command_zoom");
 	libwyv_chat_command_create(">light", "libwyv_command_light");
 	libwyv_chat_command_create(">blacklist", "libwyv_command_blacklist");
+	libwyv_chat_command_create(">doodads", "libwyv_command_doodads");
 
 	// admin commands
 	libwyv_chat_command_create(">ban", "libwyv_command_ban");
