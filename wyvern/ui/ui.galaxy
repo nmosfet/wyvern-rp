@@ -20,9 +20,10 @@ static const string LIBWYV_UI_PANEL_DTABLE_PREFIX = "ui_panel_";
 // ===============
 // information about each dialog panel to create toolbar buttons
 struct libwyv_ui_panel {
-	int dialog;
-	string name;
-	string icon;
+	int dialog;		// dialog panel
+	int btn;		// toolbar button dialog control
+	string name;	// name of the panel
+	string icon;	// string path for toolbar icon
 };
 // list of the dialog panels in the ui
 static libwyv_ui_panel[LIBWYV_UI_NPANELS] libwyv_ui_panels;
@@ -74,6 +75,7 @@ void libwyv_ui_initialize() {
 		// to the panel index in the libwyv_ui_panel array list through
 		// the data table
 		btn = libwyv_create_dialog_btn(libwyv_ui_panel_toolbar, 54, 54, c_anchorTopLeft, 5, 5 + i*50, libwyv_ui_panels[i].name, "");
+		libwyv_ui_panels[i].btn = btn;
 		DataTableSetInt(true, LIBWYV_UI_PANEL_DTABLE_PREFIX + IntToString(btn), i);
 
 		// create icon for the button
@@ -90,16 +92,32 @@ void libwyv_ui_initialize() {
 // buttons. Button is linked to a ui panel in the libwyv_ui_panel array list
 // through a data table, so if data table entry exists, then toolbar button
 // was clicked.
+// (LIBWYV_UI_PANEL_NONE is defined as -1 in player.galaxy)
 bool libwyv_ui_panel_toggle(bool testConds, bool runActions) {
 	string panel_identifier = LIBWYV_UI_PANEL_DTABLE_PREFIX + IntToString(EventDialogControl());
 	int panel;
+	int active_panel = libwyv_player[EventPlayer()].active_ui_panel;
 
 	// toggle the ui panel if the dialog control button is linked to a panel
 	if( DataTableValueExists(true, panel_identifier) ) {
 		panel = DataTableGetInt(true, panel_identifier);
-		// toggle the state and visibility
-		libwyv_ui_panel_state[panel][EventPlayer()] = !libwyv_ui_panel_state[panel][EventPlayer()];
-		DialogSetVisible(libwyv_ui_panels[panel].dialog, PlayerGroupSingle(EventPlayer()), libwyv_ui_panel_state[panel][EventPlayer()]);
+
+		// turn off existing active panel (if any)
+		if( active_panel != LIBWYV_UI_PANEL_NONE) {
+			DialogSetVisible(libwyv_ui_panels[active_panel].dialog, PlayerGroupSingle(EventPlayer()), false);
+			// toggle off toolbar button
+			libNtve_gf_SetDialogItemToggled(libwyv_ui_panels[active_panel].btn, false, PlayerGroupSingle(EventPlayer()));
+		}
+
+		// toggle ui panel visibility and set the active panel
+		if( panel != active_panel ) {
+			DialogSetVisible(libwyv_ui_panels[panel].dialog, PlayerGroupSingle(EventPlayer()), true);
+			libwyv_player[EventPlayer()].active_ui_panel = panel;
+			// toggle on toolbar button
+			libNtve_gf_SetDialogItemToggled(libwyv_ui_panels[panel].btn, true, PlayerGroupSingle(EventPlayer()));
+		} else { // same dialog just turned off, so set active panel to none
+			libwyv_player[EventPlayer()].active_ui_panel = LIBWYV_UI_PANEL_NONE;
+		}
 	}
 
 	return true;

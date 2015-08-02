@@ -11,6 +11,7 @@ const int LIBWYV_MAX_PLAYERS = 16; // max players supported is 16 (0 - neutral, 
 const string LIBWYV_PLAYER_BANK_NAME = "WyvernBank";
 const int LIBWYV_PLAYER_NEUTRAL = 0;
 const int LIBWYV_PLAYER_HOSTILE = 15;
+const int LIBWYV_UI_PANEL_NONE = -1;
 
 // libwyv_player_struct
 // =======================
@@ -120,6 +121,14 @@ struct libwyv_player_properties {
 	// dialog and button for using region waygates (teleport)
 	int waygate_dialog;
 	int waygate_dialog_control_btn;
+
+	// active_ui_panel
+	// ============
+	// for use with ui module: the current active ui panel dialog, where
+	// one panel is allowed to be active at a time.
+	// The value here is in terms of the ARRAY list of panels, NOT the
+	// dialog integer value itself.
+	int active_ui_panel;
 };
 
 // libwyv_player[LIBWYV_MAX_PLAYERS]
@@ -141,6 +150,8 @@ void libwyv_player_initialize(int player) {
 	libwyv_player[player].spawn_splat = null;
 
 	libwyv_player[player].waygate_dialog = 0;
+
+	libwyv_player[player].active_ui_panel = LIBWYV_UI_PANEL_NONE;
 
 	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
 }
