@@ -1,0 +1,24 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// dialog for the model previewer
+int libwyv_ui_modelpreviewer;
+
+struct libwyv_ui_modelpreviewer_model {
+	int portrait;
+	fixed scale;
+	fixed angle;
+};
+static libwyv_ui_modelpreviewer_model[LIBWYV_MAX_PLAYERS] libwyv_ui_modelpreview;
+
+// libwyv_ui_modelpreviewer_init
+// ==================
+// Creates the model previewer ui panel
+void libwyv_ui_modelpreviewer_init() {
+	libwyv_ui_modelpreviewer = libwyv_create_dialog(600, 700, c_anchorRight, 60, -150);
+}

@@ -6,32 +6,61 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-// default image path used for ui dialogs (for consistency)
-const string LIBWYV_UI_DIALOG_BACKGROUND = "Assets\\Textures\\ui_battlenet_settings_windowframe_sub01.dds";
-const string LIBWYV_UI_DIALOG_BORDER = "Assets\\Textures\\ui_battle_frame_summary_metal_protoss.dds";
-const string LIBWYV_UI_DIALOG_BUTTON = "Assets\\Textures\\ui_mission_hackingbuttonglow_normaloverpressedover_protoss.dds"; // for normal and hover
+//const string LIBWYV_UI_DIALOG_BACKGROUND = "Assets\\Textures\\ui_battlenet_settings_windowframe_sub01.dds";
+//const string LIBWYV_UI_DIALOG_BORDER = "Assets\\Textures\\ui_battle_frame_summary_metal_protoss.dds";
+//const string LIBWYV_UI_DIALOG_BUTTON = "Assets\\Textures\\ui_mission_hackingbuttonglow_normaloverpressedover_protoss.dds"; // for normal and hover
+
+// default image path used for ui dialog background/border styles
+// to ensure the wyvern ui has a consistent theme
+const string LIBWYV_UI_DIALOG_BACKGROUND = "Assets\\Textures\\ui_ingame_subpanel1.dds";
+const string LIBWYV_UI_DIALOG_BUTTON = "Assets\\Textures\\ui_help_frame_tips_checkbox_normalpressed.dds"; // for normal and hover
+const string LIBWYV_UI_DIALOG_BUTTON_HOV = "Assets\\Textures\\ui_help_frame_tips_checkbox_normaloverpressedover.dds"; // for normal and hover
 const string LIBWYV_UI_PORTRAIT_FRAME = "Assets\\Textures\\ui_battlenet_challenge_frame_achievement.dds"; // for normal and hover
 
 // libwyv_create_dialog
 // ================
-// creates a dialog and sets to default ui frame
+// Creates a dialog and sets its background style to default Wyvern ui frame
 int libwyv_create_dialog(int width, int height, int anchor, int offset_x, int offset_y ) {
 	int frame = DialogCreate(width, height, anchor, offset_x, offset_y, true);
-    
+
 	// set frame appearance
 	DialogSetImage(frame, LIBWYV_UI_DIALOG_BACKGROUND);
-    libNtve_gf_CreateDialogItemImage(frame, width, height, c_anchorCenter, 0, 0, StringToText(""), LIBWYV_UI_DIALOG_BORDER, c_triggerImageTypeHorizontalBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+    //libNtve_gf_CreateDialogItemImage(frame, width, height, c_anchorCenter, 0, 0, StringToText(""), LIBWYV_UI_DIALOG_BORDER, c_triggerImageTypeHorizontalBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
 
 	return frame;
 }
 
-int libwyv_create_dialog_control_btn(int dialog, int width, int height, int anchor, int offset_x, int offset_y, string tooltip, string btn_text ) {
+// libwyv_create_dialog_btn
+// =========================
+// Creates a dialog control button for a given dialog and sets default style
+int libwyv_create_dialog_btn(int dialog, int width, int height, int anchor, int offset_x, int offset_y, string tooltip, string btn_text ) {
 	int btn = libNtve_gf_CreateDialogItemButton(dialog, width, height, anchor, offset_x, offset_y, StringToText(tooltip), StringToText(btn_text), "");
-    
+
+	// set background/border
     libNtve_gf_SetDialogItemImage(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
-    libNtve_gf_SetDialogItemImage2(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
-    libNtve_gf_SetDialogItemColor(btn, Color(80, 80, 80), PlayerGroupAll());
-    libNtve_gf_SetDialogItemImageType(btn, c_triggerImageTypeEndCap, PlayerGroupAll());
+    libNtve_gf_SetDialogItemImage2(btn, LIBWYV_UI_DIALOG_BUTTON_HOV, PlayerGroupAll());
+    //libNtve_gf_SetDialogItemColor(btn, Color(80, 80, 80), PlayerGroupAll());
+    libNtve_gf_SetDialogItemImageType(btn, c_triggerImageTypeBorder, PlayerGroupAll());
+
+	// Turn off default tooltip
+	//libNtve_gf_SetDialogItemAcceptMouse(btn, false, PlayerGroupAll());
 
 	return btn;
+}
+
+// libwyv_create_dialog_portrait
+// =========================
+// Creates a dialog control portrait for a given dialog and sets default style.
+//   -> Setting render type to LDR (c_triggerRenderTypeLDR) is required so that
+//   the portrait will render above its parent dialog (by default, portraits
+//   will render behind)
+int libwyv_create_dialog_portrait(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
+	int portrait = DialogControlCreate(dialog, c_triggerControlTypePortrait);
+	DialogControlSetSize(portrait, PlayerGroupAll(), width, height);
+    DialogControlSetPosition(portrait, PlayerGroupAll(), anchor, offset_x, offset_y);
+    libNtve_gf_SetDialogItemRenderType(portrait, c_triggerRenderTypeLDR, PlayerGroupAll());
+    libNtve_gf_SetDialogItemBorderImage(portrait, LIBWYV_UI_PORTRAIT_FRAME, PlayerGroupAll());
+    libNtve_gf_SetDialogItemBackgroundVisible(portrait, false, PlayerGroupAll());
+
+	return portrait;
 }

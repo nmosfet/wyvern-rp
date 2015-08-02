@@ -61,10 +61,10 @@ region libwyv_region(string name, int player) {
 // attaching the "Enter" dialog button.
 void libwyv_create_waygate_dialog(string rgn_name) {
 	point p = RegionGetCenter( DataTableGetRegion(true, rgn_name) );
-	int dialog = libwyv_create_dialog(120, 60, 0, 0, 0); // create the waygate dialog
+	int dialog = libwyv_create_dialog(90, 44, 0, 0, 0); // create the waygate dialog
 	unit anchor;
 	int i = 1;
-	libwyv_create_dialog_control_btn(dialog, 120, 50, c_anchorCenter, 0, 0, "Click to teleport these unit(s).", "Enter");
+	libwyv_create_dialog_btn(dialog, 90, 44, c_anchorCenter, 0, 0, "Click to teleport these unit(s).", "Enter");
 	DataTableSetDialog(true, LIBWYV_WAYGATE_DIALOG_DATA_TABLE_IDENTIFIER + " " + rgn_name, dialog);
 	DataTableSetString(true, LIBWYV_WAYGATE_DIALOG_REG_DATA_TABLE_IDENTIFIER + " " + IntToString(dialog), rgn_name);
 
