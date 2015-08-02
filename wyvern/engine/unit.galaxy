@@ -142,7 +142,11 @@ unitgroup libwyv_unit_create(string type, int player, point p, fixed facing) {
 void libwyv_spawn_create_splat(string type, int player) {
 	unitgroup splat = UnitGroupEmpty();
 
+	// remove any existing spawn splat
 	if(libwyv_player[player].spawn_splat != null) {
+		// reset the custom value for owner to not trigger the data remove
+		// function to reset player mouse movement
+		UnitSetCustomValue(libwyv_player[player].spawn_splat, LIBWYV_UNIT_INDEX_SPLAT_OWNER, 0);
 		UnitRemove(libwyv_player[player].spawn_splat);
 	}
 
