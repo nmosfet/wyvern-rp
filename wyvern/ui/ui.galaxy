@@ -35,10 +35,13 @@ static bool[LIBWYV_UI_NPANELS][LIBWYV_MAX_PLAYERS] libwyv_ui_panel_state;
 // dialog toolbar on right side of the screen to access ui panels
 int libwyv_ui_panel_toolbar;
 
+// prototypes:
+static void libwyv_ui_toolbar_init();
+
 // libwyv_ui_initialize_panels
 // ====================
 // Sets array list of each dialog panel info struct.
-// These must be manually set for each panel.
+// These must be manually declared for each panel.
 static void libwyv_ui_initialize_panels() {
 	libwyv_ui_panels[0].dialog = libwyv_ui_modelpreviewer;
 	libwyv_ui_panels[0].name = "Model Previewer";
@@ -56,16 +59,33 @@ static void libwyv_ui_initialize_panels() {
 // dialog control buttons.
 // Adds event triggers for the UI toolbar buttons.
 void libwyv_ui_initialize() {
-	int i;
-	int btn;
+	int player;
 
 	// initialize panels
 	libwyv_ui_modelpreviewer_init();
+
+	// perform player unique panel initialization
+	for( player = 1; player < LIBWYV_MAX_PLAYERS; player += 1 ) {
+		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
+			libwyv_ui_modelpreviewer_init_player(player);
+		}
+	}
 
 	// set the panels list
 	libwyv_ui_initialize_panels();
 
 	// create the Wyvern ui toolbar
+	libwyv_ui_toolbar_init();
+}
+
+// libwyv_ui_toolbar_init
+// =================
+// Creates the Wyvern ui panel toolbar. This is a toolbar with buttons anchored
+// to right side of the screen that players can use to access each ui panel.
+static void libwyv_ui_toolbar_init() {
+	int i;
+	int btn;
+
 	libwyv_ui_panel_toolbar = libwyv_create_dialog(80, 15 + 50*LIBWYV_UI_NPANELS, c_anchorRight, -22, -140);
 	DialogSetVisible(libwyv_ui_panel_toolbar, PlayerGroupAll(), true);
 
@@ -79,11 +99,13 @@ void libwyv_ui_initialize() {
 		DataTableSetInt(true, LIBWYV_UI_PANEL_DTABLE_PREFIX + IntToString(btn), i);
 
 		// create icon for the button
-		libNtve_gf_CreateDialogItemImage(libwyv_ui_panel_toolbar, 46, 46, c_anchorTopLeft, 9, 9 + i*50, StringToText(""), libwyv_ui_panels[i].icon, c_triggerImageTypeNormal, false, Color(100, 100, 100), c_triggerBlendModeNormal);
+		//libNtve_gf_CreateDialogItemImage(libwyv_ui_panel_toolbar, 46, 46, c_anchorTopLeft, 9, 9 + i*50, StringToText(""), libwyv_ui_panels[i].icon, c_triggerImageTypeNormal, false, Color(100, 100, 100), c_triggerBlendModeNormal);
+		libwyv_create_dialog_btn_icon(libwyv_ui_panel_toolbar, btn, 44, 44, libwyv_ui_panels[i].icon);
 	}
 
 	// add event triggers for ui dialog controls
 	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_panel_toggle"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
+
 }
 
 // libwyv_ui_panel_toggle
