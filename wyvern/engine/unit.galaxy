@@ -280,6 +280,7 @@ text libwyv_unit_get_name(unit u) {
 void libwyv_unit_data_remove(unit u) {
 	string unit_id = FixedToString(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_ID), 0);
 	int i = 1;
+	int owner;
 
 	// remove caches:
 	while(DataTableValueExists(true, unit_id + "." + IntToString(i))) {
@@ -302,8 +303,10 @@ void libwyv_unit_data_remove(unit u) {
 
 	// check if unit killed/removed was the player spawn splat
 	// if so, set player to no longer spawning
-	if( UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_SPLAT_OWNER) > 0.0 ) {
-		libwyv_player[FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_SPLAT_OWNER))].is_placing_unit = false;
+	owner = FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_SPLAT_OWNER));
+	if( owner > 0 ) {
+		libwyv_player[owner].is_placing_unit = false;
+		UISetSelectionTypeEnabled(PlayerGroupSingle(owner), c_localSelectionTypeUnknown, true);
 	}
 
 }

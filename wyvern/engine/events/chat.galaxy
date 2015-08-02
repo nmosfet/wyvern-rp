@@ -6,18 +6,6 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
-include "wyvern/engine/chat/alias.galaxy"
-include "wyvern/engine/chat/templates.galaxy"
-include "wyvern/engine/chat/variables.galaxy"
-include "wyvern/engine/chat/parser.galaxy"
-
-// prototypes
-bool libwyv_process_chat_event(bool testConds, bool runActions);
-
-// initializes the chat engine for a player
-void libwyv_chat_initialize_player(int player) {
-	TriggerAddEventChatMessage( TriggerCreate("libwyv_process_chat_event") , player, "", false );
-}
 
 // libwyv_process_chat_event
 // ============================

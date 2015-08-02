@@ -21,24 +21,6 @@ include "wyvern/engine/utility/scripts.galaxy"
 // the theme for all dialogs
 include "wyvern/engine/ui_helper.galaxy"
 
-// player
-// =============
-// Contains any important player specific variables during
-// runtime of the engine (e.g. player mouse position, chat lines,...)
-// Contains string name for player bank
-include "wyvern/engine/player.galaxy"
-
-// permissions
-// =============
-// Contains functions for player permissions related functions
-// and unit permissions
-include "wyvern/engine/permissions.galaxy"
-
-// output
-// =============
-// All functions for outputting text to the custom chat frame
-include "wyvern/engine/output.galaxy"
-
 // data
 // =============
 // defines SCII data catalog constants used for certain commands,
@@ -48,24 +30,44 @@ include "wyvern/engine/data/data.galaxy"
 // settings
 // =============
 // Contains ingame global settings
+// These are used as parameters in certain commands
+// Ideally most of these should be adjustable in game
 include "wyvern/engine/settings.galaxy"
+
+// player
+// =============
+// Contains any important player specific variables during
+// runtime of the engine (e.g. player mouse position, chat lines,...)
+// Contains string name for player bank
+include "wyvern/engine/player.galaxy"
+
+// output
+// =============
+// All functions for outputting text to the custom chat frame
+include "wyvern/engine/output.galaxy"
 
 // bank
 // =============
 // Contains custom functions for writing to player banks
 include "wyvern/engine/bank.galaxy"
 
-// chat
+// parser
 // =============
-// All player chat/commands events framework and parsing
-// Also includes frameworks for variables, aliases, and templates.
-include "wyvern/engine/chat/chat.galaxy"
+// Parser for player chat commands and built-in chat system functions:
+// Includes frameworks for variables, aliases, and templates parsing
+include "wyvern/engine/chat/parser.galaxy"
 
 // unit
 // =============
 // Unit spawn related functions, unit death/creation data management,
 // unit command caching functionality
 include "wyvern/engine/unit.galaxy"
+
+// permissions
+// =============
+// Contains functions for player permissions related functions
+// and unit permissions
+include "wyvern/engine/permissions.galaxy"
 
 // regions
 // =============
@@ -101,7 +103,7 @@ include "wyvern/engine/debug.galaxy"
 // engine version
 const int LIBWYV_BUILD_VERSION = 1;
 const int LIBWYV_BUILD_SUB_VERSION = 2;
-const string LIBWYV_BUILD_VERSION_MODIFIER = ".3-beta";
+const string LIBWYV_BUILD_VERSION_MODIFIER = ".4-beta";
 
 void libwyv_engine_initialize() {
 	int player = 1;
@@ -110,14 +112,13 @@ void libwyv_engine_initialize() {
 	// intialize engine
 	libwyv_settings_initialize();		// initializes map settings
 	libwyv_preplaced_unit_initialize();	// assigns unit IDs to preplaced units
-	libwyv_events_initialize();			// creates event triggers
+	libwyv_events_initialize();			// creates global event triggers
 
 	// initialize players
 	while ( player < LIBWYV_MAX_PLAYERS ) {
 		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
-			libwyv_player_initialize(player);
-			libwyv_player_events_initialize(player);
-			libwyv_chat_initialize_player(player);
+			libwyv_player_initialize(player);			// player settings
+			libwyv_player_events_initialize(player);	// player specific events
 
 			// give admin to first active player (assumes player 1 is lobby host and should be default admin)
 			// then run admin's blacklist

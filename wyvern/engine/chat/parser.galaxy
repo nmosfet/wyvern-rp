@@ -6,6 +6,10 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+include "wyvern/engine/chat/alias.galaxy"
+include "wyvern/engine/chat/templates.galaxy"
+include "wyvern/engine/chat/variables.galaxy"
+
 const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX = "libwyv_command_";
 
 // libwyv_chat_command_create
@@ -34,13 +38,13 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 	string current_alias_subbed;
 	int semicolon_index;
 	int next_semicolon_index;
-	
+
 	libwyv_player[player].context = target;
-	
+
 	while ( msg != "" ) {
 		// update player's chat_msg current cache
 		libwyv_player[player].chat_msg = msg;
-		
+
 		// get a chunk of the msg by finding ";" separater
 		// -> to allow players to still use ";" in chat, "\;" is parsed as an escape sequence
 		// -> "\;" will print out a ";" in the chat, so we must find "\;" in a message
@@ -52,7 +56,7 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 					next_semicolon_index = StringFind( StringSub( msg, semicolon_index + 1, StringLength(msg) ), ";", c_stringNoCase );
 					if( next_semicolon_index > 0 ) {
 						// must add because next_semicolon_index is relative to a substring
-						semicolon_index = semicolon_index + next_semicolon_index; 
+						semicolon_index = semicolon_index + next_semicolon_index;
 						continue;
 					}
 					else { // at end of msg
@@ -72,22 +76,22 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 				msg = "";
 				break;
 			}
-			
+
 		}
 		// after getting current, replace escape sequence for semicolon: "\;" -> ";"
 		current = StringReplaceWord(current, "\\;", ";", c_stringReplaceAll, false);
-		
+
 		// go no further with parsing if current string is empty
 		// (this occurs if player types a string of ";;;;;")
 		if( current == "" ) {
 			continue;
 		}
-		
+
 		// check if performing reserved keyword commands (alias, template, var)
 		if ( StringEqual( StringWord(current, 1), "alias", c_stringNoCase) ) {
 			// returns true if using "alias create":
 			// in this case, the rest of msg is used up AS IS, so parsing considered finished
-			if( libwyv_alias_command_redirect(current, player) ) { 
+			if( libwyv_alias_command_redirect(current, player) ) {
 				break;
 			}
 			continue; // skip OOC printing
@@ -95,7 +99,7 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 		else if ( StringEqual( StringWord(current, 1), "template", c_stringNoCase) ) {
 			// returns true if using "template create":
 			// in this case, the rest of msg is used up AS IS, so parsing considered finished
-			if( libwyv_template_command_redirect(current, player) ) { 
+			if( libwyv_template_command_redirect(current, player) ) {
 				break;
 			}
 			continue; // skip OOC printing
@@ -103,39 +107,38 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 		else if ( StringEqual( StringWord(current, 1), "var", c_stringNoCase) ) {
 			// TODO: ADD VARIABLE SYSTEM
 		}
-		
+
 		// replace aliases (returns true if aliases):
-		// if aliases subbed, affix to front of msg and reparse 
+		// if aliases subbed, affix to front of msg and reparse
 		current_alias_subbed = libwyv_alias_sub(current, player, 0);
 		if( current_alias_subbed != current ) {
 			msg = current_alias_subbed + ";" + msg;
 			continue;
 		}
-		
+
 		// if template exists, append evaluated template to msg and parse
 		if( BankKeyExists( libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_TEMPLATE, StringWord(current, 1) ) ) {
 			msg = libwyv_template(current, player) + ";" + msg;
 			continue;
 		}
-		
-		
+
+
 		// TODO: replace variables
 
-		
+
 		// run command (if exists and permissions for player valid)
 		if( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ) {
-			
+
 			// if does, run wrapper function to run a command (does permissions checks etc)
-			
+
 			//libwyv_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
-			
+
 			libwyv_player[player].chat_msg = current;
 			TriggerExecute( DataTableGetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ), false, true);
 		}
 		else if ( !libwyv_player[player].muted ) {
 			libwyv_chat_print_OOC( current, player );
 		}
-		
+
 	}
 }
-

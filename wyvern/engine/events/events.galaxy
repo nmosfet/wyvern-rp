@@ -8,33 +8,34 @@
 
 include "wyvern/engine/events/mouse.galaxy"
 include "wyvern/engine/events/keypress.galaxy"
+include "wyvern/engine/events/chat.galaxy"
 include "wyvern/engine/events/player_leaves.galaxy"
 include "wyvern/engine/events/region_waygates.galaxy"
 include "wyvern/engine/events/unit_events.galaxy"
 
 void libwyv_events_initialize() {
 	// player leaves event
-	TriggerAddEventPlayerLeft( TriggerCreate("libwyv_player_leaves"), c_playerAny, c_gameResultUndecided );
+	TriggerAddEventPlayerLeft(TriggerCreate("libwyv_player_leaves"), c_playerAny, c_gameResultUndecided);
 
 	// mouse related events
-	TriggerAddEventMouseMoved( TriggerCreate("libwyv_mouse_moved"), c_playerAny );
-	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_left_clicked_down"), c_playerAny, c_mouseButtonLeft, true );
-	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_right_clicked_down"), c_playerAny, c_mouseButtonRight, true );
-	TriggerAddEventMouseClicked( TriggerCreate("librtpr_mouse_right_clicked_up"), c_playerAny, c_mouseButtonRight, false );
+	TriggerAddEventMouseMoved(TriggerCreate("libwyv_mouse_moved"), c_playerAny );
+	TriggerAddEventMouseClicked(TriggerCreate("librtpr_mouse_left_clicked_down"), c_playerAny, c_mouseButtonLeft, true);
+	TriggerAddEventMouseClicked(TriggerCreate("librtpr_mouse_right_clicked_down"), c_playerAny, c_mouseButtonRight, true);
+	TriggerAddEventMouseClicked(TriggerCreate("librtpr_mouse_right_clicked_up"), c_playerAny, c_mouseButtonRight, false);
 
 	// key press (up and down) events
-	TriggerAddEventKeyPressed( TriggerCreate("libwyv_key_pressed_down"), c_playerAny, c_keyNone, true, c_keyModifierStateIgnore, c_keyModifierStateIgnore, c_keyModifierStateIgnore);
-	TriggerAddEventKeyPressed( TriggerCreate("libwyv_key_pressed_up"), c_playerAny, c_keyNone, false, c_keyModifierStateIgnore, c_keyModifierStateIgnore, c_keyModifierStateIgnore);
+	TriggerAddEventKeyPressed(TriggerCreate("libwyv_key_pressed_down"), c_playerAny, c_keyNone, true, c_keyModifierStateIgnore, c_keyModifierStateIgnore, c_keyModifierStateIgnore);
+	TriggerAddEventKeyPressed(TriggerCreate("libwyv_key_pressed_up"), c_playerAny, c_keyNone, false, c_keyModifierStateIgnore, c_keyModifierStateIgnore, c_keyModifierStateIgnore);
 
 	// unit initialization events (functions found in unit.galaxy)
-	TriggerAddEventUnitCreated( TriggerCreate("libwyv_unit_initialize"), null, null, null );
-	TriggerAddEventUnitRemoved( TriggerCreate("libwyv_unit_death_cleanup"), null );
-	TriggerAddEventUnitDied( TriggerCreate("libwyv_unit_death_cleanup"), null) ;
+	TriggerAddEventUnitCreated(TriggerCreate("libwyv_unit_initialize"), null, null, null);
+	TriggerAddEventUnitRemoved(TriggerCreate("libwyv_unit_death_cleanup"), null);
+	TriggerAddEventUnitDied(TriggerCreate("libwyv_unit_death_cleanup"), null);
 
 	// region waygate and waygate dialog events
-	TriggerAddEventTimePeriodic( TriggerCreate("libwyv_waygate_dialog_manager"), 1.0, c_timeGame );
-	//TriggerAddEventDialogControl( TriggerCreate("libwyv_waygate_dialog_clicked_old"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
-	TriggerAddEventDialogControl( TriggerCreate("libwyv_waygate_dialog_clicked"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
+	TriggerAddEventTimePeriodic(TriggerCreate("libwyv_waygate_dialog_manager"), 1.0, c_timeGame);
+	//TriggerAddEventDialogControl(TriggerCreate("libwyv_waygate_dialog_clicked_old"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick );
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_waygate_dialog_clicked"), c_playerAny, c_invalidDialogControlId, c_triggerControlEventTypeClick);
 
 }
 
@@ -42,7 +43,6 @@ void libwyv_events_initialize() {
 // ==========================
 // events that need to be initialized individually for each player
 void libwyv_player_events_initialize(int player) {
-	// unit splat update events (from mouse movement)
-	//TriggerAddEventGeneric( TriggerCreate("libwyv_spawn_splat_update_props"), LIBWYV_SIG_MOUSE_Y_INC + " " + IntToString(player) );
-	//TriggerAddEventGeneric( TriggerCreate("libwyv_spawn_splat_update_props"), LIBWYV_SIG_MOUSE_Y_DEC + " " + IntToString(player) );
+	// initialize player chat and chat command events
+	TriggerAddEventChatMessage(TriggerCreate("libwyv_process_chat_event") , player, "", false);
 }

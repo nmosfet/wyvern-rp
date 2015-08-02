@@ -33,18 +33,24 @@ unitgroup libwyv_enforce_unit_permissions(unitgroup g, int player) {
 
 	while(count) {
         u = UnitGroupUnit(g, count);
-		if( UnitGetOwner(u) != player &&
-			PlayerType(UnitGetOwner(u)) != c_playerTypeNone &&
-			PlayerType(UnitGetOwner(u)) != c_playerTypeComputer &&
-			PlayerType(UnitGetOwner(u)) != c_playerTypeHostile &&
-			PlayerType(UnitGetOwner(u)) != c_playerTypeNeutral &&
-			libwyv_player[player].permission_level <= libwyv_player[UnitGetOwner(u)].permission_level
-		) {
-			UnitGroupRemove(g, u);
-		}
-		else if ( // LIBWYV_UNIT_INDEX_WAYGATE_ANCHOR = 16, magic number temporary
-			FixedToInt(UnitGetCustomValue(u, 17)) != 0 &&
-			PlayerType(UnitGetOwner(u)) == c_playerTypeNeutral
+		if( (	// general permissions for unit owner:
+				// unit owner must be yourself, or someone with lesser
+				// status than you (e.g. admin > mod > user > computers)
+				UnitGetOwner(u) != player &&
+				PlayerType(UnitGetOwner(u)) != c_playerTypeNone &&
+				PlayerType(UnitGetOwner(u)) != c_playerTypeComputer &&
+				PlayerType(UnitGetOwner(u)) != c_playerTypeHostile &&
+				PlayerType(UnitGetOwner(u)) != c_playerTypeNeutral &&
+				libwyv_player[player].permission_level <= libwyv_player[UnitGetOwner(u)].permission_level
+			) ||
+			(	// remove player spawn splats
+				FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_SPLAT_OWNER)) > 0
+			) ||
+			(	// remove the anchor unit used for the waygate dialog "Enter"
+				// buttons for region teleports
+				FixedToInt(UnitGetCustomValue(u, LIBWYV_UNIT_INDEX_WAYGATE_ANCHOR)) > 0 &&
+				PlayerType(UnitGetOwner(u)) == c_playerTypeNeutral
+			)
 		) {
 			UnitGroupRemove(g, u);
 		}
