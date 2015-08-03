@@ -9,7 +9,7 @@
 include "wyvern/ui/modelpreviewer.galaxy"
 
 // number of ui panels for the ui utility toolbar
-static const int LIBWYV_UI_NPANELS = 2;
+static const int LIBWYV_UI_NPANELS = 1;
 
 // data table identifier prefix for linking a toolbar button to its panel
 // Data table name is "ui_panel_[btn ID]", where the [btn ID] is the integer
@@ -47,9 +47,9 @@ static void libwyv_ui_initialize_panels() {
 	libwyv_ui_panels[0].name = "Model Previewer";
 	libwyv_ui_panels[0].icon = "Assets\\Textures\\btn-ability-protoss-phaseshift.dds";
 
-	libwyv_ui_panels[1].dialog = -1;	// TODO: make it
-	libwyv_ui_panels[1].name = "Chat Log";
-	libwyv_ui_panels[1].icon = "Assets\\Textures\\ui_cursor-interactive-talk_ingamehd.dds";
+	//libwyv_ui_panels[1].dialog = -1;	// TODO: make it
+	//libwyv_ui_panels[1].name = "Chat Log";
+	//libwyv_ui_panels[1].icon = "Assets\\Textures\\ui_cursor-interactive-talk_ingamehd.dds";
 }
 
 // libwyv_ui_initialize

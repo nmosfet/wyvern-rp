@@ -103,7 +103,7 @@ include "wyvern/engine/debug.galaxy"
 // engine version
 const int LIBWYV_BUILD_VERSION = 1;
 const int LIBWYV_BUILD_SUB_VERSION = 2;
-const string LIBWYV_BUILD_VERSION_MODIFIER = ".5-beta";
+const string LIBWYV_BUILD_VERSION_MODIFIER = ".6-beta";
 
 void libwyv_engine_initialize() {
 	int player = 1;

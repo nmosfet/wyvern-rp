@@ -13,14 +13,29 @@ static const int LIBWYV_NCATALOGMAX = 10000;
 
 // intitial model preview scale and the scale size increment step
 static const fixed LIBWYV_UI_MODELPREVIEW_SCALE_INIT = 0.15;
-static const string LIBWYV_UI_MODELPREVIEW_SCALE_AMSG = "SetScale 0.15 0.01";
+static const string LIBWYV_UI_MODELPREVIEW_SCALE_AMSG = "SetScale 0.15 0.05";
 static const fixed LIBWYV_UI_MODELPREVIEW_SCALE_STEP = 0.01;
+static const fixed LIBWYV_UI_MODELPREVIEW_SCALE_MIN = 0.01;
+static const int LIBWYV_UI_MODELPREVIEW_ANGLE_STEP = 15;
 
-// list of all catalog models
-static string[LIBWYV_NCATALOGMAX] libwyv_model_catalog;
+// name of the animgroup play name for the portrait model
+static const string LIBWYV_UI_MODELPREVIEW_ANIMNAME = "MODELPREVIEW_ANIM";
+
+// actor reference alias for the main actor in the model preview
+static const string LIBWYV_UI_MODELPREVIEW_MODELREF = "MODELPREVIEW";
+
+// actor reference alias for the attach axis tests
+static const string LIBWYV_UI_MODELPREVIEW_ATTACHREF = "MODELPREVIEW_TEST";
+
+// list of all catalog models, size LIBWYV_NCATALOGMAX + 1 because index
+// will effectively begin with 1 rather than 0 since Catalog index starts at 1
+static string[LIBWYV_NCATALOGMAX+1] libwyv_model_catalog;
 
 // index shift for a catalog model while filtering the list
-static int[LIBWYV_MAX_PLAYERS][LIBWYV_NCATALOGMAX] libwyv_model_catalog_shift;
+static int[LIBWYV_MAX_PLAYERS][LIBWYV_NCATALOGMAX+1] libwyv_model_catalog_shift;
+
+// number of models in the game model catalog
+static int libwyv_nmodels;
 
 // dialog for the model previewer
 int libwyv_ui_modelpreviewer;
@@ -36,10 +51,10 @@ static int libwyv_ui_modelpreview_search_btn;
 static int libwyv_ui_modelpreview_search_reset;
 static int libwyv_ui_modelpreview_anim;
 static int libwyv_ui_modelpreview_anim_btn;
-static int libwyv_ui_modelpreview_anim_reset;
+static int libwyv_ui_modelpreview_anim_reset_btn;
 static int libwyv_ui_modelpreview_attach;
 static int libwyv_ui_modelpreview_attach_btn;
-static int libwyv_ui_modelpreview_attach_reset;
+static int libwyv_ui_modelpreview_attach_reset_btn;
 
 // Type: libwyv_ui_modelpreviewer_model
 // ===========
@@ -47,7 +62,7 @@ static int libwyv_ui_modelpreview_attach_reset;
 struct libwyv_ui_modelpreviewer_model {
 	int portrait;
 	fixed scale;
-	fixed angle;
+	int angle;
 };
 static libwyv_ui_modelpreviewer_model[LIBWYV_MAX_PLAYERS] libwyv_ui_modelpreview;
 
@@ -71,23 +86,23 @@ void libwyv_ui_modelpreviewer_init() {
 	// search bar
 	libwyv_ui_modelpreview_search = libwyv_create_dialog_editbox(libwyv_ui_modelpreviewer, 480, 50, c_anchorTopLeft, 10, 430);
 	libwyv_ui_modelpreview_search_btn = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Search model", "" );
-	libwyv_ui_modelpreview_search_reset = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Reset", "" );
+	libwyv_ui_modelpreview_search_reset = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Reset list", "" );
 	DialogControlSetPositionRelative(libwyv_ui_modelpreview_search_btn, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_search, c_anchorRight, 0, 0);
 	DialogControlSetPositionRelative(libwyv_ui_modelpreview_search_reset, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_search_btn, c_anchorRight, 0, 0);
 
 	// play animation
 	libwyv_ui_modelpreview_anim = libwyv_create_dialog_editbox(libwyv_ui_modelpreviewer, 310, 50, c_anchorTopLeft, 180, 540);
 	libwyv_ui_modelpreview_anim_btn = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Go", "" );
-	libwyv_ui_modelpreview_anim_reset = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Reset", "" );
+	libwyv_ui_modelpreview_anim_reset_btn = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Reset", "" );
 	DialogControlSetPositionRelative(libwyv_ui_modelpreview_anim_btn, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_anim, c_anchorRight, 0, 0);
-	DialogControlSetPositionRelative(libwyv_ui_modelpreview_anim_reset, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_anim_btn, c_anchorRight, 0, 0);
+	DialogControlSetPositionRelative(libwyv_ui_modelpreview_anim_reset_btn, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_anim_btn, c_anchorRight, 0, 0);
 
 	// attach point axis test
 	libwyv_ui_modelpreview_attach = libwyv_create_dialog_editbox(libwyv_ui_modelpreviewer, 310, 50, c_anchorTopLeft, 180, 590);
 	libwyv_ui_modelpreview_attach_btn = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Go", "" );
-	libwyv_ui_modelpreview_attach_reset = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Reset", "" );
+	libwyv_ui_modelpreview_attach_reset_btn = libwyv_create_dialog_btn(libwyv_ui_modelpreviewer, 50, 50, c_anchorCenter, 0, 0, "Reset", "" );
 	DialogControlSetPositionRelative(libwyv_ui_modelpreview_attach_btn, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_attach, c_anchorRight, 0, 0);
-	DialogControlSetPositionRelative(libwyv_ui_modelpreview_attach_reset, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_attach_btn, c_anchorRight, 0, 0);
+	DialogControlSetPositionRelative(libwyv_ui_modelpreview_attach_reset_btn, PlayerGroupAll(), c_anchorLeft, libwyv_ui_modelpreview_attach_btn, c_anchorRight, 0, 0);
 
 	// create button icons
 	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_rotr_btn, 30, 30, LIBWYV_UI_ICON_RIGHT);
@@ -97,9 +112,9 @@ void libwyv_ui_modelpreviewer_init() {
 	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_search_btn, 40, 40, LIBWYV_UI_ICON_SEARCH);
 	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_search_reset, 40, 40, LIBWYV_UI_ICON_RESET);
 	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_anim_btn, 40, 40, LIBWYV_UI_ICON_GO);
-	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_anim_reset, 40, 40, LIBWYV_UI_ICON_RESET);
+	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_anim_reset_btn, 40, 40, LIBWYV_UI_ICON_RESET);
 	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_attach_btn, 40, 40, LIBWYV_UI_ICON_GO);
-	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_attach_reset, 40, 40, LIBWYV_UI_ICON_RESET);
+	libwyv_create_dialog_btn_icon(libwyv_ui_modelpreviewer, libwyv_ui_modelpreview_attach_reset_btn, 40, 40, LIBWYV_UI_ICON_RESET);
 
 	// create static labels
 	libwyv_create_dialog_label(libwyv_ui_modelpreviewer, 240, 30, c_anchorTopLeft, 14, 12, "Preview model:", LIBWYV_UI_HEADER2);
@@ -110,13 +125,26 @@ void libwyv_ui_modelpreviewer_init() {
 	DialogControlSetPositionRelative(DialogControlLastCreated(), PlayerGroupAll(), c_anchorRight, libwyv_ui_modelpreview_attach, c_anchorLeft, 0, 0);
 
 	// populate the model preview list
-	for(i = 0; i < nmodels && i < LIBWYV_NCATALOGMAX; i += 1) {
+	// index i starts at 1 because Catalog index begins at 1
+	for(i = 1; i <= nmodels && i <= LIBWYV_NCATALOGMAX; i += 1) {
 		libwyv_model_catalog[i] = CatalogEntryGet(c_gameCatalogModel, i);
 		DialogControlAddItem(libwyv_ui_modelpreview_list, PlayerGroupAll(), StringToText(libwyv_model_catalog[i]));
 	}
+	libwyv_nmodels = i - 1; // set number of models to how many models added to list
 
 	// add model previewer trigger events
 	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_model_preview_select"), c_playerAny, libwyv_ui_modelpreview_list, c_triggerControlEventTypeSelectionChanged);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_filter"), c_playerAny, libwyv_ui_modelpreview_search_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_reset"), c_playerAny, libwyv_ui_modelpreview_search_reset, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_scale_inc"), c_playerAny, libwyv_ui_modelpreview_scaleup_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_scale_dec"), c_playerAny, libwyv_ui_modelpreview_scaledown_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_angle_inc"), c_playerAny, libwyv_ui_modelpreview_rotr_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_angle_dec"), c_playerAny, libwyv_ui_modelpreview_rotl_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_anim_play"), c_playerAny, libwyv_ui_modelpreview_anim_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_anim_reset"), c_playerAny, libwyv_ui_modelpreview_anim_reset_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_attach_axis"), c_playerAny, libwyv_ui_modelpreview_attach_btn, c_triggerControlEventTypeClick);
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_modelpreview_attach_reset"), c_playerAny, libwyv_ui_modelpreview_attach_reset_btn, c_triggerControlEventTypeClick);
+
 }
 
 // libwyv_ui_modelpreviewer_init_player
@@ -134,6 +162,24 @@ void libwyv_ui_modelpreviewer_init_player(int p) {
 	// initialize the portrait model
 	libNtve_gf_SetDialogItemModel(libwyv_ui_modelpreview[p].portrait, "MercHavenChick", PlayerGroupSingle(p));
 	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[p].portrait), LIBWYV_UI_MODELPREVIEW_SCALE_AMSG);
+
+	// set player model state
+	libwyv_ui_modelpreview[p].scale = LIBWYV_UI_MODELPREVIEW_SCALE_INIT;
+	libwyv_ui_modelpreview[p].angle = 0;
+}
+
+// libwyv_ui_modelpreview_list_reset
+// ================
+// Resets the model list for a player:
+// First removes all list items, then readds all models from catalog list
+void libwyv_ui_modelpreview_list_reset(int player) {
+	int i;
+
+	DialogControlRemoveAllItems(libwyv_ui_modelpreview_list, PlayerGroupSingle(player));
+	for( i = 1; i <= libwyv_nmodels; i += 1) {
+		DialogControlAddItem(libwyv_ui_modelpreview_list, PlayerGroupSingle(player), StringToText(libwyv_model_catalog[i]));
+		libwyv_model_catalog_shift[player][i] = 0;
+	}
 }
 
 // libwyv_ui_model_preview_select
@@ -150,13 +196,151 @@ bool libwyv_ui_model_preview_select(bool testConds, bool runActions) {
 	j = libwyv_model_catalog_shift[player][i]; //in case a search was run, the index will be offset
 	model = libwyv_model_catalog[i + j];
 
+	// remove any attached axis attachpoint testers
+	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[player].portrait), LIBWYV_UI_MODELPREVIEW_ATTACHREF, "Destroy");
+
+	// create the new actor/model
 	libNtve_gf_SetDialogItemModel(libwyv_ui_modelpreview[player].portrait, model, PlayerGroupSingle(EventPlayer()));
 	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[player].portrait), "ModelSwap {" + model + "}");
 	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[player].portrait), LIBWYV_UI_MODELPREVIEW_SCALE_AMSG);
 	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[player].portrait), "SetFacing 0");
+	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[player].portrait), "AliasAdd " + LIBWYV_UI_MODELPREVIEW_MODELREF);
 
 	libwyv_ui_modelpreview[player].scale = LIBWYV_UI_MODELPREVIEW_SCALE_INIT;
 	libwyv_ui_modelpreview[player].angle = 0;
 
+	return true;
+}
+
+// libwyv_ui_modelpreview_filter
+// ==============
+// Filters the model list for the search terms input.
+// -> Must create offsets for each catalog entry so the player can switch
+//    model to proper model in list, since theres no way to get the string
+//    value from a list item.
+bool libwyv_ui_modelpreview_filter(bool testConds, bool runActions) {
+	string filter = libNtve_gf_DialogItemEditValue(libwyv_ui_modelpreview_search, EventPlayer());
+	int i;
+	int j = 0;
+
+	// first reset list
+	libwyv_ui_modelpreview_list_reset(EventPlayer());
+
+	// search bar empty, just reset list and exit
+	if( filter == "" ) {
+		return true;
+	}
+
+	// else, remove entries that dont match filter
+	for( i = 1; i <= libwyv_nmodels; i += 1) {
+		if( !StringContains(libwyv_model_catalog[i], filter, c_stringAnywhere, c_stringNoCase) ) {
+			DialogControlRemoveItem(libwyv_ui_modelpreview_list, PlayerGroupSingle(EventPlayer()), i - j);
+			j += 1;
+		}
+		else {
+			libwyv_model_catalog_shift[EventPlayer()][i - j] = j;
+		}
+	}
+
+	return true;
+}
+
+// libwyv_ui_modelpreview_reset
+// ==============
+// repopulates the model preview list with model catalog entries
+bool libwyv_ui_modelpreview_reset(bool testConds, bool runActions) {
+	libwyv_ui_modelpreview_list_reset(EventPlayer());
+	return true;
+}
+
+// libwyv_ui_modelpreview_scale_inc
+// ===============
+// Increases the model preview scale size by the increment step defined
+bool libwyv_ui_modelpreview_scale_inc(bool testConds, bool runActions) {
+	libwyv_ui_modelpreview[EventPlayer()].scale += LIBWYV_UI_MODELPREVIEW_SCALE_STEP;
+	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), "SetScale " + FixedToString(libwyv_ui_modelpreview[EventPlayer()].scale, 3) + " 0.1");
+	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_ATTACHREF, "SetScale " + FixedToString(libwyv_ui_modelpreview[EventPlayer()].scale, 3) + " 0.1");
+	return true;
+}
+
+// libwyv_ui_modelpreview_scale_dec
+// ================
+// Decreases the model preview scale size by decrement
+// -> If reached min scale, dont scale any further
+bool libwyv_ui_modelpreview_scale_dec(bool testConds, bool runActions) {
+	if( libwyv_ui_modelpreview[EventPlayer()].scale > LIBWYV_UI_MODELPREVIEW_SCALE_MIN ) {
+		libwyv_ui_modelpreview[EventPlayer()].scale -= LIBWYV_UI_MODELPREVIEW_SCALE_STEP;
+		ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), "SetScale " + FixedToString(libwyv_ui_modelpreview[EventPlayer()].scale, 3) + " 0.1");
+		ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_ATTACHREF, "SetScale " + FixedToString(libwyv_ui_modelpreview[EventPlayer()].scale, 4) + " 0.1");
+	}
+	return true;
+}
+
+// libwyv_ui_modelpreview_angle_inc
+// ==================
+// Increments the facing angle of the model by the defined step constant
+// (rotates towards right, CCW)
+bool libwyv_ui_modelpreview_angle_inc(bool testConds, bool runActions) {
+	libwyv_ui_modelpreview[EventPlayer()].angle += LIBWYV_UI_MODELPREVIEW_ANGLE_STEP;
+	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), "SetFacing " + IntToString(libwyv_ui_modelpreview[EventPlayer()].angle));
+	return true;
+}
+
+// libwyv_ui_modelpreview_angle_dec
+// ==================
+// Decrements the facing angle of the model by the defined step constant
+// (rotates towards left, CW)
+bool libwyv_ui_modelpreview_angle_dec(bool testConds, bool runActions) {
+	libwyv_ui_modelpreview[EventPlayer()].angle -= LIBWYV_UI_MODELPREVIEW_ANGLE_STEP;
+	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), "SetFacing " + IntToString(libwyv_ui_modelpreview[EventPlayer()].angle));
+	return true;
+}
+
+// libwyv_ui_modelpreview_anim_play
+// ==================
+// Makes the portrait model play an animation input in the anim editbox
+bool libwyv_ui_modelpreview_anim_play(bool testConds, bool runActions) {
+	string anim = libNtve_gf_DialogItemEditValue(libwyv_ui_modelpreview_anim, EventPlayer());
+
+	// force capitalization of the first letter
+	// since animations have first letter capitalized
+	anim = StringCase(StringSub(anim, 1, 1), true) + StringSub(anim, 2, StringLength(anim));
+
+	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), "AnimPlay " + LIBWYV_UI_MODELPREVIEW_ANIMNAME + " " + anim + " PlayForever");
+	return true;
+}
+
+// libwyv_ui_modelpreview_anim_reset
+// ===============
+// Resets (clears) the animation applied to the model preview
+bool libwyv_ui_modelpreview_anim_reset(bool testConds, bool runActions) {
+	ActorSend(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), "AnimClear " + LIBWYV_UI_MODELPREVIEW_ANIMNAME);
+	return true;
+}
+
+// libwyv_ui_modelpreview_anim_play
+// ==================
+// Attaches an axis to the input point in the attach point edit box
+bool libwyv_ui_modelpreview_attach_axis(bool testConds, bool runActions) {
+	string attachpt = libNtve_gf_DialogItemEditValue(libwyv_ui_modelpreview_attach, EventPlayer());
+	if( attachpt == "" ) { // no input, exit
+		return true;
+	}
+
+	// force capitalization of the first letter
+	attachpt = StringCase(StringSub(attachpt, 1, 1), true) + StringSub(attachpt, 2, StringLength(attachpt));
+
+	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_MODELREF, "AttachModelOffset {} {Axis} {" + attachpt + "}");
+	ActorSend(ActorFrom("::LastCreatedActual"), "AliasAdd " + LIBWYV_UI_MODELPREVIEW_ATTACHREF);
+	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_ATTACHREF, "SetScale " + FixedToString(libwyv_ui_modelpreview[EventPlayer()].scale, 4) + " 0.1");
+
+	return true;
+}
+
+// libwyv_ui_modelpreview_attach_reset
+// ==================
+// Removes all attached axis from the preview model
+bool libwyv_ui_modelpreview_attach_reset(bool testConds, bool runActions) {
+	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_ATTACHREF, "Destroy");
 	return true;
 }
