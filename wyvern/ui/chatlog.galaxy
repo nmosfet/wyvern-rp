@@ -1,0 +1,17 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// dialog for the chat log
+int libwyv_ui_chatlog;
+
+// libwyv_ui_chatlog_init
+// ==================
+// Creates the chat log ui panel
+void libwyv_ui_chatlog_init() {
+	libwyv_ui_chatlog = libwyv_create_dialog(600, 700, c_anchorRight, 60, -150);
+}

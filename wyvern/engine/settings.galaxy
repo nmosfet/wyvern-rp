@@ -42,7 +42,7 @@ libwyv_settings_definition libwyv_settings;
 // initializes default settings
 void libwyv_settings_initialize() {
 	libwyv_settings.map_revealed = true;
-	libwyv_settings.commands = "alias, template, var";
+	libwyv_settings.commands = "alias, macro, var";
 	libwyv_settings.min_scale = 0.001;
 	libwyv_settings.max_scale = 20.0;
 

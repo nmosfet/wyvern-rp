@@ -7,7 +7,7 @@
 //=========================================================
 
 include "wyvern/engine/chat/alias.galaxy"
-include "wyvern/engine/chat/templates.galaxy"
+include "wyvern/engine/chat/macro.galaxy"
 include "wyvern/engine/chat/variables.galaxy"
 
 const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX = "libwyv_command_";
@@ -31,7 +31,7 @@ void libwyv_chat_command_create(string command, string function) {
 // libwyv_chat_parse
 // =================
 // parses a chat message string for commands (each command separated by ";" )
-// built-in commands are "alias", "template", and "var" which affect parsing
+// built-in commands are "alias", "macro", and "var" which affect parsing
 // hence these are treated separately than all other commands
 void libwyv_chat_parse(string msg, int player, unitgroup target) {
 	string current = msg;
@@ -87,7 +87,7 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 			continue;
 		}
 
-		// check if performing reserved keyword commands (alias, template, var)
+		// check if performing reserved keyword commands (alias, macro, var)
 		if ( StringEqual( StringWord(current, 1), "alias", c_stringNoCase) ) {
 			// returns true if using "alias create":
 			// in this case, the rest of msg is used up AS IS, so parsing considered finished
@@ -96,10 +96,10 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 			}
 			continue; // skip OOC printing
 		}
-		else if ( StringEqual( StringWord(current, 1), "template", c_stringNoCase) ) {
-			// returns true if using "template create":
+		else if ( StringEqual( StringWord(current, 1), "macro", c_stringNoCase) ) {
+			// returns true if using "macro create":
 			// in this case, the rest of msg is used up AS IS, so parsing considered finished
-			if( libwyv_template_command_redirect(current, player) ) {
+			if( libwyv_macro_command_redirect(current, player) ) {
 				break;
 			}
 			continue; // skip OOC printing
@@ -116,9 +116,9 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 			continue;
 		}
 
-		// if template exists, append evaluated template to msg and parse
-		if( BankKeyExists( libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_TEMPLATE, StringWord(current, 1) ) ) {
-			msg = libwyv_template(current, player) + ";" + msg;
+		// if macro exists, append evaluated macro to msg and parse
+		if( BankKeyExists( libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_MACRO, StringWord(current, 1) ) ) {
+			msg = libwyv_macro(current, player) + ";" + msg;
 			continue;
 		}
 

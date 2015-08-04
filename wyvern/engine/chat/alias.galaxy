@@ -7,7 +7,7 @@
 //=========================================================
 
 const int LIBWYV_ALIAS_MAX_DEPTH = 10;	// max depth of recursive alias replacing (prevent infinite aliasing)
-const string LIBWYV_BANK_SECTION_ALIAS = "alias";
+const string LIBWYV_BANK_SECTION_ALIAS = "aliases";
 
 // libwyv_alias_command_redirect
 // ===================
@@ -16,23 +16,23 @@ bool libwyv_alias_command_redirect(string command, int player) {
 	string subcommand = StringWord(command, 2);
 	string alias = "";
 	string content = "";
-	
-	if( StringEqual(subcommand, "create", c_stringNoCase) ) { 
+
+	if( StringEqual(subcommand, "create", c_stringNoCase) ) {
 		alias = StringWord(command, 3);
-		
+
 		// remove "alias" and "create" and the alias from chat msg
 		content = StringReplaceWord(libwyv_player[player].chat_msg, "alias", "", 1, c_stringNoCase);
 		content = StringReplaceWord(content, "create", "", 1, c_stringNoCase);
 		content = libwyv_string_trim( StringSub(content, StringFind(content, alias, c_stringNoCase) + StringLength(alias) + 1, StringLength(content)) );
-		
-		if( content != "" ) { 
+
+		if( content != "" ) {
 			libwyv_bank_create(LIBWYV_BANK_SECTION_ALIAS, alias, content, player);
 			libwyv_print_success("ALIAS CREATED: " + alias + "\n" + "[\'" + content + "\']", player);
 		}
 		else {
 			libwyv_print_error("ALIAS CANNOT BE EMPTY", player);
 		}
-		
+
 		return true;
 	}
 	else if( StringEqual(subcommand, "remove", c_stringNoCase) ) {
@@ -61,7 +61,7 @@ bool libwyv_alias_command_redirect(string command, int player) {
 	else {
 		libwyv_print_error("INVALID ALIAS COMMAND", player);
 	}
-	
+
 	return false;
 }
 
@@ -72,11 +72,11 @@ string libwyv_alias_sub(string msg, int player, int recursion_depth) {
 	string alias = StringWord(msg, 1);
 	string subbed = "";
 	int i = 1;
-	
+
 	if( recursion_depth > LIBWYV_ALIAS_MAX_DEPTH ) {
 		return msg;
 	}
-	
+
 	while( alias != "" ) {
 		if( BankKeyExists( libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_ALIAS, alias ) ) {
 			subbed = subbed + " " + libwyv_alias_sub(BankValueGetAsString(libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_ALIAS, alias), player, recursion_depth + 1);
@@ -84,7 +84,7 @@ string libwyv_alias_sub(string msg, int player, int recursion_depth) {
 		else {
 			subbed = subbed + " " + alias;
 		}
-		
+
 		i += 1;
 		alias = StringWord(msg, i);
 	}

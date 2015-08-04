@@ -41,6 +41,8 @@ static int libwyv_nmodels;
 int libwyv_ui_modelpreviewer;
 
 // dialog control items
+// TODO: move most of the buttons to local vars, since they arent needed
+// outside of the function itself
 static int libwyv_ui_modelpreview_list;
 static int libwyv_ui_modelpreview_rotl_btn;
 static int libwyv_ui_modelpreview_rotr_btn;
@@ -327,9 +329,13 @@ bool libwyv_ui_modelpreview_attach_axis(bool testConds, bool runActions) {
 		return true;
 	}
 
-	// force capitalization of the first letter
+	// force capitalization of the first letter (most actor attach points
+	// have capital first letter)
 	attachpt = StringCase(StringSub(attachpt, 1, 1), true) + StringSub(attachpt, 2, StringLength(attachpt));
 
+	// Attach an axis to the test point
+	// -> must use ::LastCreatedActual to capture the Axis because it belongs
+	//    to CActorModel scope, which cant be referenced with ActorLastCreated()
 	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_MODELREF, "AttachModelOffset {} {Axis} {" + attachpt + "}");
 	ActorSend(ActorFrom("::LastCreatedActual"), "AliasAdd " + LIBWYV_UI_MODELPREVIEW_ATTACHREF);
 	ActorSendTo(ActorFromDialogControl(libwyv_ui_modelpreview[EventPlayer()].portrait), LIBWYV_UI_MODELPREVIEW_ATTACHREF, "SetScale " + FixedToString(libwyv_ui_modelpreview[EventPlayer()].scale, 4) + " 0.1");
