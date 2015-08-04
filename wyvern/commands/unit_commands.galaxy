@@ -139,7 +139,7 @@ bool libwyv_command_behaviors(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		// print unit name and ID
-		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()), PlayerGroupSingle(EventPlayer()) );
+		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" behaviors:"), PlayerGroupSingle(EventPlayer()) );
 
 		count = UnitBehaviorCountAll(UnitGroupLoopCurrent());
 		if( count > 0 ) {
@@ -204,6 +204,33 @@ bool libwyv_command_removebehavior(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
+	return true;
+}
+
+// libwyv_command_weapons
+// =================
+// prints a list of the weapons a unit currently has
+bool libwyv_command_weapons(bool testConds, bool runActions) {
+	int count;
+
+	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	while(!UnitGroupLoopDone()) {
+		// print unit name and ID
+		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" weapons:"), PlayerGroupSingle(EventPlayer()) );
+
+		count = UnitWeaponCount(UnitGroupLoopCurrent());
+		if( count > 0 ) {
+			while( count > 0 ) {
+				libwyv_print_output(UnitWeaponGet(UnitGroupLoopCurrent(), count), EventPlayer());
+				count -= 1;
+			}
+		}
+		else { // count == 0, no behaviors
+			libwyv_print_output("No weapons", EventPlayer());
+		}
+		UnitGroupLoopStep();
+	}
+	UnitGroupLoopEnd();
 	return true;
 }
 
