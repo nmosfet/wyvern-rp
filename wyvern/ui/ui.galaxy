@@ -70,6 +70,7 @@ void libwyv_ui_initialize() {
 	for( player = 1; player < LIBWYV_MAX_PLAYERS; player += 1 ) {
 		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
 			libwyv_ui_modelpreviewer_init_player(player);
+			libwyv_ui_chatlog_init_player(player);
 		}
 	}
 

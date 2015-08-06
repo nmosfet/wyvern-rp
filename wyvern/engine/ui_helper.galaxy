@@ -21,6 +21,8 @@ const string LIBWYV_UI_SUBPANEL_BACKGROUND = "Assets\\Textures\\ui_ingame_subpan
 const string LIBWYV_UI_HEADER1 = "CantinaLevelStart";
 const string LIBWYV_UI_HEADER2 = "DirectiveDisplay";
 const string LIBWYV_UI_HEADER3 = "DebugTechPanelLabel";
+const string LIBWYV_UI_HEADER4 = "Header18";
+const string LIBWYV_UI_HEADER5 = "Header16";
 const string LIBWYV_UI_SHINING = "CreditsLabel";
 
 // generic icons
@@ -51,6 +53,16 @@ int libwyv_create_dialog(int width, int height, int anchor, int offset_x, int of
 // Creates a static label for a dialog with a given text style
 int libwyv_create_dialog_label(int dialog, int width, int height, int anchor, int offset_x, int offset_y, string s, string style ) {
 	int label = libNtve_gf_CreateDialogItemLabel(dialog, width, height, anchor, offset_x, offset_y, StringToText(s), ColorWithAlpha(0,0,0,0), false, 0);
+	libNtve_gf_SetDialogItemStyle(label, style, PlayerGroupAll());
+
+	return label;
+}
+
+// libwyv_create_dialog_label
+// =================
+// Creates a static label for a dialog with a given text style
+int libwyv_create_dialog_label_text(int dialog, int width, int height, int anchor, int offset_x, int offset_y, text s, string style ) {
+	int label = libNtve_gf_CreateDialogItemLabel(dialog, width, height, anchor, offset_x, offset_y, s, ColorWithAlpha(0,0,0,0), false, 0);
 	libNtve_gf_SetDialogItemStyle(label, style, PlayerGroupAll());
 
 	return label;
@@ -99,15 +111,27 @@ int libwyv_create_dialog_list(int dialog, int width, int height, int anchor, int
 	return item;
 }
 
-// libwyv_create_dialog_list
+// libwyv_create_dialog_editbox
 // =====================
-// Creates a dialog control list and sets default styles
+// Creates a dialog control editbox and sets default styles
 int libwyv_create_dialog_editbox(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
 	int item = DialogControlCreate(dialog, c_triggerControlTypeEditBox);
 	DialogControlSetSize(item, PlayerGroupAll(), width, height);
     DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
 	libNtve_gf_SetDialogItemBorderImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	libNtve_gf_SetDialogItemImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
+	return item;
+}
+
+// libwyv_create_dialog_checkbox
+// =====================
+// Creates a dialog control checkbox and sets default styles
+int libwyv_create_dialog_checkbox(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
+	int item = DialogControlCreate(dialog, c_triggerControlTypeCheckBox);
+	DialogControlSetSize(item, PlayerGroupAll(), width, height);
+    DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
+	libNtve_gf_SetDialogItemBorderImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
+	//libNtve_gf_SetDialogItemImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	return item;
 }
 

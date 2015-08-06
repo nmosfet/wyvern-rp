@@ -14,9 +14,13 @@
 // number of messages to be logged
 const int LIBWYV_NLOGGED_MSG = 512;
 
-// max number of chars in a chat log msg
+// max number of chars in a chat log msg. This should be set so that chat log
+// messages can fit into a ui chatlog reader
 // (not including timestamp or a unit name)
 static const int LIBWYV_LOG_MSG_LENGTH = 30;
+
+// guess for the size of a typical unit say msg header (timestamp + unitname)
+static const int LIBWYV_LOG_MSG_HEADER_GUESS = 16;
 
 // event signal when a new chatlog message is added
 const string LIBWYV_EVENT_CHATLOG = "LIBWYV_EVENT_CHATLOG ";

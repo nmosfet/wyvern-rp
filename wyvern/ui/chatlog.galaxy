@@ -9,31 +9,63 @@
 // indent used for chatlog msg that are part of a previous msg
 static const string LIBWYV_UI_CHATLOG_INDENT = "              ";
 
+// number of players on the filter list
+static int libwyv_chatlog_nplayers = 0;
+
+// player message author filter for chatlog messages
+// filter checkboxes correspond to filter array index-1
+static int[LIBWYV_MAX_PLAYERS] libwyv_chatlog_filter;
+
 // dialog for the chat log
 int libwyv_ui_chatlog;
 
 // dialog controls for the chat log
 int libwyv_ui_chatlog_list;
+static int libwyv_ui_chatlog_filter_last = 0; // last player check in filter list
 
 // libwyv_ui_chatlog_init
 // ==================
 // Creates the chat log ui panel
 void libwyv_ui_chatlog_init() {
 	int i;
-	libwyv_ui_chatlog = libwyv_create_dialog(750, 600, c_anchorRight, 60, -150);
+	libwyv_ui_chatlog = libwyv_create_dialog(820, 600, c_anchorRight, 60, -150);
 
-	libwyv_ui_chatlog_list = libwyv_create_dialog_list(libwyv_ui_chatlog, 550, 580, c_anchorTopLeft, 10, 10);
+	// create the list used for chatlog messages as list items
+	libwyv_ui_chatlog_list = libwyv_create_dialog_list(libwyv_ui_chatlog, 600, 580, c_anchorTopLeft, 10, 10);
+
+	// create "Players:" label for player filter list
+	libwyv_create_dialog_label(libwyv_ui_chatlog, 100, 40, c_anchorTopRight, 100, 10, "Players:", LIBWYV_UI_HEADER3);
 
 	for( i = 0; i < LIBWYV_NLOGGED_MSG; i += 1 ) {
 		TriggerAddEventGeneric(TriggerCreate("libwyv_ui_chatlog_update"), LIBWYV_EVENT_CHATLOG + IntToString(i));
 	}
 }
 
+// libwyv_ui_chatlog_init
+// ===================
+// adds a player's name to the list of players to filter in the
+void libwyv_ui_chatlog_init_player(int player) {
+	int checkbox = libwyv_create_dialog_checkbox(libwyv_ui_chatlog, 30, 30, c_anchorTopRight, 175, 50);
+	int playername = libwyv_create_dialog_label_text(libwyv_ui_chatlog, 200, 20, c_anchorTopRight, 14, 12, libwyv_player_name_colored(player), LIBWYV_UI_HEADER5);
+	DialogControlSetPositionRelative(playername, PlayerGroupAll(), c_anchorLeft, checkbox, c_anchorRight, 0, 0);
+
+	// if a previous checkbox has been created, anchor new checkbox to previous
+	if( libwyv_ui_chatlog_filter_last != 0 ) {
+		DialogControlSetPositionRelative(checkbox, PlayerGroupAll(), c_anchorTop, libwyv_ui_chatlog_filter_last, c_anchorBottom, 0, 0);
+	}
+
+	// set the checkbox default marked (no players filtered)
+	libNtve_gf_SetDialogItemChecked(checkbox, true, PlayerGroupAll());
+
+	// set the global var for the last created checkbox
+	libwyv_ui_chatlog_filter_last = checkbox;
+}
+
 // libwyv_ui_chatlog_populate
 // =======================
 // Removes all entries and populates the player chatlog ui list from
 // the Wyvern chatlog
-void libwyv_ui_chatlog_populate(int player) {
+static void libwyv_ui_chatlog_populate(int player) {
 	int counter = LIBWYV_NLOGGED_MSG;
 	int i;
 	text msg;
@@ -67,6 +99,8 @@ bool libwyv_ui_chatlog_update(bool testConds, bool runActions) {
 	int i = StringToInt(StringWord(EventGenericName(), 2));
 	int player;
 	text msg;
+	bool[LIBWYV_MAX_PLAYERS] chatlog_filter;
+
 	if( libwyv_chatlog[i].is_part_of_prev ) {
 		msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
 	} else {
@@ -79,5 +113,6 @@ bool libwyv_ui_chatlog_update(bool testConds, bool runActions) {
 			DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
 		}
 	}
+
 	return true;
 }

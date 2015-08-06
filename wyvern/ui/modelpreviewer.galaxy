@@ -9,7 +9,7 @@
 // guess for the max number of catalog models
 // this is required because an array of model catalog entries must be used
 // the array must be declared with a fixed index size
-static const int LIBWYV_NCATALOGMAX = 10000;
+static const int LIBWYV_NCATALOGMAX = 12000;
 
 // intitial model preview scale and the scale size increment step
 static const fixed LIBWYV_UI_MODELPREVIEW_SCALE_INIT = 0.15;
