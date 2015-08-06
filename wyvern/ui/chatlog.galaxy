@@ -6,6 +6,9 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+
+static const string LIBWYV_DATA_TABLE_CHATLOG_FILTER = "ui_chatlog_filter ";
+
 // indent used for chatlog msg that are part of a previous msg
 static const string LIBWYV_UI_CHATLOG_INDENT = "              ";
 
@@ -14,7 +17,14 @@ static int libwyv_chatlog_nplayers = 0;
 
 // player message author filter for chatlog messages
 // filter checkboxes correspond to filter array index-1
-static int[LIBWYV_MAX_PLAYERS] libwyv_chatlog_filter;
+static int[LIBWYV_MAX_PLAYERS] libwyv_ui_chatlog_filter_list;
+
+// actual flags for whether a player's messages in chatlog are to be filtered
+// format for array is [Player][Flag], where flag is the player int of the
+// target player for filtering.
+// False (default) - not filtered
+// True - filtered (msg does not appear in chat log)
+static bool[LIBWYV_MAX_PLAYERS][LIBWYV_MAX_PLAYERS] libwyv_chatlog_filter;
 
 // dialog for the chat log
 int libwyv_ui_chatlog;
@@ -34,7 +44,7 @@ void libwyv_ui_chatlog_init() {
 	libwyv_ui_chatlog_list = libwyv_create_dialog_list(libwyv_ui_chatlog, 600, 580, c_anchorTopLeft, 10, 10);
 
 	// create "Players:" label for player filter list
-	libwyv_create_dialog_label(libwyv_ui_chatlog, 100, 40, c_anchorTopRight, 100, 10, "Players:", LIBWYV_UI_HEADER3);
+	libwyv_create_dialog_label(libwyv_ui_chatlog, 120, 40, c_anchorTopRight, 90, 10, "Players:", LIBWYV_UI_HEADER3);
 
 	for( i = 0; i < LIBWYV_NLOGGED_MSG; i += 1 ) {
 		TriggerAddEventGeneric(TriggerCreate("libwyv_ui_chatlog_update"), LIBWYV_EVENT_CHATLOG + IntToString(i));
@@ -56,6 +66,14 @@ void libwyv_ui_chatlog_init_player(int player) {
 
 	// set the checkbox default marked (no players filtered)
 	libNtve_gf_SetDialogItemChecked(checkbox, true, PlayerGroupAll());
+
+	// set the player for this checkbox
+	DataTableSetInt(true, LIBWYV_DATA_TABLE_CHATLOG_FILTER + IntToString(checkbox), player);
+	//libwyv_ui_chatlog_filter_list[libwyv_chatlog_nplayers] = player;
+	libwyv_chatlog_nplayers += 1;
+
+	// add trigger event for toggling player filter
+	TriggerAddEventDialogControl(TriggerCreate("libwyv_ui_chatlog_filter_toggle"), c_playerAny, checkbox, c_triggerControlEventTypeChecked);
 
 	// set the global var for the last created checkbox
 	libwyv_ui_chatlog_filter_last = checkbox;
@@ -79,15 +97,30 @@ static void libwyv_ui_chatlog_populate(int player) {
 	} else { // hasnt cycled, start chatlog populate from start
 		i = 0;
 		for( i = 0; i < libwyv_chatlog_counter; i += 1 ) {
-			if( libwyv_chatlog[i].is_part_of_prev ) {
-				msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
-			} else {
-				msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
+			if( !libwyv_chatlog_filter[player][libwyv_chatlog[i].author] ) {
+				if( libwyv_chatlog[i].is_part_of_prev ) {
+					msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
+				} else {
+					msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
+				}
+				DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
 			}
-			DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
-
 		}
 	}
+
+}
+
+// libwyv_ui_chatlog_filter_toggle
+bool libwyv_ui_chatlog_filter_toggle(bool testConds, bool runActions) {
+	int checkbox = EventDialogControl();
+	int player = EventPlayer();
+	int filtered = 	DataTableGetInt(true, LIBWYV_DATA_TABLE_CHATLOG_FILTER + IntToString(checkbox));
+	libwyv_chatlog_filter[player][filtered] = !libNtve_gf_DialogItemIsChecked(checkbox, player);
+
+	// update chat log based on filter
+	libwyv_ui_chatlog_populate(player);
+
+	return true;
 }
 
 // libwyv_ui_chatlog_update
