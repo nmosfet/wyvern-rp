@@ -49,7 +49,16 @@ include "wyvern/engine/output.galaxy"
 // bank
 // =============
 // Contains custom functions for writing to player banks
+
 include "wyvern/engine/bank.galaxy"
+
+// log (chat)
+// =============
+// (chat) log deals with messages that should be logged and able to be accessed
+// elsewhere, specifically for a message log reading ui module (chatlog).
+// These messages logged should be those from a @say or >narrate type command,
+// e.g. commands that print messages pertaining to the roleplay's story.
+include "wyvern/engine/chat/log.galaxy"
 
 // parser
 // =============
@@ -103,7 +112,7 @@ include "wyvern/engine/debug.galaxy"
 // engine version
 const int LIBWYV_BUILD_VERSION = 1;
 const int LIBWYV_BUILD_SUB_VERSION = 2;
-const string LIBWYV_BUILD_VERSION_MODIFIER = ".6-beta";
+const string LIBWYV_BUILD_VERSION_MODIFIER = ".7-beta";
 
 void libwyv_engine_initialize() {
 	int player = 1;

@@ -88,7 +88,7 @@ static void libwyv_ui_toolbar_init() {
 	int i;
 	int btn;
 
-	libwyv_ui_panel_toolbar = libwyv_create_dialog(80, 15 + 50*LIBWYV_UI_NPANELS, c_anchorRight, -22, -140);
+	libwyv_ui_panel_toolbar = libwyv_create_dialog(80, 14 + 50*LIBWYV_UI_NPANELS, c_anchorRight, -22, -140);
 	DialogSetVisible(libwyv_ui_panel_toolbar, PlayerGroupAll(), true);
 
 	// initialize toolbar buttons

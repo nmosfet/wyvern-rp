@@ -6,12 +6,78 @@
 // <http://opensource.org/licenses/MIT>
 //=========================================================
 
+// indent used for chatlog msg that are part of a previous msg
+static const string LIBWYV_UI_CHATLOG_INDENT = "              ";
+
 // dialog for the chat log
 int libwyv_ui_chatlog;
+
+// dialog controls for the chat log
+int libwyv_ui_chatlog_list;
 
 // libwyv_ui_chatlog_init
 // ==================
 // Creates the chat log ui panel
 void libwyv_ui_chatlog_init() {
-	libwyv_ui_chatlog = libwyv_create_dialog(600, 700, c_anchorRight, 60, -150);
+	int i;
+	libwyv_ui_chatlog = libwyv_create_dialog(750, 600, c_anchorRight, 60, -150);
+
+	libwyv_ui_chatlog_list = libwyv_create_dialog_list(libwyv_ui_chatlog, 550, 580, c_anchorTopLeft, 10, 10);
+
+	for( i = 0; i < LIBWYV_NLOGGED_MSG; i += 1 ) {
+		TriggerAddEventGeneric(TriggerCreate("libwyv_ui_chatlog_update"), LIBWYV_EVENT_CHATLOG + IntToString(i));
+	}
+}
+
+// libwyv_ui_chatlog_populate
+// =======================
+// Removes all entries and populates the player chatlog ui list from
+// the Wyvern chatlog
+void libwyv_ui_chatlog_populate(int player) {
+	int counter = LIBWYV_NLOGGED_MSG;
+	int i;
+	text msg;
+
+	// remove all existing messages
+	DialogControlRemoveAllItems(libwyv_ui_chatlog_list, PlayerGroupSingle(player));
+
+	if( libwyv_chatlog_cycled ) {
+		i = (libwyv_chatlog_counter + 1) % LIBWYV_NLOGGED_MSG;
+		// TODO: do a cycled read of the chatlog
+	} else { // hasnt cycled, start chatlog populate from start
+		i = 0;
+		for( i = 0; i < libwyv_chatlog_counter; i += 1 ) {
+			if( libwyv_chatlog[i].is_part_of_prev ) {
+				msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
+			} else {
+				msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
+			}
+			DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
+
+		}
+	}
+}
+
+// libwyv_ui_chatlog_update
+// ==================
+// Responds to a LIBWYV_EVENT_CHATLOG updated chatlog event:
+// Adds just the newest added entry to the chatlog.
+// TODO: filter the added entry by player filter
+bool libwyv_ui_chatlog_update(bool testConds, bool runActions) {
+	int i = StringToInt(StringWord(EventGenericName(), 2));
+	int player;
+	text msg;
+	if( libwyv_chatlog[i].is_part_of_prev ) {
+		msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
+	} else {
+		msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
+	}
+
+	for( player = 1; player < LIBWYV_MAX_PLAYERS; player += 1 ) {
+		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
+			//libwyv_ui_chatlog_populate(p);
+			DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
+		}
+	}
+	return true;
 }

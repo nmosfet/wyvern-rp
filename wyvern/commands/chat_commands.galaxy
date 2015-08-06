@@ -13,8 +13,12 @@
 bool libwyv_command_narrate(bool testConds, bool runActions) {
 	string msg = libwyv_player[EventPlayer()].chat_msg;
 	msg = StringSub( msg, StringFind(msg, " ", c_stringCase) + 1, StringLength(msg) ); // remainder of chat message
-	
+
 	libwyv_print( libwyv_string_trim(msg), PlayerGroupAll() );
+
+	// log msg in chatlog
+	libwyv_log(EventPlayer(), StringToText(""), msg);
+
 	return true;
 }
 
@@ -23,23 +27,30 @@ bool libwyv_command_narrate(bool testConds, bool runActions) {
 // prints [unit name]: msg to chat
 // (actor talk icon and sound are defined in data.galaxy)
 bool libwyv_command_say(bool testConds, bool runActions) {
+	text unit_name;
 	text unit_msg;
 	string cmd_msg = libwyv_player[EventPlayer()].chat_msg;
-	cmd_msg = StringSub( cmd_msg, StringFind(cmd_msg, " ", c_stringCase) + 1, StringLength(cmd_msg) ); // remainder of chat message
-	
-	unit_msg = StringToText(": " + libwyv_string_trim(cmd_msg));
-	
+	cmd_msg = ": " + libwyv_string_trim(StringSub( cmd_msg, StringFind(cmd_msg, " ", c_stringCase) + 1, StringLength(cmd_msg) )); // remainder of chat message
+
+	unit_msg = StringToText(cmd_msg);
+
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
+		unit_name = libwyv_unit_get_name( UnitGroupLoopCurrent() );
+
 		// @say unit visuals (flash circle, make a talk icon appear overhead)
 		UnitFlashSelection(UnitGroupLoopCurrent(), 2.0);
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AttachModel " + LIBWYV_TALK_ICON_ACTOR + "{} Overhead");
-		
-		libwyv_print_text( libwyv_unit_get_name( UnitGroupLoopCurrent() ) + unit_msg, PlayerGroupAll() );
+
+		libwyv_print_text( unit_name + unit_msg, PlayerGroupAll() );
+
+		// log msg in chatlog
+		libwyv_log(EventPlayer(), unit_name, cmd_msg);
+
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	
+
 	return true;
 }
 
@@ -49,7 +60,7 @@ bool libwyv_command_say(bool testConds, bool runActions) {
 bool libwyv_command_setname(bool testConds, bool runActions) {
 	string name = libwyv_player[EventPlayer()].chat_msg;
 	name = StringSub( name, StringFind(name, " ", c_stringCase) + 1, StringLength(name) ); // remainder of chat message
-	
+
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		libwyv_unit_set_name(name, UnitGroupLoopCurrent());
@@ -58,7 +69,7 @@ bool libwyv_command_setname(bool testConds, bool runActions) {
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	
+
 	return true;
 }
 
@@ -73,7 +84,7 @@ bool libwyv_command_setnamecolor(bool testConds, bool runActions) {
 	fixed g = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 3 ) );
 	fixed b = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 4 ) );
 	color col = Color( r*100/256 , g*100/256 , b*100/256 ); // normalize to 100
-	
+
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		libwyv_unit_set_name_color(col, UnitGroupLoopCurrent());
@@ -82,6 +93,6 @@ bool libwyv_command_setnamecolor(bool testConds, bool runActions) {
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	
+
 	return true;
 }

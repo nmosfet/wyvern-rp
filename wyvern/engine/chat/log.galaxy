@@ -1,0 +1,110 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @90-proof
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// Log deals with messages that should be logged and able to be accessed
+// elsewhere, specifically for a message log reading ui module (chatlog).
+// The messages that are logged should be "ingame" messages, e.g. those
+// from @say or >narrate that pertain to the roleplay story.
+
+// number of messages to be logged
+const int LIBWYV_NLOGGED_MSG = 512;
+
+// max number of chars in a chat log msg
+// (not including timestamp or a unit name)
+static const int LIBWYV_LOG_MSG_LENGTH = 30;
+
+// event signal when a new chatlog message is added
+const string LIBWYV_EVENT_CHATLOG = "LIBWYV_EVENT_CHATLOG ";
+
+// Type: libwyv_log_msg
+// ==============
+// Message information unit stored in chatlog array
+struct libwyv_log_msg {
+	int author;		// player number of the creator of this msg
+	text timestamp;	// text formatted timestamp [H:M:S]
+	text msg;		// text formatted message
+	bool is_part_of_prev;	// flag for whether this message part of the previous
+							// useful for multi-line split messages
+};
+
+libwyv_log_msg[LIBWYV_NLOGGED_MSG] libwyv_chatlog;
+
+// Counter for the current log index in the chatlog array.
+// The index of chatlog array must be cyclical: that is, after writing to
+// index LIBWYV_NLOGGED_MSG-1, the index will cycle back to 0.
+int libwyv_chatlog_counter = 0;
+
+// flag for whether the chatlog has cycled
+bool libwyv_chatlog_cycled = false;
+
+// libwyv_chatlog_add
+// ================
+// Adds a message to the chatlog at the current counter index
+// (stored in libwyv_chatlog_counter). When a new chatlog message saved,
+// sends event signal [LIBWYV_EVENT_CHATLOG + index]. This can be responded
+// to by any modules that utilize this chatlog. The reason for using events
+// rather than direct function calls is to decouple this module from any
+// clients, so there does not have to be any interlocking dependencies between
+// e.g. a chatlog ui and this engine chatlog system.
+// Though events introduces messiness.
+static void libwyv_chatlog_add(int index, int author, text timestamp, text msg, bool part_prev) {
+	libwyv_chatlog[index].author = author;
+	libwyv_chatlog[index].timestamp = timestamp;
+	libwyv_chatlog[index].msg = msg;
+	libwyv_chatlog[index].is_part_of_prev = part_prev;
+
+	// if chat log hasn't cycled and will cycle, check flag for cycled
+	if( !libwyv_chatlog_cycled && libwyv_chatlog_counter == (LIBWYV_NLOGGED_MSG - 1) ) {
+		libwyv_chatlog_cycled = true;
+	}
+
+	// send event that this chatlog message has been updated
+	TriggerSendEvent(LIBWYV_EVENT_CHATLOG + IntToString(libwyv_chatlog_counter));
+
+	// increment counter and take modulus to ensure
+	libwyv_chatlog_counter = (libwyv_chatlog_counter + 1) % LIBWYV_NLOGGED_MSG;
+}
+
+// libwyv_log
+// ===============
+// Conditions an input message into chunks for saving into the chatlog.
+// Used by client to log messages.
+void libwyv_log(int author, text unitname, string msg) {
+	int time = FixedToInt(GameGetMissionTime());
+	text timestamp = StringToText("[" + IntToString( time / 3600 ) + ":" + IntToString( ( time % 3600 ) / 60 ) + ":" + IntToString( time % 60 ) + "] ");
+	string chunk;
+
+	// split up the string msg into chunks that will fit into a chat log line
+	libwyv_print_output(msg, author);
+	if( StringLength(msg) > LIBWYV_LOG_MSG_LENGTH ) {
+		libwyv_chatlog_add(libwyv_chatlog_counter, author, timestamp, unitname + StringToText(StringSub(msg, 1, LIBWYV_LOG_MSG_LENGTH)), false);
+		libwyv_print_output(StringSub(msg, 1, LIBWYV_LOG_MSG_LENGTH), author);
+
+		msg = StringSub(msg, LIBWYV_LOG_MSG_LENGTH + 1, StringLength(msg));
+
+		while( msg != "" ) {
+			if( StringLength(msg) > LIBWYV_LOG_MSG_LENGTH ) {
+				chunk = StringSub(msg, 1, LIBWYV_LOG_MSG_LENGTH);
+				msg = StringSub(msg, LIBWYV_LOG_MSG_LENGTH + 1, StringLength(msg));
+				libwyv_print_output(chunk, author);
+
+				libwyv_chatlog_add(libwyv_chatlog_counter, author, timestamp, StringToText(chunk), true);
+
+			} else {
+				libwyv_print_output(msg, author);
+
+				libwyv_chatlog_add(libwyv_chatlog_counter, author, timestamp, StringToText(msg), true);
+				break;
+			}
+		}
+	}
+	else {
+		libwyv_chatlog_add(libwyv_chatlog_counter, author, timestamp, unitname + StringToText(msg), false);
+	}
+
+}
