@@ -84,28 +84,35 @@ void libwyv_ui_chatlog_init_player(int player) {
 // Removes all entries and populates the player chatlog ui list from
 // the Wyvern chatlog
 static void libwyv_ui_chatlog_populate(int player) {
-	int counter = LIBWYV_NLOGGED_MSG;
-	int i;
+	int nmsgs;	// number of messages to read
+	int count;	// counter
+	int i;		// chatlog read index
 	text msg;
 
 	// remove all existing messages
 	DialogControlRemoveAllItems(libwyv_ui_chatlog_list, PlayerGroupSingle(player));
 
+	// chatlog read index
 	if( libwyv_chatlog_cycled ) {
 		i = (libwyv_chatlog_counter + 1) % LIBWYV_NLOGGED_MSG;
-		// TODO: do a cycled read of the chatlog
-	} else { // hasnt cycled, start chatlog populate from start
+		nmsgs = LIBWYV_NLOGGED_MSG;
+	} else { // hasnt cycled, nmsgs < MAX_NMSGS
 		i = 0;
-		for( i = 0; i < libwyv_chatlog_counter; i += 1 ) {
-			if( !libwyv_chatlog_filter[player][libwyv_chatlog[i].author] ) {
-				if( libwyv_chatlog[i].is_part_of_prev ) {
-					msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
-				} else {
-					msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
-				}
-				DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
+		nmsgs = libwyv_chatlog_counter;
+	}
+
+	// populate chat log with messages from non-filtered players
+	for( count = 0; count < nmsgs; count += 1 ) {
+		if( !libwyv_chatlog_filter[player][libwyv_chatlog[i].author] ) {
+			if( libwyv_chatlog[i].is_part_of_prev ) {
+				msg = StringToText(LIBWYV_UI_CHATLOG_INDENT) + libwyv_chatlog[i].msg;
+			} else {
+				msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
 			}
+			DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
 		}
+
+		i = (i + 1) % LIBWYV_NLOGGED_MSG;
 	}
 
 }
