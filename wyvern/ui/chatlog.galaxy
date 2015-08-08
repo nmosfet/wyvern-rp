@@ -111,6 +111,10 @@ static void libwyv_ui_chatlog_populate(int player) {
 }
 
 // libwyv_ui_chatlog_filter_toggle
+// ==================
+// Event trigger for when player toggle a player for the chatlog filter:
+// Must update player's filter list, then repopulate chatlog based on
+// new filter.
 bool libwyv_ui_chatlog_filter_toggle(bool testConds, bool runActions) {
 	int checkbox = EventDialogControl();
 	int player = EventPlayer();
@@ -125,9 +129,9 @@ bool libwyv_ui_chatlog_filter_toggle(bool testConds, bool runActions) {
 
 // libwyv_ui_chatlog_update
 // ==================
-// Responds to a LIBWYV_EVENT_CHATLOG updated chatlog event:
-// Adds just the newest added entry to the chatlog.
-// TODO: filter the added entry by player filter
+// Responds to a LIBWYV_EVENT_CHATLOG updated chatlog event, where event
+// is in format "[CHATLOG_EVENT] [# index to update]":
+// Adds just the newest added entry to each players' chatlog
 bool libwyv_ui_chatlog_update(bool testConds, bool runActions) {
 	int i = StringToInt(StringWord(EventGenericName(), 2));
 	int player;
@@ -140,10 +144,12 @@ bool libwyv_ui_chatlog_update(bool testConds, bool runActions) {
 		msg = libwyv_chatlog[i].timestamp + libwyv_chatlog[i].msg;
 	}
 
+	// add new message to all active players' chatlogs
 	for( player = 1; player < LIBWYV_MAX_PLAYERS; player += 1 ) {
 		if( PlayerType(player) == c_playerTypeUser && PlayerStatus(player) == c_playerStatusActive ) {
-			//libwyv_ui_chatlog_populate(p);
-			DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
+			if( !libwyv_chatlog_filter[player][libwyv_chatlog[i].author] ) {
+				DialogControlAddItem(libwyv_ui_chatlog_list, PlayerGroupSingle(player), msg);
+			}
 		}
 	}
 

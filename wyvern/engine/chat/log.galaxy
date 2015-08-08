@@ -17,7 +17,7 @@ const int LIBWYV_NLOGGED_MSG = 512;
 // max number of chars in a chat log msg. This should be set so that chat log
 // messages can fit into a ui chatlog reader
 // (not including timestamp or a unit name)
-static const int LIBWYV_LOG_MSG_LENGTH = 30;
+static const int LIBWYV_LOG_MSG_LENGTH = 50;
 
 // guess for the size of a typical unit say msg header (timestamp + unitname)
 static const int LIBWYV_LOG_MSG_HEADER_GUESS = 16;
@@ -84,12 +84,17 @@ void libwyv_log(int author, text unitname, string msg) {
 	string chunk;
 
 	// split up the string msg into chunks that will fit into a chat log line
+	// -> must adjust for unit name in guess for first line
 	libwyv_print_output(msg, author);
-	if( StringLength(msg) > LIBWYV_LOG_MSG_LENGTH ) {
-		libwyv_chatlog_add(libwyv_chatlog_counter, author, timestamp, unitname + StringToText(StringSub(msg, 1, LIBWYV_LOG_MSG_LENGTH)), false);
+	if( StringLength(msg) > LIBWYV_LOG_MSG_LENGTH - LIBWYV_LOG_MSG_HEADER_GUESS ) {
+		// must special case the first message: set length of first message in
+		// series as ([HEADER] + [MAX LENGTH]), where the HEADER is an estimate
+		// of the unit name. Without this, first line will always be longer than
+		// others due to unit name. So first line msg is [MAX LENGTH] - [HEADER]
+		libwyv_chatlog_add(libwyv_chatlog_counter, author, timestamp, unitname + StringToText(StringSub(msg, 1, LIBWYV_LOG_MSG_LENGTH - LIBWYV_LOG_MSG_HEADER_GUESS)), false);
 		libwyv_print_output(StringSub(msg, 1, LIBWYV_LOG_MSG_LENGTH), author);
 
-		msg = StringSub(msg, LIBWYV_LOG_MSG_LENGTH + 1, StringLength(msg));
+		msg = StringSub(msg, LIBWYV_LOG_MSG_LENGTH - LIBWYV_LOG_MSG_HEADER_GUESS + 1, StringLength(msg));
 
 		while( msg != "" ) {
 			if( StringLength(msg) > LIBWYV_LOG_MSG_LENGTH ) {
