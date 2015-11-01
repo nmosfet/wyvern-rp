@@ -76,11 +76,11 @@ bool libwyv_command_cache(bool testConds, bool runActions) {
 			else {
 				unit_caches = FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_CACHE_COUNT), 0);
 			}
-			libwyv_print_output("Unit " + UnitGetType(UnitGroupLoopCurrent()) + " has " + unit_caches + " command caches (type \"@cache #\" to view a cache)", EventPlayer());
+			libwyv_print_output(EventPlayer(), "Unit " + UnitGetType(UnitGroupLoopCurrent()) + " has " + unit_caches + " command caches (type \"@cache #\" to view a cache)");
 		}
 		else {
 			if(DataTableValueExists(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0) + "." + cache)) {
-				libwyv_print_output("Unit " + UnitGetType(UnitGroupLoopCurrent()) + " cache " + cache + ":<n/>" + DataTableGetString(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0) + "." + cache), EventPlayer());
+				libwyv_print_output(EventPlayer(), "Unit " + UnitGetType(UnitGroupLoopCurrent()) + " cache " + cache + ":<n/>" + DataTableGetString(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0) + "." + cache));
 			}
 		}
 		UnitGroupLoopStep();
@@ -139,18 +139,18 @@ bool libwyv_command_behaviors(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		// print unit name and ID
-		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" behaviors:"), PlayerGroupSingle(EventPlayer()) );
+		libwyv_print_text(PlayerGroupSingle(EventPlayer()), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" behaviors:"));
 
 		count = UnitBehaviorCountAll(UnitGroupLoopCurrent());
 		if( count > 0 ) {
 			while( count > 0 ) {
 				behavior = UnitBehaviorGet(UnitGroupLoopCurrent(), count);
-				libwyv_print_output(behavior + " (" + IntToString( UnitBehaviorCount(UnitGroupLoopCurrent(), behavior) ) + ")", EventPlayer());
+				libwyv_print_output(EventPlayer(), behavior + " (" + IntToString( UnitBehaviorCount(UnitGroupLoopCurrent(), behavior) ) + ")");
 				count -= 1;
 			}
 		}
 		else { // count == 0, no behaviors
-			libwyv_print_output("No behaviors", EventPlayer());
+			libwyv_print_output(EventPlayer(), "No behaviors");
 		}
 		UnitGroupLoopStep();
 	}
@@ -168,7 +168,7 @@ bool libwyv_command_addbehavior(bool testConds, bool runActions) {
 	// get full behavior name from catalog
 	val = libwyv_catalog_get(c_gameCatalogBehavior, val);
 	if(val == null) {
-		libwyv_print_error("<c val=\"ff0000\">Unable to add behavior</c>: No such behavior exists.", EventPlayer());
+		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to add behavior</c>: No such behavior exists.");
 		return true;
 	}
 
@@ -192,7 +192,7 @@ bool libwyv_command_removebehavior(bool testConds, bool runActions) {
 	// get catalog entry from user input
 	val = libwyv_catalog_get(c_gameCatalogBehavior, val);
 	if(val == null) {
-		libwyv_print_error("<c val=\"ff0000\">Unable to remove behavior</c>: No such behavior exists.", EventPlayer());
+		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to remove behavior</c>: No such behavior exists.");
 		return true;
 	}
 
@@ -216,17 +216,17 @@ bool libwyv_command_weapons(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		// print unit name and ID
-		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" weapons:"), PlayerGroupSingle(EventPlayer()) );
+		libwyv_print_text(PlayerGroupSingle(EventPlayer()), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" weapons:"));
 
 		count = UnitWeaponCount(UnitGroupLoopCurrent());
 		if( count > 0 ) {
 			while( count > 0 ) {
-				libwyv_print_output(UnitWeaponGet(UnitGroupLoopCurrent(), count), EventPlayer());
+				libwyv_print_output(EventPlayer(), UnitWeaponGet(UnitGroupLoopCurrent(), count));
 				count -= 1;
 			}
 		}
 		else { // count == 0, no behaviors
-			libwyv_print_output("No weapons", EventPlayer());
+			libwyv_print_output(EventPlayer(), "No weapons");
 		}
 		UnitGroupLoopStep();
 	}
@@ -249,7 +249,7 @@ bool libwyv_command_addweapon(bool testConds, bool runActions) {
 
 	weapon = libwyv_catalog_get(c_gameCatalogWeapon, weapon);
 	if( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
-		libwyv_print_error("<c val=\"ff0000\">Unable to add weapon</c>: No such weapon exists.", EventPlayer());
+		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to add weapon</c>: No such weapon exists.");
 		return true;
 	}
 
@@ -257,7 +257,7 @@ bool libwyv_command_addweapon(bool testConds, bool runActions) {
 	if( turret != "CTurret") {
 		turret = libwyv_catalog_get(c_gameCatalogTurret, turret);
 		if( turret == null ) {
-			libwyv_print_error("<c val=\"ff0000\">Unable to add weapon</c>: No such turret exists.", EventPlayer());
+			libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to add weapon</c>: No such turret exists.");
 			return true;
 		}
 	}
@@ -282,7 +282,7 @@ bool libwyv_command_removeweapon(bool testConds, bool runActions) {
 	// get catalog entry for weapon and make sure weapon is valid
 	weapon = libwyv_catalog_get(c_gameCatalogWeapon, weapon);
 	if ( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
-		libwyv_print_error("<c val=\"ff0000\">Unable to remove weapon</c>: No such weapon exists.", EventPlayer());
+		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to remove weapon</c>: No such weapon exists.");
 		return true;
 	}
 
@@ -1355,7 +1355,7 @@ bool libwyv_command_effect(bool testConds, bool runActions) {
 
 	effect = libwyv_catalog_get(c_gameCatalogEffect, effect);
 	if(effect == null) {
-		libwyv_print_error( "<c val=\"ff0000\">Unable to create effect</c>: No such effect exists.", EventPlayer() );
+		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to create effect</c>: No such effect exists.");
 		return true;
 	}
 
@@ -1367,7 +1367,7 @@ bool libwyv_command_effect(bool testConds, bool runActions) {
 				libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@effect", libwyv_player[EventPlayer()].chat_msg);
 			}
 			else {
-				libwyv_print_error( "<c val=\"ff0000\">Unable to create the effect.</c>", EventPlayer() );
+				libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to create the effect.</c>");
 			}
 			UnitGroupLoopStep();
 		}
@@ -1378,7 +1378,7 @@ bool libwyv_command_effect(bool testConds, bool runActions) {
 			PlayerCreateEffectPoint(EventPlayer(), effect, libwyv_player[EventPlayer()].mouse_position);
 		}
 		else {
-			libwyv_print_error( "<c val=\"ff0000\">Unable to create the effect.</c>", EventPlayer() );
+			libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to create the effect.</c>");
 		}
 	}
 
@@ -1451,7 +1451,7 @@ bool libwyv_command_label(bool testConds, bool runActions) {
 	label = StringSub( label, StringFind(label, " ", c_stringCase) + 1, StringLength(label)); // The remainder of the chat message.
 
 	if( StringLength(label) > 512 ) {
-		libwyv_print_error("Your label length is too long.", EventPlayer());
+		libwyv_print_error(EventPlayer(), "Your label length is too long.");
 		return true;
 	}
 
@@ -1491,7 +1491,7 @@ bool libwyv_command_radius(bool testConds, bool runActions) {
 	unitgroup g = libwyv_player[EventPlayer()].context;
 
 	if(val == "") {
-		libwyv_print_error( "Usage: @radius collision_radius[%]", EventPlayer() );
+		libwyv_print_error(EventPlayer(), "Usage: @radius collision_radius[%]");
 	}
 	else if(StringContains(val, "%", c_stringEnd, c_stringCase)) {
 		radius = StringToFixed(StringSub(val, 1, StringLength(val) - 1));
@@ -1568,9 +1568,8 @@ bool libwyv_command_state(bool testConds, bool runActions) {
 	} else if( param == "usessupply" ) {
 		state = c_unitStateUsingSupply;
 	} else {
-		libwyv_print_error( "Usage: @radius [state] [on/off]\n" +
-							"States: fidget, highlightable, highlighted, ignoreterrainheight, invulnerable, hidden, paused, selectable, statusbar, targetable, tooltips, cursor, movable, turnable, usessupply"
-							, EventPlayer() );
+		libwyv_print_error(EventPlayer(), "Usage: @radius [state] [on/off]\n" +
+							"States: fidget, highlightable, highlighted, ignoreterrainheight, invulnerable, hidden, paused, selectable, statusbar, targetable, tooltips, cursor, movable, turnable, usessupply");
 		return false;
 	}
 
@@ -1579,7 +1578,7 @@ bool libwyv_command_state(bool testConds, bool runActions) {
 		status = true;
 	}
 
-	libwyv_print( "Setting state " + param + ": " + libNtve_gf_ConvertBooleanToString(status), PlayerGroupSingle(EventPlayer()) );
+	libwyv_print(PlayerGroupSingle(EventPlayer()), "Setting state " + param + ": " + libNtve_gf_ConvertBooleanToString(status));
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {

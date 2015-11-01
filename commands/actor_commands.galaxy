@@ -152,7 +152,7 @@ bool libwyv_command_actoralias(bool testConds, bool runActions) {
 	// get actor alias
 	actoralias = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
 	if( actoralias == "" ) {
-		libwyv_print_error("Actor alias cannot be blank", EventPlayer());
+		libwyv_print_error(EventPlayer(), "Actor alias cannot be blank");
 		return false;
 	}
 
@@ -360,7 +360,7 @@ bool libwyv_command_modelswap(bool testConds, bool runActions) {
 
 	model = libwyv_catalog_get(c_gameCatalogModel, StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset));
 	if(model == null) {
-		libwyv_print_output("<c val=\"ff0000\">Unable to swap model</c>: No such model exists.", EventPlayer());
+		libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to swap model</c>: No such model exists.");
 		return true;
 	}
 	amsg = "ModelSwap {" + model + "}";
@@ -596,7 +596,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	}
 
 	if( actr == "listpoints" || model =="listpoints" ) {
-		libwyv_print("<c val=\"00ff00\">Available attach points</c>:<n/>" + attachPoints, PlayerGroupSingle(EventPlayer()));
+		libwyv_print(PlayerGroupSingle(EventPlayer()), "<c val=\"00ff00\">Available attach points</c>:<n/>" + attachPoints);
 		return true;
 	}
 
@@ -604,7 +604,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 2 + parse_offset) == "-m") { //do catalog check for model
 		model = libwyv_catalog_get(c_gameCatalogModel, model);
 		if(model == null) {
-			libwyv_print_output("<c val=\"ff0000\">Unable to attach actor model</c>: No such model exists.", EventPlayer());
+			libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to attach actor model</c>: No such model exists.");
 			return true;
 		}
 		parse_offset += 1; // increase parse offset since model "-m" flag being used
@@ -612,12 +612,12 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	else { // do catalog check for actor
 		actr = libwyv_catalog_get(c_gameCatalogActor, actr);
 		if(actr == null) {
-			libwyv_print_output("<c val=\"ff0000\">Unable to attach actor</c>: No such actor exists.", EventPlayer());
+			libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to attach actor</c>: No such actor exists.");
 			return true;
 		}
 		scope = CatalogEntryScope( c_gameCatalogActor, actr );
 		if( scope == "CActorEventMacro" || scope == "CActorSound" ) {
-			libwyv_print_output("<c val=\"ff0000\">Unable to attach actor</c>: Invalid actor.", EventPlayer());
+			libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to attach actor</c>: Invalid actor.");
 			return true;
 		}
 	}
@@ -649,7 +649,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 
 	if( x != -1 ) {
 		apoint = "Origin";
-		libwyv_print_output("<c val=\"ff0000\">Warning</c>: Invalid attachment point, defaulting to Origin.<n/>You can obtain a list of attachment points by typing <c val=\"00ff00\">@attach listpoints</c>.", EventPlayer());
+		libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Warning</c>: Invalid attachment point, defaulting to Origin.<n/>You can obtain a list of attachment points by typing <c val=\"00ff00\">@attach listpoints</c>.");
 	}
 
 	//remake the apoint string
@@ -705,7 +705,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 				SOp = StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x);
 				SOp = libwyv_catalog_get(c_gameCatalogActor, SOp);
 				if(SOp == null) {
-					libwyv_print_output("<c val=\"ff0000\">Warning: Encounted invalid or unknown Site Op: Skipping", EventPlayer());
+					libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Warning: Encounted invalid or unknown Site Op: Skipping");
 				}
 				else {
 					siteops = siteops + " " + SOp;
@@ -736,9 +736,6 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	if(siteops != "") {
 		actormsg = actormsg + " " + siteops;
 	}
-
-	// DEBUG: prints out actor message created
-	// libwyv_print_success("TEST: ACTORMSG = " + "\"" + actormsg + "\"", EventPlayer());
 
 	// apply attach actor msg to units
 	if( StringSub(target, 1, 2) == "->" ) {

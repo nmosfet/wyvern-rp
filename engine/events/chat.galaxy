@@ -19,7 +19,7 @@ bool libwyv_process_chat_event(bool testConds, bool runActions) {
 	// "<< " directly dumps message to OOC (if player not muted)
 	if ( StringWord( libwyv_player[EventPlayer()].chat_msg, 1) == "<<" &&  !libwyv_player[EventPlayer()].muted ) {
 		libwyv_player[EventPlayer()].chat_msg = libwyv_string_trim( StringSub(libwyv_player[EventPlayer()].chat_msg, 3, StringLength(libwyv_player[EventPlayer()].chat_msg)) );
-		libwyv_chat_print_OOC( libwyv_player[EventPlayer()].chat_msg , EventPlayer());
+		libwyv_chat_print_OOC(EventPlayer(), libwyv_player[EventPlayer()].chat_msg);
 	}
 	else if( !libwyv_player[EventPlayer()].disabled ) {
 		// if player is mouse-click spawning, set context to spawn splat
@@ -34,7 +34,7 @@ bool libwyv_process_chat_event(bool testConds, bool runActions) {
 		libwyv_chat_parse(libwyv_player[EventPlayer()].chat_msg, EventPlayer(), target);
 	}
 	else if( !libwyv_player[EventPlayer()].muted ){
-		libwyv_chat_print_OOC( libwyv_player[EventPlayer()].chat_msg , EventPlayer());
+		libwyv_chat_print_OOC(EventPlayer(), libwyv_player[EventPlayer()].chat_msg);
 	}
 
 	// TODO: chat message logging

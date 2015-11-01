@@ -27,10 +27,10 @@ bool libwyv_alias_command_redirect(string command, int player) {
 
 		if( content != "" ) {
 			libwyv_bank_create(LIBWYV_BANK_SECTION_ALIAS, alias, content, player);
-			libwyv_print_success("ALIAS CREATED: " + alias + "\n" + "[\'" + content + "\']", player);
+			libwyv_print_success(player, "ALIAS CREATED: " + alias + "\n" + "[\'" + content + "\']");
 		}
 		else {
-			libwyv_print_error("ALIAS CANNOT BE EMPTY", player);
+			libwyv_print_error(player, "ALIAS CANNOT BE EMPTY");
 		}
 
 		return true;
@@ -39,15 +39,15 @@ bool libwyv_alias_command_redirect(string command, int player) {
 		alias = StringWord(command, 3);
 		if( BankKeyExists(libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_ALIAS, alias) ) {
 			libwyv_bank_remove(LIBWYV_BANK_SECTION_ALIAS, alias, player);
-			libwyv_print_success("ALIAS REMOVED: " + alias, player);
+			libwyv_print_success(player, "ALIAS REMOVED: " + alias);
 		}
 		else {
-			libwyv_print_error("ALIAS " + alias + " DOES NOT EXIST", player);
+			libwyv_print_error(player, "ALIAS " + alias + " DOES NOT EXIST");
 		}
 	}
 	else if( StringEqual(subcommand, "removeall", c_stringNoCase) ) {
 		libwyv_bank_section_remove_all(LIBWYV_BANK_SECTION_ALIAS, player);
-		libwyv_print_success("ALL ALIASES REMOVED", player);
+		libwyv_print_success(player, "ALL ALIASES REMOVED");
 	}
 	else if( StringEqual(subcommand, "list", c_stringNoCase) ) {
 		libwyv_bank_section_dump(LIBWYV_BANK_SECTION_ALIAS, player);
@@ -59,7 +59,7 @@ bool libwyv_alias_command_redirect(string command, int player) {
 		libwyv_bank_key_content_dump(LIBWYV_BANK_SECTION_ALIAS, subcommand, player);
 	}
 	else {
-		libwyv_print_error("INVALID ALIAS COMMAND", player);
+		libwyv_print_error(player, "INVALID ALIAS COMMAND");
 	}
 
 	return false;

@@ -28,11 +28,11 @@ void libwyv_bank_section_remove_all(string section, int player) {
 // prints out content of bank value
 void libwyv_bank_key_content_dump(string section, string key, int player) {
 	if( BankKeyExists(libwyv_player[player].bank_storage, section, key) ) {
-		libwyv_print_output(StringCase(section, true) + ": " + key, player);
-		libwyv_print_output("CONTENT: " + BankValueGetAsString(libwyv_player[player].bank_storage, section, key), player);
+		libwyv_print_output(player, StringCase(section, true) + ": " + key);
+		libwyv_print_output(player, "CONTENT: " + BankValueGetAsString(libwyv_player[player].bank_storage, section, key));
 	}
 	else {
-		libwyv_print_error(StringCase(section, true) + " " + key + " DOES NOT EXIST", player);
+		libwyv_print_error(player, StringCase(section, true) + " " + key + " DOES NOT EXIST");
 	}
 }
 
@@ -50,9 +50,9 @@ void libwyv_bank_section_dump(string section, int player) {
 		}
 		// remove extra ','
 		keys = StringSub(keys, 1, StringLength(keys) - 1) + "]";
-		libwyv_print_output(StringCase(section, true) + ":\n" + keys, player);
+		libwyv_print_output(player, StringCase(section, true) + ":\n" + keys);
 	}
 	else {
-		libwyv_print_output("You have no " + section, player);
+		libwyv_print_output(player, "You have no " + section);
 	}
 }

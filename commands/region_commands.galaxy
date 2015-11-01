@@ -17,7 +17,7 @@ bool libwyv_command_region_create(bool testConds, bool runActions) {
 	string name = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
 
 	if( name == "" ) {
-		libwyv_print_error("Invalid region name", EventPlayer());
+		libwyv_print_error(EventPlayer(), "Invalid region name");
 		return false;
 	}
 
@@ -27,14 +27,14 @@ bool libwyv_command_region_create(bool testConds, bool runActions) {
 	}
 
 	if( DataTableGetRegion( true, libwyv_region_get_name(name, EventPlayer()) ) ) {
-		libwyv_print_error("A region with that name already exists!", EventPlayer());
+		libwyv_print_error(EventPlayer(), "A region with that name already exists!");
 		return false;
 	}
 
 	r = RegionCircle( libwyv_player[EventPlayer()].mouse_position, radius );
 
 	DataTableSetRegion( true, libwyv_region_get_name(name, EventPlayer()), r );
-	libwyv_print_output("Region (circle) \"" + name + "\" has been created.", EventPlayer());
+	libwyv_print_output(EventPlayer(), "Region (circle) \"" + name + "\" has been created.");
 
 	return true;
 }
@@ -48,7 +48,7 @@ bool libwyv_command_region_remove(bool testConds, bool runActions) {
 	region rgn = DataTableGetRegion( true, name );
 
 	if( rgn == null ) {
-		libwyv_print_error("Region does not exist", EventPlayer());
+		libwyv_print_error(EventPlayer(), "Region does not exist");
 		return true;
 	}
 
@@ -63,7 +63,7 @@ bool libwyv_command_region_remove(bool testConds, bool runActions) {
 		DataTableValueRemove(true, LIBWYV_REGION_ANCHOR_DATA_TABLE_IDENTIFIER + " " + name);
 	}
 
-	libwyv_print_output("Region \"" + libwyv_region_get_public_name(name) + "\" has been removed", EventPlayer());
+	libwyv_print_output(EventPlayer(), "Region \"" + libwyv_region_get_public_name(name) + "\" has been removed");
 
 	return true;
 }
@@ -93,10 +93,10 @@ bool libwyv_command_region_removeall(bool testConds, bool runActions) {
 	}
 
 	if(removed > 0) {
-		libwyv_print_output("All your regions have been removed", EventPlayer());
+		libwyv_print_output(EventPlayer(), "All your regions have been removed");
 	}
 	else {
-		libwyv_print_output("You have no regions to remove", EventPlayer());
+		libwyv_print_output(EventPlayer(), "You have no regions to remove");
 	}
 
 	return true;
@@ -120,10 +120,10 @@ bool libwyv_command_region_list(bool testConds, bool runActions) {
 
 	if( region_list != "" ) {
 		region_list = StringSub(region_list, 3, StringLength(region_list)); // get rid of leading ", "
-		libwyv_print_output("Your regions:\n" + region_list, EventPlayer());
+		libwyv_print_output(EventPlayer(), "Your regions:\n" + region_list);
 	}
 	else {
-		libwyv_print_output("You have no regions", EventPlayer());
+		libwyv_print_output(EventPlayer(), "You have no regions");
 	}
 
 	return true;
@@ -144,7 +144,7 @@ bool libwyv_command_region_teleport(bool testConds, bool runActions) {
 	trigger t;
 
 	if( !DataTableValueExists(true, rgn_1_name) || !DataTableValueExists(true, rgn_2_name) ) {
-		libwyv_print_error("One or more invalid regions were entered.", EventPlayer());
+		libwyv_print_error(EventPlayer(), "One or more invalid regions were entered.");
 		return true;
 	}
 
@@ -164,8 +164,8 @@ bool libwyv_command_region_teleport(bool testConds, bool runActions) {
 	TriggerAddEventUnitRegion( t, null, rgn_2, true );
 	TriggerAddEventUnitRegion( t, null, rgn_2, false );
 
-	libwyv_print_output("Teleport created between regions " + libwyv_region_get_public_name(rgn_1_name)
-	                    + " and " + libwyv_region_get_public_name(rgn_2_name), EventPlayer());
+	libwyv_print_output(EventPlayer(), "Teleport created between regions " + libwyv_region_get_public_name(rgn_1_name)
+	                    + " and " + libwyv_region_get_public_name(rgn_2_name));
 
 	return true;
 }
@@ -184,7 +184,7 @@ bool libwyv_command_region_attach(bool checkConds, bool runActions) {
 
 	rgn = DataTableGetRegion(true, name);
 	if(rgn == null) {
-		libwyv_print_error("No region with that name exists!", EventPlayer());
+		libwyv_print_error(EventPlayer(), "No region with that name exists!");
 		return true;
 	}
 
@@ -194,7 +194,7 @@ bool libwyv_command_region_attach(bool checkConds, bool runActions) {
 	if(UnitGroupCount(g, c_unitCountAll) == 0) {	// no units selected -> unattach region
 		RegionAttachToUnit(rgn, null, offset);
 		DataTableValueRemove(true, LIBWYV_REGION_ANCHOR_DATA_TABLE_IDENTIFIER + " " + name);
-		libwyv_print_success("Region unattached successfully.", EventPlayer());
+		libwyv_print_success(EventPlayer(), "Region unattached successfully.");
 	}
 	else if(UnitGroupCount(g, c_unitCountAll) == 1) { // attach region to unit
 		// if a unit has previously had region attached, remove unit custom value
@@ -221,10 +221,10 @@ bool libwyv_command_region_attach(bool checkConds, bool runActions) {
 			}
 		}
 
-		libwyv_print_success("Region attached successfully.", EventPlayer());
+		libwyv_print_success(EventPlayer(), "Region attached successfully.");
 	}
 	else {
-		libwyv_print_error("You can't attach the same region to multiple units!", EventPlayer());
+		libwyv_print_error(EventPlayer(), "You can't attach the same region to multiple units!");
 	}
 
 	return true;

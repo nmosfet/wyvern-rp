@@ -744,8 +744,6 @@ unit libwyv_unit_cache_undo(unit subject_orig, int undo_iterations) {
 	UnitRemove(subject_orig);
 
 	//now parse all the commands from original unit to the new unit
-	//libwyv_unit_cache_isCopying[UnitGetOwner(subject_undo)] = true;
-
 	cache = 1;
 	g = UnitGroupEmpty();
 	UnitGroupAdd(g, subject_undo);
@@ -761,7 +759,7 @@ unit libwyv_unit_cache_undo(unit subject_orig, int undo_iterations) {
 	libwyv_unit_data_remove(subject_orig);
 
 	//finally, write how many commands undid and return the unit
-	libwyv_print_success( "(Unit: " + UnitGetType(subject_undo) + ") " + "Undid " + IntToString(undo_iterations - iterations) + " commands", EventPlayer() );
+	libwyv_print_success(EventPlayer(), "(Unit: " + UnitGetType(subject_undo) + ") " + "Undid " + IntToString(undo_iterations - iterations) + " commands");
 
 	return subject_undo;
 }

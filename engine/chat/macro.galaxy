@@ -24,7 +24,7 @@ bool libwyv_macro_command_redirect(string command, int player) {
 	// -> bank value stored is: "%a %b = @cmd1 %a; @cmd2 %b"
 	if( StringEqual(subcommand, "create", c_stringNoCase) ) {
 		if( !StringContains(libwyv_player[player].chat_msg, "=", c_stringAnywhere, c_stringNoCase) ) {
-			libwyv_print_error("IMPROPER MACRO: NO ASSIGNMENT", player);
+			libwyv_print_error(player, "IMPROPER MACRO: NO ASSIGNMENT");
 			return true;
 		}
 
@@ -35,7 +35,7 @@ bool libwyv_macro_command_redirect(string command, int player) {
 			// return true;
 		// }
 		if( StringContains(macro, "=", c_stringAnywhere, c_stringNoCase) ) {
-			libwyv_print_error("MACRO NAME CANNOT HAVE AN \'=\' SYMBOL", player);
+			libwyv_print_error(player, "MACRO NAME CANNOT HAVE AN \'=\' SYMBOL");
 			return true;
 		}
 
@@ -46,11 +46,11 @@ bool libwyv_macro_command_redirect(string command, int player) {
 
 		if( content != "" ) {
 			libwyv_bank_create(LIBWYV_BANK_SECTION_MACRO, StringWord(macro, 1), content, player);
-			libwyv_print_success("MACRO CREATED: " + macro + " " + StringSub(content, 1, StringFind(content, "=", c_stringNoCase) - 1) + "\n"
-								  + "[\'" + libwyv_string_trim( StringSub(content, StringFind(content, "=", c_stringNoCase) + 1, StringLength(content)) ) + "\']", player);
+			libwyv_print_success(player, "MACRO CREATED: " + macro + " " + StringSub(content, 1, StringFind(content, "=", c_stringNoCase) - 1) + "\n"
+								  + "[\'" + libwyv_string_trim( StringSub(content, StringFind(content, "=", c_stringNoCase) + 1, StringLength(content)) ) + "\']");
 		}
 		else {
-			libwyv_print_error("MACRO CANNOT BE EMPTY", player);
+			libwyv_print_error(player, "MACRO CANNOT BE EMPTY");
 		}
 
 		return true;
@@ -59,15 +59,15 @@ bool libwyv_macro_command_redirect(string command, int player) {
 		macro = StringWord(command, 3);
 		if( BankKeyExists(libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_MACRO, macro) ) {
 			libwyv_bank_remove(LIBWYV_BANK_SECTION_MACRO, macro, player);
-			libwyv_print_success("MACRO REMOVED: " + macro, player);
+			libwyv_print_success(player, "MACRO REMOVED: " + macro);
 		}
 		else {
-			libwyv_print_error("MACRO " + macro + " DOES NOT EXIST", player);
+			libwyv_print_error(player, "MACRO " + macro + " DOES NOT EXIST");
 		}
 	}
 	else if( StringEqual(subcommand, "removeall", c_stringNoCase) ) {
 		libwyv_bank_section_remove_all(LIBWYV_BANK_SECTION_MACRO, player);
-		libwyv_print_success("ALL MACROS REMOVED", player);
+		libwyv_print_success(player, "ALL MACROS REMOVED");
 	}
 	else if( StringEqual(subcommand, "list", c_stringNoCase) ) {
 		libwyv_bank_section_dump(LIBWYV_BANK_SECTION_MACRO, player);
@@ -79,7 +79,7 @@ bool libwyv_macro_command_redirect(string command, int player) {
 		libwyv_bank_key_content_dump(LIBWYV_BANK_SECTION_MACRO, subcommand, player);
 	}
 	else {
-		libwyv_print_error("INVALID MACRO COMMAND", player);
+		libwyv_print_error(player, "INVALID MACRO COMMAND");
 	}
 
 	return false;

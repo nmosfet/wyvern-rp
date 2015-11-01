@@ -12,31 +12,31 @@ const string LIBWYV_OUTPUT_SOUND_ERROR = "UI_GenericError";
 // libwyv_print
 // ===========================
 // prints a (string) message to all for the custom overrided chat
-void libwyv_print(string msg, playergroup players) {
-	UIDisplayMessage( players, c_messageAreaDebug, StringToText(msg) );
+void libwyv_print(playergroup players, string msg) {
+	UIDisplayMessage(players, c_messageAreaDebug, StringToText(msg));
 }
 
 // libwyv_print_text
 // ===========================
 // prints a (text) message to the chat
-void libwyv_print_text(text msg, playergroup players) {
-	UIDisplayMessage( players, c_messageAreaDebug, msg );
+void libwyv_print_text(playergroup players, text msg) {
+	UIDisplayMessage(players, c_messageAreaDebug, msg);
 }
 
 // libwyv_print_output
 // ===========================
 // prints a message proceeded by "> " to single player
 // (used for various function output)
-void libwyv_print_output(string msg, int player) {
-	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, StringToText("> " + msg) );
+void libwyv_print_output(int player, string msg) {
+	UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaDebug, StringToText("> " + msg));
 }
 
 // libwyv_print_success
 // ===========================
 // prints an success message to the chat
 // (green tinted message)
-void libwyv_print_success(string msg, int player) {
-	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> " + msg), Color(0,250,0)) );
+void libwyv_print_success(int player, string msg) {
+	UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> " + msg), Color(0,250,0)));
 	SoundPlay(SoundLink(LIBWYV_OUTPUT_SOUND_SUCCESS, -1), PlayerGroupSingle(player), 100.0, 0.0);
 }
 
@@ -44,8 +44,8 @@ void libwyv_print_success(string msg, int player) {
 // ===========================
 // prints an error message to the chat
 // (red tinted message)
-void libwyv_print_error(string msg, int player) {
-	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> [ERR] " + msg), Color(250,0,0)) );
+void libwyv_print_error(int player, string msg) {
+	UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> [ERR] " + msg), Color(250,0,0)));
 	SoundPlay(SoundLink(LIBWYV_OUTPUT_SOUND_ERROR, -1), PlayerGroupSingle(player), 100.0, 0.0);
 }
 
@@ -53,8 +53,8 @@ void libwyv_print_error(string msg, int player) {
 // ===========================
 // prints a warning message to the chat
 // (yellow tinted message)
-void libwyv_print_warning(string msg, int player) {
-	UIDisplayMessage( PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> [WARN] " + msg), Color(250,250,0)) );
+void libwyv_print_warning(int player, string msg) {
+	UIDisplayMessage(PlayerGroupSingle(player), c_messageAreaDebug, TextWithColor(StringToText("> [WARN] " + msg), Color(250,250,0)));
 	//SoundPlay(SoundLink(LIBWYV_OUTPUT_SOUND_ERROR, -1), PlayerGroupSingle(player), 100.0, 0.0);
 }
 
@@ -62,12 +62,13 @@ void libwyv_print_warning(string msg, int player) {
 // ===========================
 // prints an "out-of-character" message for all players in format
 // "[OOC] [Clan-tag] [Player-Name]: [msg]"
-void libwyv_chat_print_OOC(string msg, int player) {
+void libwyv_chat_print_OOC(int player, string msg) {
 	text output;
-	
-	if( libwyv_player[player].muted ) { return; }
-	
-	output = StringToText("[OOC] ") + libwyv_player_name_colored(player) + StringToText(": ") + StringToText(msg);
-	UIDisplayMessage( PlayerGroupAll(), c_messageAreaDebug, output );
-}
 
+	if( libwyv_player[player].muted ) {
+		return;
+	}
+
+	output = StringToText("[OOC] ") + libwyv_player_name_colored(player) + StringToText(": ") + StringToText(msg);
+	UIDisplayMessage(PlayerGroupAll(), c_messageAreaDebug, output);
+}

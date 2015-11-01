@@ -14,7 +14,7 @@ bool libwyv_command_narrate(bool testConds, bool runActions) {
 	string msg = libwyv_player[EventPlayer()].chat_msg;
 	msg = StringSub( msg, StringFind(msg, " ", c_stringCase) + 1, StringLength(msg) ); // remainder of chat message
 
-	libwyv_print( libwyv_string_trim(msg), PlayerGroupAll() );
+	libwyv_print(PlayerGroupAll(), libwyv_string_trim(msg));
 
 	// log msg in chatlog
 	libwyv_log(EventPlayer(), StringToText(""), msg);
@@ -42,7 +42,7 @@ bool libwyv_command_say(bool testConds, bool runActions) {
 		UnitFlashSelection(UnitGroupLoopCurrent(), 2.0);
 		ActorSend(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), "AttachModel " + LIBWYV_TALK_ICON_ACTOR + "{} Overhead");
 
-		libwyv_print_text( unit_name + unit_msg, PlayerGroupAll() );
+		libwyv_print_text(PlayerGroupAll(), unit_name + unit_msg);
 
 		// log msg in chatlog
 		libwyv_log(EventPlayer(), unit_name, cmd_msg);
@@ -64,7 +64,7 @@ bool libwyv_command_setname(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		libwyv_unit_set_name(name, UnitGroupLoopCurrent());
-		libwyv_print_output( "Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] name set to: " + name, EventPlayer() );
+		libwyv_print_output(EventPlayer(), "Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] name set to: " + name);
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@setname", libwyv_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}
@@ -88,7 +88,7 @@ bool libwyv_command_setnamecolor(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
 	while(!UnitGroupLoopDone()) {
 		libwyv_unit_set_name_color(col, UnitGroupLoopCurrent());
-		libwyv_print_text( StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] name set to: ") + libwyv_unit_get_name(UnitGroupLoopCurrent()), PlayerGroupSingle(EventPlayer()) );
+		libwyv_print_text(PlayerGroupSingle(EventPlayer()), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] name set to: ") + libwyv_unit_get_name(UnitGroupLoopCurrent()));
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@setnamecolor", libwyv_player[EventPlayer()].chat_msg);
 		UnitGroupLoopStep();
 	}

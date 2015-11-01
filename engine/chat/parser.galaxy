@@ -21,7 +21,7 @@ const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX = "libwyv_command_";
 void libwyv_chat_command_create(string command, string function) {
 	trigger t = TriggerCreate(function);
 	if (t == null) {
-		libwyv_print("FAILED TO LOAD COMMAND: " + command, PlayerGroupAll());
+		libwyv_print(PlayerGroupAll(), "FAILED TO LOAD COMMAND: " + command);
 	} else {
 		DataTableSetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + command, t);
 		libwyv_settings.commands = libwyv_settings.commands +  ", " + command;
@@ -137,7 +137,7 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 			TriggerExecute( DataTableGetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ), false, true);
 		}
 		else if ( !libwyv_player[player].muted ) {
-			libwyv_chat_print_OOC( current, player );
+			libwyv_chat_print_OOC(player, current);
 		}
 
 	}

@@ -37,7 +37,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 			return true;
 		}
 		else {
-			libwyv_print_error("Invalid unit type, or no previous spawn instance", EventPlayer());
+			libwyv_print_error(EventPlayer(), "Invalid unit type, or no previous spawn instance");
 			return false;
 		}
 	}
@@ -51,23 +51,23 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 
 	// get unit type
 	if( type == "" ) {
-		libwyv_print_error("INVALID UNIT TYPE", EventPlayer());
+		libwyv_print_error(EventPlayer(), "INVALID UNIT TYPE");
 		return false;
 	}
 	else {
 		type = UnitTypeFromString(type);
 		//type = librtpr_catalog_get( c_gameCatalogUnit, type );
 		if (type == "" || !CatalogEntryIsValid(c_gameCatalogUnit, type) || UnitTypeTestFlag(type, c_unitFlagMissile) ) {
-			libwyv_print_error("INVALID UNIT TYPE", EventPlayer());
+			libwyv_print_error(EventPlayer(), "INVALID UNIT TYPE");
 			return false;
 		}
 	}
 
 	// if count is <= 0, then turn on mouse-click spawning
 	if( count <= 0 ) {
-		libwyv_print_output("SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel.\n" +
+		libwyv_print_output(EventPlayer(), "SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel.\n" +
 							"Hold: [Ctrl] to rotate, [Shift] to scale, [Alt] to change height,\n" +
-							"Hold: [Right Mouse] to lock position)", EventPlayer());
+							"Hold: [Right Mouse] to lock position)");
 		libwyv_spawn_create_splat(type, EventPlayer());
 		libwyv_player[EventPlayer()].is_placing_unit = true;
 		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);
@@ -89,7 +89,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 				spawn_point = RegionGetCenter(location);
 			}
 			else {
-				libwyv_print_error("No region by name \"" + parameter + "\" exists, defaulting to cursor", EventPlayer() );
+				libwyv_print_error(EventPlayer(), "No region by name \"" + parameter + "\" exists, defaulting to cursor");
 			}
 		}
 		else if( StringContains( StringWord(libwyv_player[EventPlayer()].chat_msg, 4), "@", c_stringBegin, c_stringNoCase) ) {
@@ -97,7 +97,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 			player = libwyv_color_to_player( StringSub(parameter, 2, StringLength(parameter)) );
 			if( player == -1 ) {
 				player = EventPlayer();
-				libwyv_print_error("Invalid player color, defaulting to self", EventPlayer() );
+				libwyv_print_error(EventPlayer(), "Invalid player color, defaulting to self");
 			}
 		}
 	}
@@ -110,7 +110,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 				spawn_point = RegionGetCenter(location);
 			}
 			else {
-				libwyv_print_error("No region by name \"" + parameter + "\" exists, defaulting to cursor", EventPlayer() );
+				libwyv_print_error(EventPlayer(), "No region by name \"" + parameter + "\" exists, defaulting to cursor");
 			}
 		}
 		else if( StringContains( StringWord(libwyv_player[EventPlayer()].chat_msg, 5), "@", c_stringBegin, c_stringNoCase) ) {
@@ -118,7 +118,7 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 			player = libwyv_color_to_player( StringSub(parameter, 2, StringLength(parameter)) );
 			if( player == -1 ) {
 				player = EventPlayer();
-				libwyv_print_error("Invalid player color, defaulting to self", EventPlayer() );
+				libwyv_print_error(EventPlayer(), "Invalid player color, defaulting to self");
 			}
 		}
 	}

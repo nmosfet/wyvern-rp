@@ -103,7 +103,7 @@ void libwyv_gamesetup_save(int player, string gamesetup_name, region rgn) {
 	//finally, save bank
 	BankSave(libwyv_player[player].bank_storage);
 
-	libwyv_print_success("Game setup saved as \"" + gamesetup_name + "\"", player);
+	libwyv_print_success(player, "Game setup saved as \"" + gamesetup_name + "\"");
 }
 
 // libwyv_gamesetup_load
@@ -176,7 +176,7 @@ void libwyv_gamesetup_load(int player, string gamesetup_name) {
 	}
 
 	//loading complete!
-	libwyv_print_success("Game setup loaded: \"" + gamesetup_name + "\"", player);
+	libwyv_print_success(player, "Game setup loaded: \"" + gamesetup_name + "\"");
 }
 
 // libwyv_gamesetup_alias_commands

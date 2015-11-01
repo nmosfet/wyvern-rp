@@ -18,6 +18,6 @@ void libwyv_initialize() {
 	libwyv_commands_initialize();
 	libwyv_ui_initialize();
 
-	libwyv_print("Wyvern Engine: v" + IntToString(LIBWYV_BUILD_VERSION) + "." + IntToString(LIBWYV_BUILD_SUB_VERSION) + LIBWYV_BUILD_VERSION_MODIFIER, PlayerGroupAll());
-	libwyv_print(LIBWYV_SPLASH_MESSAGE, PlayerGroupAll());
+	libwyv_print(PlayerGroupAll(), "Wyvern Engine: v" + IntToString(LIBWYV_BUILD_VERSION) + "." + IntToString(LIBWYV_BUILD_SUB_VERSION) + LIBWYV_BUILD_VERSION_MODIFIER);
+	libwyv_print(PlayerGroupAll(), LIBWYV_SPLASH_MESSAGE);
 }
