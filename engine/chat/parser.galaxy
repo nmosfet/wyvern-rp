@@ -11,19 +11,67 @@ include "wyvern/engine/chat/macro.galaxy"
 include "wyvern/engine/chat/variables.galaxy"
 
 const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX = "libwyv_command_";
+const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD = "libwyv_command_old_";
+
+// libwyv_arg
+// ===============
+// Returns the string argument value at the index.
+// Wrapper for StringWord in order to appear more descriptive in commands.
+string libwyv_arg(string argv, int index) {
+	return StringWord(argv, index);
+}
+
+// function signature for wyvern chat commands
+unitgroup libwyv_command_signature(int player, unitgroup u, string argv);
+
+// funcref type for wyvern commands
+typedef funcref<libwyv_command_signature> libwyv_command_type;
+
+// Table of all wyvern commands:
+// ===========================
+// Commands are created and hardcoded/registered as an entry in the table.
+// Global data table maps a function name to an index in this array:
+//
+//   DataTable index -> commands[index] -> command funcref
+//
+// Though this is an annoying double leap (map -> array -> func), easier
+// to reference a command in the table instead of creating an if-elif cascade
+// to match a function string name to its function reference
+//
+// Array length hardcoded such that num of commands registered should never
+// reach command table size. If it does, increase this array size.
+libwyv_command_type[100] libwyv_command_table;
+
+// Counter for the next free array entry in the libwyv_command_table array
+int libwyv_command_table_counter = 0;
 
 // libwyv_chat_command_create
 // ==================
+// Adds a command function to the global array of commands.
+// Use data table to map command name (string) to the array index.
+void libwyv_chat_command_create(string command, libwyv_command_type func) {
+	DataTableSetInt(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + command, libwyv_command_table_counter);
+	libwyv_command_table[libwyv_command_table_counter] = func;
+	libwyv_command_table_counter += 1;
+
+	// add command to list of commands
+	libwyv_settings.commands = libwyv_settings.commands +  ", " + command;
+}
+
+// libwyv_chat_command_create_old
+// ==================
+// DEPRECATED!!!: need to switch over commands to the new
+//                libwyv_chat_command_create
 // creates a chat command by storing as a trigger in data table
 // [key: command string] : [value: command trigger]
 // when a command needs to be run, if command exists as a key in the data table,
 // the trigger is run as a command function
-void libwyv_chat_command_create(string command, string function) {
+void libwyv_chat_command_create_old(string command, string function) {
 	trigger t = TriggerCreate(function);
 	if (t == null) {
 		libwyv_print(PlayerGroupAll(), "FAILED TO LOAD COMMAND: " + command);
 	} else {
-		DataTableSetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + command, t);
+		DataTableSetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + command, t);
 		libwyv_settings.commands = libwyv_settings.commands +  ", " + command;
 	}
 }
@@ -38,6 +86,7 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 	string current_alias_subbed;
 	int semicolon_index;
 	int next_semicolon_index;
+	libwyv_command_type func; // command ref test
 
 	libwyv_player[player].context = target;
 
@@ -127,14 +176,14 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 
 
 		// run command (if exists and permissions for player valid)
-		if( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ) {
-
-			// if does, run wrapper function to run a command (does permissions checks etc)
-
-			//libwyv_print_success("RUNNING COMMAND: " + StringWord(current, 1), player);
-
+		if( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + StringCase(StringWord(current, 1), false) ) ) {
+			// if does, run wrapper function to run a command (does permissions checks etc
 			libwyv_player[player].chat_msg = current;
-			TriggerExecute( DataTableGetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ), false, true);
+			TriggerExecute( DataTableGetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + StringCase(StringWord(current, 1), false) ), false, true);
+		}
+		else if ( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ) {
+			func = libwyv_command_table[ DataTableGetInt(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ];
+			func( player, target, current );
 		}
 		else if ( !libwyv_player[player].muted ) {
 			libwyv_chat_print_OOC(player, current);
