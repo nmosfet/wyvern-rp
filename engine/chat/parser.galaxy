@@ -22,7 +22,7 @@ string libwyv_arg(string argv, int index) {
 }
 
 // function signature for wyvern chat commands
-unitgroup libwyv_command_signature(int player, unitgroup u, string argv);
+void libwyv_command_signature(int player, unitgroup u, string argv);
 
 // funcref type for wyvern commands
 typedef funcref<libwyv_command_signature> libwyv_command_type;
@@ -76,6 +76,11 @@ void libwyv_chat_command_create_old(string command, string function) {
 	}
 }
 
+// Max iterations for number of aliases and macros replaced by parser
+// per parser function call. This is to break from infinite loops caused
+// by recursive aliases or macros.
+const int LIBWYV_PARSE_LIMIT = 1000;
+
 // libwyv_chat_parse
 // =================
 // parses a chat message string for commands (each command separated by ";" )
@@ -84,13 +89,15 @@ void libwyv_chat_command_create_old(string command, string function) {
 void libwyv_chat_parse(string msg, int player, unitgroup target) {
 	string current = msg;
 	string current_alias_subbed;
+	string cmd_key;
+	int count = 0;
 	int semicolon_index;
 	int next_semicolon_index;
 	libwyv_command_type func; // command ref test
 
 	libwyv_player[player].context = target;
 
-	while ( msg != "" ) {
+	while ( msg != "" && count < LIBWYV_PARSE_LIMIT) {
 		// update player's chat_msg current cache
 		libwyv_player[player].chat_msg = msg;
 
@@ -162,32 +169,39 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 		current_alias_subbed = libwyv_alias_sub(current, player, 0);
 		if( current_alias_subbed != current ) {
 			msg = current_alias_subbed + ";" + msg;
+			count += 1;
 			continue;
 		}
 
 		// if macro exists, append evaluated macro to msg and parse
 		if( BankKeyExists( libwyv_player[player].bank_storage, LIBWYV_BANK_SECTION_MACRO, StringWord(current, 1) ) ) {
 			msg = libwyv_macro(current, player) + ";" + msg;
+			count += 1;
 			continue;
 		}
-
 
 		// TODO: replace variables
 
 
 		// run command (if exists and permissions for player valid)
+		cmd_key = LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false);
 		if( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + StringCase(StringWord(current, 1), false) ) ) {
-			// if does, run wrapper function to run a command (does permissions checks etc
+			// DEPRECATED
 			libwyv_player[player].chat_msg = current;
 			TriggerExecute( DataTableGetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + StringCase(StringWord(current, 1), false) ), false, true);
 		}
-		else if ( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ) {
-			func = libwyv_command_table[ DataTableGetInt(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false) ) ];
+		else if ( DataTableValueExists(true, cmd_key) ) {
+			func = libwyv_command_table[ DataTableGetInt(true, cmd_key) ];
 			func( player, target, current );
 		}
 		else if ( !libwyv_player[player].muted ) {
 			libwyv_chat_print_OOC(player, current);
 		}
-
 	}
+
+	// reached parse limit
+	if( count == LIBWYV_PARSE_LIMIT ) {
+		libwyv_print_error(player, "Reached parse limit (recursive alias or recursive macro?)");
+	}
+
 }

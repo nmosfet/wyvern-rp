@@ -16,7 +16,7 @@ include "wyvern/commands/region_commands.galaxy"
 
 // TEMPORARY:
 // test of new command system using func refs
-unitgroup libwyv_command_experiment(int player, unitgroup u, string argv) {
+void libwyv_command_experiment(int player, unitgroup u, string argv) {
 	int i = 1;
 	string arg = libwyv_arg(argv, 1);
 	libwyv_print(PlayerGroupAll(), libwyv_string_trim(argv));
@@ -26,8 +26,6 @@ unitgroup libwyv_command_experiment(int player, unitgroup u, string argv) {
 		i += 1;
 		arg = libwyv_arg(argv, i);
 	}
-
-	return u;
 }
 
 void libwyv_commands_initialize() {
