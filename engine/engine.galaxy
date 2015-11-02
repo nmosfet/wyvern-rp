@@ -119,6 +119,7 @@ void libwyv_engine_initialize() {
 	bool admin_set = false;
 
 	// intialize engine
+	libwyv_scripts_init();				// scripts and dependencies
 	libwyv_settings_initialize();		// initializes map settings
 	libwyv_preplaced_unit_initialize();	// assigns unit IDs to preplaced units
 	libwyv_events_initialize();			// creates global event triggers

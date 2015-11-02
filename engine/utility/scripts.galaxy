@@ -7,3 +7,8 @@
 //=========================================================
 
 include "wyvern/engine/utility/string.galaxy"
+include "wyvern/engine/utility/qsort.galaxy"
+
+void libwyv_scripts_init() {
+	libx_qsort_init();
+}

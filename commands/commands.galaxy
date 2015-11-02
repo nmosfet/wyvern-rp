@@ -13,25 +13,13 @@ include "wyvern/commands/unit_commands.galaxy"
 include "wyvern/commands/actor_commands.galaxy"
 include "wyvern/commands/chat_commands.galaxy"
 include "wyvern/commands/region_commands.galaxy"
-
-// TEMPORARY:
-// test of new command system using func refs
-void libwyv_command_experiment(int player, unitgroup u, string argv) {
-	int i = 1;
-	string arg = libwyv_arg(argv, 1);
-	libwyv_print(PlayerGroupAll(), libwyv_string_trim(argv));
-
-	while( arg != "" ) {
-		libwyv_print(PlayerGroupAll(), IntToString(i) + ": " + arg);
-		i += 1;
-		arg = libwyv_arg(argv, i);
-	}
-}
+include "wyvern/commands/debug_commands.galaxy"
 
 void libwyv_commands_initialize() {
 
-	// experiment with func ref
+	// debug commands
 	libwyv_chat_command_create(">test", libwyv_command_experiment);
+	libwyv_chat_command_create(">sort", libwyv_command_sort);
 
 	// general commands
 	libwyv_chat_command_create_old(">info", "libwyv_command_info");
