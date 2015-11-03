@@ -103,6 +103,12 @@ struct libwyv_player_properties {
 	// (aliases, templates, setups, etc...)
 	bank bank_storage;
 
+	// aliases
+	// ===============
+	// alphebetized list of player's aliases as a cache to avoid
+	// resorting player's alias list multiple times
+	string aliases;
+
 	// map_revealer
 	// ===============
 	// map revealer for entire map (revealers player specific)
@@ -137,6 +143,12 @@ struct libwyv_player_properties {
 libwyv_player_properties[LIBWYV_MAX_PLAYERS] libwyv_player;
 
 
+// libwyv_sort_aliases (prototype)
+// =======================
+// Prototype for sorting player aliases. Actual function definition
+// provided by chat/aliases.galaxy.
+string libwyv_sort_aliases(int player);
+
 // libwyv_initialize_player
 // ==============================
 // initialize players (default settings)
@@ -152,6 +164,9 @@ void libwyv_player_initialize(int player) {
 	libwyv_player[player].waygate_dialog = 0;
 
 	libwyv_player[player].active_ui_panel = LIBWYV_UI_PANEL_NONE;
+
+	// create alphabetized alias list
+	libwyv_player[player].aliases = libwyv_sort_aliases(player);
 
 	CameraPan( player, RegionGetCenter(RegionEntireMap()), 0.0, 10.0, 10.0, false );
 }
