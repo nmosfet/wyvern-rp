@@ -22,25 +22,25 @@ void libwyv_commands_initialize() {
 	libwyv_chat_command_create(">sort", libwyv_command_sort);
 
 	// general commands
-	libwyv_chat_command_create_old(">info", "libwyv_command_info");
-	libwyv_chat_command_create_old(">commands", "libwyv_command_list_commands");
-	libwyv_chat_command_create_old(">players", "libwyv_command_players");
-	libwyv_chat_command_create_old(">gamesetup", "libwyv_command_gamesetup");
-	libwyv_chat_command_create_old(">control", "libwyv_command_control");
-	libwyv_chat_command_create_old(">uncontrol", "libwyv_command_uncontrol");
-	libwyv_chat_command_create_old(">ally", "libwyv_command_ally");
-	libwyv_chat_command_create_old(">unally", "libwyv_command_unally");
-	libwyv_chat_command_create_old(">remove", "libwyv_command_remove_player");
-	libwyv_chat_command_create_old(">search", "libwyv_command_search");
-	libwyv_chat_command_create_old(">replace", "libwyv_command_replace");
-	libwyv_chat_command_create_old(">minerals", "libwyv_command_minerals");
-	libwyv_chat_command_create_old(">gas", "libwyv_command_gas");
-	libwyv_chat_command_create_old(">terrazine", "libwyv_command_terrazine");
-	libwyv_chat_command_create_old(">supply", "libwyv_command_supply");
-	libwyv_chat_command_create_old(">zoom", "libwyv_command_zoom");
-	libwyv_chat_command_create_old(">light", "libwyv_command_light");
-	libwyv_chat_command_create_old(">blacklist", "libwyv_command_blacklist");
-	libwyv_chat_command_create_old(">doodads", "libwyv_command_doodads");
+	libwyv_chat_command_create(">info", libwyv_command_info);
+	libwyv_chat_command_create(">commands", libwyv_command_list_commands);
+	libwyv_chat_command_create(">players", libwyv_command_players);
+	libwyv_chat_command_create(">gamesetup", libwyv_command_gamesetup);
+	libwyv_chat_command_create(">control", libwyv_command_control);
+	libwyv_chat_command_create(">uncontrol", libwyv_command_uncontrol);
+	libwyv_chat_command_create(">ally", libwyv_command_ally);
+	libwyv_chat_command_create(">unally", libwyv_command_unally);
+	libwyv_chat_command_create(">remove", libwyv_command_remove_player);
+	libwyv_chat_command_create(">search", libwyv_command_search);
+	libwyv_chat_command_create(">replace", libwyv_command_replace);
+	libwyv_chat_command_create(">minerals", libwyv_command_minerals);
+	libwyv_chat_command_create(">gas", libwyv_command_gas);
+	libwyv_chat_command_create(">terrazine", libwyv_command_terrazine);
+	libwyv_chat_command_create(">supply", libwyv_command_supply);
+	libwyv_chat_command_create(">zoom", libwyv_command_zoom);
+	libwyv_chat_command_create(">light", libwyv_command_light);
+	libwyv_chat_command_create(">blacklist", libwyv_command_blacklist);
+	libwyv_chat_command_create(">doodads", libwyv_command_doodads);
 
 	// admin commands
 	libwyv_chat_command_create_old(">ban", "libwyv_command_ban");

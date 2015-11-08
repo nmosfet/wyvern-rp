@@ -11,7 +11,7 @@ include "wyvern/commands/commands.galaxy"
 include "wyvern/ui/ui.galaxy"
 
 // welcome message
-const string LIBWYV_SPLASH_MESSAGE = "Welcome to Wyvern Roleplay Engine. This is still in beta, so there are a lot of features still being added. Type \">commands\" to get started!\n\nNOTE: Alias bank section name changed, so your aliases may have been deleted. I apologize for the inconvenience.";
+const string LIBWYV_SPLASH_MESSAGE = "Welcome to Wyvern Roleplay Engine. This is still in beta, so there are a lot of features still being added. Type \">commands\" to get started!";
 
 void libwyv_initialize() {
 	libwyv_engine_initialize();

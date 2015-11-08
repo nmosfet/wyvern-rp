@@ -22,7 +22,7 @@ string libwyv_arg(string argv, int index) {
 }
 
 // function signature for wyvern chat commands
-void libwyv_command_signature(int player, unitgroup u, string argv);
+void libwyv_command_signature(int user, unitgroup u, string argv);
 
 // funcref type for wyvern commands
 typedef funcref<libwyv_command_signature> libwyv_command_type;
