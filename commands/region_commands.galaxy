@@ -11,49 +11,49 @@
 // creates a region and sets it into the global data table
 // regions are stored in format:
 // "reg [player] [name]"
-bool libwyv_command_region_create(bool testConds, bool runActions) {
+void libwyv_command_region_create(int user, unitgroup u, string argv) {
 	region r;
 	fixed radius;
-	string name = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	string name = StringWord(argv, 2);
 
 	if( name == "" ) {
-		libwyv_print_error(EventPlayer(), "Invalid region name");
-		return false;
+		libwyv_print_error(user, "Invalid region name");
+		return;
 	}
 
-	radius = StringToFixed(StringWord(libwyv_player[EventPlayer()].chat_msg, 3));
+	radius = StringToFixed(StringWord(argv, 3));
 	if( radius == 0.0 ) {
 		radius = 2;
 	}
 
-	if( DataTableGetRegion( true, libwyv_region_get_name(name, EventPlayer()) ) ) {
-		libwyv_print_error(EventPlayer(), "A region with that name already exists!");
-		return false;
+	if( DataTableGetRegion( true, libwyv_region_get_name(name, user) ) ) {
+		libwyv_print_error(user, "A region with that name already exists!");
+		return;
 	}
 
-	r = RegionCircle( libwyv_player[EventPlayer()].mouse_position, radius );
+	r = RegionCircle( libwyv_player[user].mouse_position, radius );
 
-	DataTableSetRegion( true, libwyv_region_get_name(name, EventPlayer()), r );
-	libwyv_print_output(EventPlayer(), "Region (circle) \"" + name + "\" has been created.");
+	DataTableSetRegion( true, libwyv_region_get_name(name, user), r );
+	libwyv_print_output(user, "Region (circle) \"" + name + "\" has been created.");
 
-	return true;
+	return;
 }
 
 // libwyv_command_region_remove
 // ==================
 // removes a region and any linking to other regions
 // (for linking, see libwyv_command_region_teleport below)
-bool libwyv_command_region_remove(bool testConds, bool runActions) {
-	string name = libwyv_region_get_name(StringWord(libwyv_player[EventPlayer()].chat_msg, 2), EventPlayer());
+void libwyv_command_region_remove(int user, unitgroup u, string argv) {
+	string name = libwyv_region_get_name(StringWord(argv, 2), user);
 	region rgn = DataTableGetRegion( true, name );
 
 	if( rgn == null ) {
-		libwyv_print_error(EventPlayer(), "Region does not exist");
-		return true;
+		libwyv_print_error(user, "Region does not exist");
+		return;
 	}
 
 	// first remove any linking data (for teleports) related to this region
-	libwyv_region_remove_links(name, EventPlayer());
+	libwyv_region_remove_links(name, user);
 
 	// remove region
 	DataTableValueRemove( true, name );
@@ -63,24 +63,24 @@ bool libwyv_command_region_remove(bool testConds, bool runActions) {
 		DataTableValueRemove(true, LIBWYV_REGION_ANCHOR_DATA_TABLE_IDENTIFIER + " " + name);
 	}
 
-	libwyv_print_output(EventPlayer(), "Region \"" + libwyv_region_get_public_name(name) + "\" has been removed");
+	libwyv_print_output(user, "Region \"" + libwyv_region_get_public_name(name) + "\" has been removed");
 
-	return true;
+	return;
 }
 
 // libwyv_command_region_removeall
 // ======================
 // removes all regions and links
-bool libwyv_command_region_removeall(bool testConds, bool runActions) {
+void libwyv_command_region_removeall(int user, unitgroup u, string argv) {
 	int index = 1;
 	int removed = 0;
-	string rgn_identifier = libwyv_region_get_name("", EventPlayer());
+	string rgn_identifier = libwyv_region_get_name("", user);
 	string name; // full region data table name
 
 	while( index <= DataTableValueCount(true) ) {
 		if( StringContains(DataTableValueName(true, index), rgn_identifier, c_stringBegin, c_stringNoCase) ) {
 			name = DataTableValueName(true, index);
-			libwyv_region_remove_links( name, EventPlayer() );
+			libwyv_region_remove_links( name, user );
 			DataTableValueRemove(true, name);
 			// if region attached to unit, remove unit anchor data table entry
 			if( DataTableValueExists(true, LIBWYV_REGION_ANCHOR_DATA_TABLE_IDENTIFIER + " " + name) ) {
@@ -93,26 +93,26 @@ bool libwyv_command_region_removeall(bool testConds, bool runActions) {
 	}
 
 	if(removed > 0) {
-		libwyv_print_output(EventPlayer(), "All your regions have been removed");
+		libwyv_print_output(user, "All your regions have been removed");
 	}
 	else {
-		libwyv_print_output(EventPlayer(), "You have no regions to remove");
+		libwyv_print_output(user, "You have no regions to remove");
 	}
 
-	return true;
+	return;
 }
 // libwyv_command_region_list
 // ======================
 // lists a player's regions from the data table
 // because region creation is not case sensitive,
 // these will always be in lowercase
-bool libwyv_command_region_list(bool testConds, bool runActions) {
+void libwyv_command_region_list(int user, unitgroup u, string argv) {
 	int i = 1;
 	string region_list = "";
 
 	while( i < DataTableValueCount(true) ) {
 		if( StringWord( DataTableValueName(true, i), 1 ) == LIBWYV_REGION_DATA_TABLE_IDENTIFIER &&
-			StringToInt( StringWord( DataTableValueName(true, i), 2) ) == EventPlayer() ) {
+			StringToInt( StringWord( DataTableValueName(true, i), 2) ) == user ) {
 			region_list = region_list + ", " + libwyv_region_get_public_name(DataTableValueName(true, i));
 		}
 		i += 1;
@@ -120,13 +120,13 @@ bool libwyv_command_region_list(bool testConds, bool runActions) {
 
 	if( region_list != "" ) {
 		region_list = StringSub(region_list, 3, StringLength(region_list)); // get rid of leading ", "
-		libwyv_print_output(EventPlayer(), "Your regions:\n" + region_list);
+		libwyv_print_output(user, "Your regions:\n" + region_list);
 	}
 	else {
-		libwyv_print_output(EventPlayer(), "You have no regions");
+		libwyv_print_output(user, "You have no regions");
 	}
 
-	return true;
+	return;
 }
 
 // libwyv_command_region_teleport
@@ -136,24 +136,24 @@ bool libwyv_command_region_list(bool testConds, bool runActions) {
 // regions. (see engine/regions.galaxy to see how regions are linked,
 // events/region_waygates.galaxy to see how waygates function)
 // (heavily modified from Cortex engine)
-bool libwyv_command_region_teleport(bool testConds, bool runActions) {
-	string rgn_1_name = libwyv_region_get_name(StringWord(libwyv_player[EventPlayer()].chat_msg, 2), EventPlayer());
-	string rgn_2_name = libwyv_region_get_name(StringWord(libwyv_player[EventPlayer()].chat_msg, 3), EventPlayer());
+void libwyv_command_region_teleport(int user, unitgroup u, string argv) {
+	string rgn_1_name = libwyv_region_get_name(StringWord(argv, 2), user);
+	string rgn_2_name = libwyv_region_get_name(StringWord(argv, 3), user);
 	region rgn_1;
 	region rgn_2;
 	trigger t;
 
 	if( !DataTableValueExists(true, rgn_1_name) || !DataTableValueExists(true, rgn_2_name) ) {
-		libwyv_print_error(EventPlayer(), "One or more invalid regions were entered.");
-		return true;
+		libwyv_print_error(user, "One or more invalid regions were entered.");
+		return;
 	}
 
 	rgn_1 = DataTableGetRegion( true, rgn_1_name );
 	rgn_2 = DataTableGetRegion( true, rgn_2_name );
 
 	// remove existing links for the regions
-	libwyv_region_remove_links(rgn_1_name, EventPlayer());
-	libwyv_region_remove_links(rgn_2_name, EventPlayer());
+	libwyv_region_remove_links(rgn_1_name, user);
+	libwyv_region_remove_links(rgn_2_name, user);
 
 	// create link between these two regions
 	libwyv_link_regions(rgn_1_name, rgn_2_name);
@@ -164,37 +164,37 @@ bool libwyv_command_region_teleport(bool testConds, bool runActions) {
 	TriggerAddEventUnitRegion( t, null, rgn_2, true );
 	TriggerAddEventUnitRegion( t, null, rgn_2, false );
 
-	libwyv_print_output(EventPlayer(), "Teleport created between regions " + libwyv_region_get_public_name(rgn_1_name)
+	libwyv_print_output(user, "Teleport created between regions " + libwyv_region_get_public_name(rgn_1_name)
 	                    + " and " + libwyv_region_get_public_name(rgn_2_name));
 
-	return true;
+	return;
 }
 
 // libwyv_command_region_attach
 // =================
 // attaches a region to a unit
-bool libwyv_command_region_attach(bool checkConds, bool runActions) {
-	string name = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+void libwyv_command_region_attach(int user, unitgroup u, string argv) {
+	string name = StringWord(argv, 2);
 	region rgn = null;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = libwyv_player[user].context;
 	point offset;
 	int waygate_dialog; // waygate dialog for region
 
-	name = libwyv_region_get_name(name, EventPlayer());
+	name = libwyv_region_get_name(name, user);
 
 	rgn = DataTableGetRegion(true, name);
 	if(rgn == null) {
-		libwyv_print_error(EventPlayer(), "No region with that name exists!");
-		return true;
+		libwyv_print_error(user, "No region with that name exists!");
+		return;
 	}
 
-	offset = Point( StringToFixed(StringWord(libwyv_player[EventPlayer()].chat_msg, 3)),
-					StringToFixed(StringWord(libwyv_player[EventPlayer()].chat_msg, 4)) );
+	offset = Point( StringToFixed(StringWord(argv, 3)),
+					StringToFixed(StringWord(argv, 4)) );
 
 	if(UnitGroupCount(g, c_unitCountAll) == 0) {	// no units selected -> unattach region
 		RegionAttachToUnit(rgn, null, offset);
 		DataTableValueRemove(true, LIBWYV_REGION_ANCHOR_DATA_TABLE_IDENTIFIER + " " + name);
-		libwyv_print_success(EventPlayer(), "Region unattached successfully.");
+		libwyv_print_success(user, "Region unattached successfully.");
 	}
 	else if(UnitGroupCount(g, c_unitCountAll) == 1) { // attach region to unit
 		// if a unit has previously had region attached, remove unit custom value
@@ -221,11 +221,11 @@ bool libwyv_command_region_attach(bool checkConds, bool runActions) {
 			}
 		}
 
-		libwyv_print_success(EventPlayer(), "Region attached successfully.");
+		libwyv_print_success(user, "Region attached successfully.");
 	}
 	else {
-		libwyv_print_error(EventPlayer(), "You can't attach the same region to multiple units!");
+		libwyv_print_error(user, "You can't attach the same region to multiple units!");
 	}
 
-	return true;
+	return;
 }

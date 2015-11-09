@@ -11,7 +11,6 @@ include "wyvern/engine/chat/macro.galaxy"
 include "wyvern/engine/chat/variables.galaxy"
 
 const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX = "libwyv_command_";
-const string LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD = "libwyv_command_old_";
 
 // libwyv_arg
 // ===============
@@ -56,24 +55,6 @@ void libwyv_chat_command_create(string command, libwyv_command_type func) {
 
 	// add command to list of commands
 	libwyv_settings.commands = libwyv_settings.commands +  ", " + command;
-}
-
-// libwyv_chat_command_create_old
-// ==================
-// DEPRECATED!!!: need to switch over commands to the new
-//                libwyv_chat_command_create
-// creates a chat command by storing as a trigger in data table
-// [key: command string] : [value: command trigger]
-// when a command needs to be run, if command exists as a key in the data table,
-// the trigger is run as a command function
-void libwyv_chat_command_create_old(string command, string function) {
-	trigger t = TriggerCreate(function);
-	if (t == null) {
-		libwyv_print(PlayerGroupAll(), "FAILED TO LOAD COMMAND: " + command);
-	} else {
-		DataTableSetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + command, t);
-		libwyv_settings.commands = libwyv_settings.commands +  ", " + command;
-	}
 }
 
 // Max iterations for number of aliases and macros replaced by parser
@@ -185,13 +166,9 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 
 		// run command (if exists and permissions for player valid)
 		cmd_key = LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX + StringCase(StringWord(current, 1), false);
-		if( DataTableValueExists(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + StringCase(StringWord(current, 1), false) ) ) {
-			// DEPRECATED
-			libwyv_player[player].chat_msg = current;
-			TriggerExecute( DataTableGetTrigger(true, LIBWYV_CHAT_COMMAND_DATA_TABLE_PREFIX_OLD + StringCase(StringWord(current, 1), false) ), false, true);
-		}
-		else if ( DataTableValueExists(true, cmd_key) ) {
+		if ( DataTableValueExists(true, cmd_key) ) {
 			func = libwyv_command_table[ DataTableGetInt(true, cmd_key) ];
+			target = libwyv_player[player].context;
 			func( player, target, current );
 		}
 		else if ( !libwyv_player[player].muted ) {

@@ -9,41 +9,39 @@
 // libwyv_command_kill
 // ====================
 // kills units in player unitgroup context
-bool libwyv_command_kill(bool testConds, bool runActions) {
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+void libwyv_command_kill(int user, unitgroup u, string argv) {
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		UnitKill( UnitGroupLoopCurrent() );
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
 }
 
 // libwyv_command_remove
 // ====================
 // removes units in player unitgroup context
-bool libwyv_command_remove(bool testConds, bool runActions) {
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+void libwyv_command_remove(int user, unitgroup u, string argv) {
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		UnitRemove(UnitGroupLoopCurrent());
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
 }
 
 // libwyv_command_removearea
 // =====================
 // removes unit in a radius around mouse position
-bool libwyv_command_removearea(bool testConds, bool runActions) {
+void libwyv_command_removearea(int user, unitgroup u, string argv) {
 	unitgroup g;
-	fixed radius = StringToFixed( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ));
+	fixed radius = StringToFixed( StringWord( argv, 2 ));
 	if(radius == 0.0) {
 		radius = 5.0;
 	}
 
-	g = UnitGroup( null, c_playerAny, RegionCircle( libwyv_player[EventPlayer()].mouse_position, radius), null, 0 );
-	g = libwyv_enforce_unit_permissions(g, EventPlayer());
+	g = UnitGroup( null, c_playerAny, RegionCircle( libwyv_player[user].mouse_position, radius), null, 0 );
+	g = libwyv_enforce_unit_permissions(g, user);
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
@@ -52,20 +50,18 @@ bool libwyv_command_removearea(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	libNtve_gf_RemoveDeathModelsinRegion( RegionCircle( libwyv_player[EventPlayer()].mouse_position, radius) );
-
-	return true;
+	libNtve_gf_RemoveDeathModelsinRegion( RegionCircle( libwyv_player[user].mouse_position, radius) );
 }
 
 // libwyv_command_cache
 // ===================
 // displays unit command cache info or values
-bool libwyv_command_cache(bool testConds, bool runActions) {
+void libwyv_command_cache(int user, unitgroup u, string argv) {
 	string cache;
 	string unit_caches;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
-	cache = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	cache = StringWord(argv, 2);
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
@@ -76,28 +72,28 @@ bool libwyv_command_cache(bool testConds, bool runActions) {
 			else {
 				unit_caches = FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_CACHE_COUNT), 0);
 			}
-			libwyv_print_output(EventPlayer(), "Unit " + UnitGetType(UnitGroupLoopCurrent()) + " has " + unit_caches + " command caches (type \"@cache #\" to view a cache)");
+			libwyv_print_output(user, "Unit " + UnitGetType(UnitGroupLoopCurrent()) + " has " + unit_caches + " command caches (type \"@cache #\" to view a cache)");
 		}
 		else {
 			if(DataTableValueExists(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0) + "." + cache)) {
-				libwyv_print_output(EventPlayer(), "Unit " + UnitGetType(UnitGroupLoopCurrent()) + " cache " + cache + ":<n/>" + DataTableGetString(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0) + "." + cache));
+				libwyv_print_output(user, "Unit " + UnitGetType(UnitGroupLoopCurrent()) + " cache " + cache + ":<n/>" + DataTableGetString(true, FixedToString(UnitGetCustomValue(UnitGroupLoopCurrent(), LIBWYV_UNIT_INDEX_ID), 0) + "." + cache));
 			}
 		}
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_give
 // =================
 // gives another player units
-bool libwyv_command_give(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	int new_owner = libwyv_color_to_player( StringCase( StringWord(libwyv_player[EventPlayer()].chat_msg, 2), false ) );
+void libwyv_command_give(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	int new_owner = libwyv_color_to_player( StringCase( StringWord(argv, 2), false ) );
 
 	if(new_owner == -1) { // invalid entry by user
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
@@ -107,131 +103,131 @@ bool libwyv_command_give(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_renameall
 // ===================
 // renames all units (by replacing unit catalog name entry)
-bool libwyv_command_renameall(bool testConds, bool runActions) {
+void libwyv_command_renameall(int user, unitgroup u, string argv) {
 	string val;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	val = libwyv_player[EventPlayer()].chat_msg;
+	unitgroup g = u;
+	val = argv;
 	val = StringSub( val, StringFind(val, " ", c_stringCase)+1, StringLength(val)); // The remainder of the chat message.
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		CatalogFieldValueSet(c_gameCatalogUnit, UnitGetType(UnitGroupLoopCurrent()), "Name", UnitGetOwner(UnitGroupLoopCurrent()), val);
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@renameall", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@renameall", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_behaviors
 // ====================
 // prints a list of all unit behaviors and stack count (behaviors can stack)
-bool libwyv_command_behaviors(bool testConds, bool runActions) {
+void libwyv_command_behaviors(int user, unitgroup u, string argv) {
 	int count;
 	string behavior;
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		// print unit name and ID
-		libwyv_print_text(PlayerGroupSingle(EventPlayer()), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" behaviors:"));
+		libwyv_print_text(PlayerGroupSingle(user), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" behaviors:"));
 
 		count = UnitBehaviorCountAll(UnitGroupLoopCurrent());
 		if( count > 0 ) {
 			while( count > 0 ) {
 				behavior = UnitBehaviorGet(UnitGroupLoopCurrent(), count);
-				libwyv_print_output(EventPlayer(), behavior + " (" + IntToString( UnitBehaviorCount(UnitGroupLoopCurrent(), behavior) ) + ")");
+				libwyv_print_output(user, behavior + " (" + IntToString( UnitBehaviorCount(UnitGroupLoopCurrent(), behavior) ) + ")");
 				count -= 1;
 			}
 		}
 		else { // count == 0, no behaviors
-			libwyv_print_output(EventPlayer(), "No behaviors");
+			libwyv_print_output(user, "No behaviors");
 		}
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_addbehavior
 // =====================
 // adds a behavior to units
-bool libwyv_command_addbehavior(bool testConds, bool runActions) {
-	string val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_addbehavior(int user, unitgroup u, string argv) {
+	string val = StringWord( argv, 2 );
 
 	// get full behavior name from catalog
 	val = libwyv_catalog_get(c_gameCatalogBehavior, val);
 	if(val == null) {
-		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to add behavior</c>: No such behavior exists.");
-		return true;
+		libwyv_print_error(user, "<c val=\"ff0000\">Unable to add behavior</c>: No such behavior exists.");
+		return;
 	}
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		UnitBehaviorAdd( UnitGroupLoopCurrent(), val, UnitGroupLoopCurrent(), 1 );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addbehavior", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addbehavior", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_removebehavior
 // =======================
 // removes a behavior from units
-bool libwyv_command_removebehavior(bool testConds, bool runActions) {
-	string val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_removebehavior(int user, unitgroup u, string argv) {
+	string val = StringWord( argv, 2 );
 
 	// get catalog entry from user input
 	val = libwyv_catalog_get(c_gameCatalogBehavior, val);
 	if(val == null) {
-		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to remove behavior</c>: No such behavior exists.");
-		return true;
+		libwyv_print_error(user, "<c val=\"ff0000\">Unable to remove behavior</c>: No such behavior exists.");
+		return;
 	}
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		UnitBehaviorRemove( UnitGroupLoopCurrent(), val, 1 );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@removebehavior", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@removebehavior", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_weapons
 // =================
 // prints a list of the weapons a unit currently has
-bool libwyv_command_weapons(bool testConds, bool runActions) {
+void libwyv_command_weapons(int user, unitgroup u, string argv) {
 	int count;
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		// print unit name and ID
-		libwyv_print_text(PlayerGroupSingle(EventPlayer()), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" weapons:"));
+		libwyv_print_text(PlayerGroupSingle(user), StringToText("> Unit [ID: " + libwyv_unit_id(UnitGroupLoopCurrent()) + "] ") + libwyv_unit_get_name(UnitGroupLoopCurrent()) + StringToText(" weapons:"));
 
 		count = UnitWeaponCount(UnitGroupLoopCurrent());
 		if( count > 0 ) {
 			while( count > 0 ) {
-				libwyv_print_output(EventPlayer(), UnitWeaponGet(UnitGroupLoopCurrent(), count));
+				libwyv_print_output(user, UnitWeaponGet(UnitGroupLoopCurrent(), count));
 				count -= 1;
 			}
 		}
 		else { // count == 0, no behaviors
-			libwyv_print_output(EventPlayer(), "No weapons");
+			libwyv_print_output(user, "No weapons");
 		}
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_addweapon
@@ -239,9 +235,9 @@ bool libwyv_command_weapons(bool testConds, bool runActions) {
 // adds a weapon to a given turret on a unit
 //  -> if turret specified does not exist, defaults to CTurret
 //     (default weapon turret)
-bool libwyv_command_addweapon(bool testConds, bool runActions) {
-	string weapon = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
-	string turret = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+void libwyv_command_addweapon(int user, unitgroup u, string argv) {
+	string weapon = StringWord(argv, 2);
+	string turret = StringWord(argv, 3);
 
 	if( turret == "" ) {
 		turret = "CTurret";
@@ -249,52 +245,52 @@ bool libwyv_command_addweapon(bool testConds, bool runActions) {
 
 	weapon = libwyv_catalog_get(c_gameCatalogWeapon, weapon);
 	if( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
-		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to add weapon</c>: No such weapon exists.");
-		return true;
+		libwyv_print_error(user, "<c val=\"ff0000\">Unable to add weapon</c>: No such weapon exists.");
+		return;
 	}
 
 	// if turret is not default, use catalog get on turet
 	if( turret != "CTurret") {
 		turret = libwyv_catalog_get(c_gameCatalogTurret, turret);
 		if( turret == null ) {
-			libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to add weapon</c>: No such turret exists.");
-			return true;
+			libwyv_print_error(user, "<c val=\"ff0000\">Unable to add weapon</c>: No such turret exists.");
+			return;
 		}
 	}
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while( !UnitGroupLoopDone() ) {
 		UnitWeaponAdd( UnitGroupLoopCurrent(), weapon, turret );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addweapon", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addweapon", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_removeweapon
 // ====================
 // removes a weapon from a unit
-bool libwyv_command_removeweapon(bool testConds, bool runActions) {
-	string weapon = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_removeweapon(int user, unitgroup u, string argv) {
+	string weapon = StringWord( argv, 2 );
 
 	// get catalog entry for weapon and make sure weapon is valid
 	weapon = libwyv_catalog_get(c_gameCatalogWeapon, weapon);
 	if ( weapon == null || CatalogEntryScope(c_gameCatalogWeapon, weapon) == weapon) {
-		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to remove weapon</c>: No such weapon exists.");
-		return true;
+		libwyv_print_error(user, "<c val=\"ff0000\">Unable to remove weapon</c>: No such weapon exists.");
+		return;
 	}
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while( !UnitGroupLoopDone() ) {
 		UnitWeaponRemove( UnitGroupLoopCurrent(), weapon );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@removeweapon", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@removeweapon", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_life
@@ -303,14 +299,14 @@ bool libwyv_command_removeweapon(bool testConds, bool runActions) {
 // ===================
 // sets units life, shields, or energy (absolute, adding, or percentage)
 // e.g. syntax: @life 10, @life 10%, @life +10, @life +10%
-bool libwyv_command_life(bool testConds, bool runActions) {
+void libwyv_command_life(int user, unitgroup u, string argv) {
 	string param;
 	fixed val;
 	bool percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		percent = true;
@@ -345,17 +341,17 @@ bool libwyv_command_life(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
-bool libwyv_command_shields(bool testConds, bool runActions) {
+void libwyv_command_shields(int user, unitgroup u, string argv) {
 	string param;
 	fixed val;
 	bool percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		percent = true;
@@ -390,17 +386,17 @@ bool libwyv_command_shields(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
-bool libwyv_command_energy(bool testConds, bool runActions) {
+void libwyv_command_energy(int user, unitgroup u, string argv) {
 	string param;
 	fixed val;
 	bool percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		percent = true;
@@ -435,7 +431,7 @@ bool libwyv_command_energy(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_maxlife
@@ -445,14 +441,14 @@ bool libwyv_command_energy(bool testConds, bool runActions) {
 // sets a unit's maxlife, maxshields, or maxenergy
 // can specify as either absolute, percentage, or added value
 // e.g. syntax: @maxlife 10, @maxlife 10%, @maxlife +10%, @maxlife +10
-bool libwyv_command_maxlife(bool testConds, bool runActions) {
+void libwyv_command_maxlife(int user, unitgroup u, string argv) {
 	string param;
 	fixed val;
 	bool percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		percent = true;
@@ -466,7 +462,7 @@ bool libwyv_command_maxlife(bool testConds, bool runActions) {
 	val = StringToFixed(param);
 
 	if( val <= 0 && absolute) {
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
@@ -490,17 +486,17 @@ bool libwyv_command_maxlife(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
-bool libwyv_command_maxshields(bool testConds, bool runActions) {
+void libwyv_command_maxshields(int user, unitgroup u, string argv) {
 	string param;
 	fixed val;
 	bool percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		percent = true;
@@ -514,7 +510,7 @@ bool libwyv_command_maxshields(bool testConds, bool runActions) {
 	val = StringToFixed(param);
 
 	if( val <= 0 && absolute) {
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
@@ -538,17 +534,17 @@ bool libwyv_command_maxshields(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
-bool libwyv_command_maxenergy(bool testConds, bool runActions) {
+void libwyv_command_maxenergy(int user, unitgroup u, string argv) {
 	string param;
 	fixed val;
 	bool percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		percent = true;
@@ -562,7 +558,7 @@ bool libwyv_command_maxenergy(bool testConds, bool runActions) {
 	val = StringToFixed(param);
 
 	if( val <= 0 && absolute) {
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
@@ -586,7 +582,7 @@ bool libwyv_command_maxenergy(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_liferegen
@@ -596,11 +592,11 @@ bool libwyv_command_maxenergy(bool testConds, bool runActions) {
 // changes units life, shields, or energy regeneration
 // can specify as absolute or as a percentage
 // e.g. syntax: @liferegen 2 or @liferegen 2%
-bool libwyv_command_liferegen(bool testConds, bool runActions) {
-	string param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_liferegen(int user, unitgroup u, string argv) {
+	string param = StringWord( argv, 2 );
 	fixed val = StringToFixed(param);
 	bool is_percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		param = StringSub(param, 1, StringLength(param)-1);
@@ -621,14 +617,14 @@ bool libwyv_command_liferegen(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
-bool libwyv_command_shieldsregen(bool testConds, bool runActions) {
-	string param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_shieldsregen(int user, unitgroup u, string argv) {
+	string param = StringWord( argv, 2 );
 	fixed val = StringToFixed(param);
 	bool is_percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		param = StringSub(param, 1, StringLength(param)-1);
@@ -649,14 +645,14 @@ bool libwyv_command_shieldsregen(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
-bool libwyv_command_energyregen(bool testConds, bool runActions) {
-	string param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_energyregen(int user, unitgroup u, string argv) {
+	string param = StringWord( argv, 2 );
 	fixed val = StringToFixed(param);
 	bool is_percent = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
 	if( StringContains(param, "%", c_stringEnd, c_stringCase) ) {
 		param = StringSub(param, 1, StringLength(param)-1);
@@ -677,21 +673,21 @@ bool libwyv_command_energyregen(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_speed
 // ==================
 // sets a unit's speed (either for a single unit, or permanently for all)
-bool libwyv_command_speed(bool testConds, bool runActions) {
-	string param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_speed(int user, unitgroup u, string argv) {
+	string param = StringWord( argv, 2 );
 	fixed val;
 	bool is_permanent = false;
 	bool absolute = true;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
-	is_permanent = StringContains(libwyv_player[EventPlayer()].chat_msg, "all", c_stringAnywhere, false) ||
-				  StringContains(libwyv_player[EventPlayer()].chat_msg, "permanent", c_stringAnywhere, false);
+	is_permanent = StringContains(argv, "all", c_stringAnywhere, false) ||
+				  StringContains(argv, "permanent", c_stringAnywhere, false);
 
 	if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
 		absolute = false;
@@ -732,91 +728,91 @@ bool libwyv_command_speed(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_height
 // ====================
 // sets a unit's z height
-bool libwyv_command_height(bool testConds, bool runActions) {
+void libwyv_command_height(int user, unitgroup u, string argv) {
 	fixed height;
 	fixed time;
 	string param;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	unitgroup g = u;
+	param = StringWord( argv, 2 );
 	height = StringToFixed( param );
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 3 );
+	param = StringWord( argv, 3 );
 	time = StringToFixed( param );
 
 	UnitGroupLoopBegin(g);
 	while( !UnitGroupLoopDone() ) {
 		UnitSetHeight( UnitGroupLoopCurrent(), height, time );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@height", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@height", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_color
 // ==================
 // changes the player color of a unit
-bool libwyv_command_color(bool testConds, bool runActions) {
+void libwyv_command_color(int user, unitgroup u, string argv) {
 	int new_color;
-	string param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	string param = StringWord( argv, 2 );
+	unitgroup g = u;
 
 	new_color = libwyv_color_to_player_default(param);
 	if(new_color == -1) { // invalid entry by user
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		UnitSetTeamColorIndex( UnitGroupLoopCurrent(), new_color );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@color", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@color", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_invulnerable
 // libwyv_command_vulnerable
 // ====================
 // Makes a unit invulnerable or vulnerable
-bool libwyv_command_invulnerable(bool testConds, bool runActions) {
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+void libwyv_command_invulnerable(int user, unitgroup u, string argv) {
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		UnitSetState( UnitGroupLoopCurrent(), c_unitStateInvulnerable, true );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
-bool libwyv_command_vulnerable(bool testConds, bool runActions) {
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+void libwyv_command_vulnerable(int user, unitgroup u, string argv) {
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		UnitSetState( UnitGroupLoopCurrent(), c_unitStateInvulnerable, false );
 		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@invulnerable", "");
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_face
 // ===============
 // makes a unit face an angle. (modified from Cortex engine)
 // if no angle is specified, unit will face towards player's mouse cursor
-bool libwyv_command_face(bool testConds, bool runActions) {
+void libwyv_command_face(int user, unitgroup u, string argv) {
 	fixed angle;
 	string param;
 	bool absolute = true;
 
-	param = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+	param = StringWord( argv, 2 );
 	if( param != "" ) {
 		if( StringContains(param, "+", c_stringBegin, c_stringCase) ) {
 			absolute = false;
@@ -825,10 +821,10 @@ bool libwyv_command_face(bool testConds, bool runActions) {
 		angle = StringToFixed( param );
 	}
 
-	UnitGroupLoopBegin(libwyv_player[EventPlayer()].context);
+	UnitGroupLoopBegin(u);
 	while(!UnitGroupLoopDone()) {
 		if( param == "" ) { // face mouse
-			libNtve_gf_MakeUnitFacePoint( UnitGroupLoopCurrent(), libwyv_player[EventPlayer()].mouse_position, 0.0 );
+			libNtve_gf_MakeUnitFacePoint( UnitGroupLoopCurrent(), libwyv_player[user].mouse_position, 0.0 );
 		}
 		else if(!absolute) {
 			UnitSetFacing(UnitGroupLoopCurrent(), UnitGetFacing(UnitGroupLoopCurrent()) + angle, 0.0);
@@ -839,7 +835,7 @@ bool libwyv_command_face(bool testConds, bool runActions) {
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_damage
@@ -847,15 +843,15 @@ bool libwyv_command_face(bool testConds, bool runActions) {
 // deals with both adding or removing damage (modified from Cortex engine)
 // both @adddamage and @removedamage are directed here
 // max damage added or removed is currently set at 9999
-bool libwyv_command_damage(bool testConds, bool runActions) {
-	string command = StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 1 ), false );
+void libwyv_command_damage(int user, unitgroup u, string argv) {
+	string command = StringCase( StringWord( argv, 1 ), false );
 	string dmg_behavior_1;
 	string dmg_behavior_10;
 	string dmg_behavior_100;
 	string dmg_behavior_1000;
 	int amt;
-	int val = StringToInt(StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ));
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	int val = StringToInt(StringWord( argv, 2 ));
+	unitgroup g = u;
 
 	// since we are using the same command for both @adddamage and @removedamage,
 	// check which command it is, and set proper behaviors
@@ -908,12 +904,12 @@ bool libwyv_command_damage(bool testConds, bool runActions) {
 		}
 		UnitBehaviorAdd( UnitGroupLoopCurrent(), dmg_behavior_1, UnitGroupLoopCurrent(), val );
 
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@adddamage", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@adddamage", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_range
@@ -921,12 +917,12 @@ bool libwyv_command_damage(bool testConds, bool runActions) {
 // deals with both adding or removing weapon range (modified from Cortex engine)
 // both @addrange and @removerange are directed here
 // max range able to be added/removed is currently set as 100
-bool libwyv_command_range(bool testConds, bool runActions) {
-	string command = StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 1 ), false );
+void libwyv_command_range(int user, unitgroup u, string argv) {
+	string command = StringCase( StringWord( argv, 1 ), false );
 	string range_behavior_1;
 	string range_behavior_10;
-	int range = StringToInt( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ) );
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	int range = StringToInt( StringWord( argv, 2 ) );
+	unitgroup g = u;
 
 	// since we are using the same command for both @addrange and @removerange,
 	// check which command it is, and set proper behaviors
@@ -954,20 +950,20 @@ bool libwyv_command_range(bool testConds, bool runActions) {
 		UnitBehaviorAdd(UnitGroupLoopCurrent(), range_behavior_1, null, ModI(range, 10));
 		UnitBehaviorAdd(UnitGroupLoopCurrent(), range_behavior_10, null, range / 10);
 
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addrange", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@addrange", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_armor
 // ===============
 // used for both @armor and @shieldsarmor
 // sets a unit's armor to the amount given via behaviors
-bool libwyv_command_armor(bool testConds, bool runActions) {
-	fixed armor = StringToFixed( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ) );
+void libwyv_command_armor(int user, unitgroup u, string argv) {
+	fixed armor = StringToFixed( StringWord( argv, 2 ) );
 	fixed armor_curr = 0;
 	fixed armor_diff = 0;
 	string behav_armor_add_p1;
@@ -977,9 +973,9 @@ bool libwyv_command_armor(bool testConds, bool runActions) {
 	string behav_armor_subtract_1;
 	string behav_armor_subtract_10;
 	unit current;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
-	if( StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 1 ), false ) == "@shieldsarmor" ) {
+	if( StringCase( StringWord( argv, 1 ), false ) == "@shieldsarmor" ) {
 		behav_armor_add_p1 = LIBWYV_BEHAVIOR_ADD_SHIELDSARMOR_P1;
 		behav_armor_add_1 = LIBWYV_BEHAVIOR_ADD_SHIELDSARMOR_1;
 		behav_armor_add_10 = LIBWYV_BEHAVIOR_ADD_SHIELDSARMOR_10;
@@ -1043,18 +1039,18 @@ bool libwyv_command_armor(bool testConds, bool runActions) {
 			}
 		}
 
-		if( StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 1 ), false ) == "@shieldsarmor" ) {
-			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@shieldsarmor", libwyv_player[EventPlayer()].chat_msg);
+		if( StringCase( StringWord( argv, 1 ), false ) == "@shieldsarmor" ) {
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@shieldsarmor", argv);
 		}
 		else { // using @armor
-			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@armor", libwyv_player[EventPlayer()].chat_msg);
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@armor", argv);
 		}
 
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_weaponspeed
@@ -1070,9 +1066,9 @@ bool libwyv_command_armor(bool testConds, bool runActions) {
 // So we require stack X given by (floored to an int):
 // If Y > W : X = log(Y/W)/log(1.1)
 // If Y < W : X = log(Y/W)/log(0.9)
-bool libwyv_command_weaponspeed(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	fixed speed = StringToFixed( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ) );
+void libwyv_command_weaponspeed(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	fixed speed = StringToFixed( StringWord( argv, 2 ) );
 	fixed ratio = 0;
 	int stack_required;
 	string weapon;
@@ -1114,21 +1110,21 @@ bool libwyv_command_weaponspeed(bool testConds, bool runActions) {
 			UnitBehaviorAdd(current, LIBWYV_BEHAVIOR_WEAPONSPEED_MULT_P9, null, stack_required);
 		}
 
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@weaponspeed", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@weaponspeed", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_weaponspeedall
 // ====================
 // sets global weaponspeed for weapons on a unit
 // (by changing the catalog weaponspeed value)
-bool libwyv_command_weaponspeedall(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	fixed speed = StringToFixed( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ) );
+void libwyv_command_weaponspeedall(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	fixed speed = StringToFixed( StringWord( argv, 2 ) );
 	int index;
 	string weapon;
 	unit current;
@@ -1154,53 +1150,53 @@ bool libwyv_command_weaponspeedall(bool testConds, bool runActions) {
 		UnitBehaviorRemove(current, LIBWYV_BEHAVIOR_WEAPONSPEED_MULT_P9, -1);
 		UnitBehaviorRemove(current, LIBWYV_BEHAVIOR_WEAPONSPEED_MULT_1P1, -1);
 
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@weaponspeedall", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@weaponspeedall", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_subtitle
 // =================
 // sets a unit's subtitle (underneath a unit name)
-bool libwyv_command_subtitle(bool testConds, bool runActions) {
-	string val = libwyv_player[EventPlayer()].chat_msg;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+void libwyv_command_subtitle(int user, unitgroup u, string argv) {
+	string val = argv;
+	unitgroup g = u;
 	val = StringSub( val, StringFind(val, " ", c_stringCase)+1, StringLength(val)); // The remainder of the chat message.
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		CatalogFieldValueSet(c_gameCatalogUnit, UnitGetType(UnitGroupLoopCurrent()), "Subtitle", UnitGetOwner(UnitGroupLoopCurrent()), val);
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@subtitle", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@subtitle", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_tooltip
 // =====================
 // sets a units tooltip, either the main tip or subtip
 // (note: this is only visible to OTHER players)
-bool libwyv_command_tooltip(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
+void libwyv_command_tooltip(int user, unitgroup u, string argv) {
+	unitgroup g = u;
 	string description;
 	bool subtip = false;
 
-	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 2) == "") {
-		return true;
+	if(StringWord( argv, 2) == "") {
+		return;
 	}
 
-	if(StringEqual(StringWord( libwyv_player[EventPlayer()].chat_msg, 2),"sub",c_stringNoCase)) {
-		description = StringSub( libwyv_player[EventPlayer()].chat_msg, StringLength(StringWord( libwyv_player[EventPlayer()].chat_msg, 1)) + 2, StringLength(libwyv_player[EventPlayer()].chat_msg));
+	if(StringEqual(StringWord( argv, 2),"sub",c_stringNoCase)) {
+		description = StringSub( argv, StringLength(StringWord( argv, 1)) + 2, StringLength(argv));
 		description = StringSub( description, StringLength(StringWord( description, 1)) + 2, StringLength(description));
 
 		subtip = true;
 	}
 	else {
-		description = StringSub( libwyv_player[EventPlayer()].chat_msg, StringLength(StringWord( libwyv_player[EventPlayer()].chat_msg, 1)) + 2, StringLength(libwyv_player[EventPlayer()].chat_msg));
+		description = StringSub( argv, StringLength(StringWord( argv, 1)) + 2, StringLength(argv));
 	}
 
 	UnitGroupLoopBegin(g);
@@ -1211,12 +1207,12 @@ bool libwyv_command_tooltip(bool testConds, bool runActions) {
 		else {
 			UnitSetInfoTip(UnitGroupLoopCurrent(), StringToText(description));
 		}
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@tooltip", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@tooltip", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_copy
@@ -1224,8 +1220,8 @@ bool libwyv_command_tooltip(bool testConds, bool runActions) {
 // copies selected units:
 // - stats, behaviors, orders, weapons
 // - visuals (by parsing commands from source cache)
-bool libwyv_command_copy(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
+void libwyv_command_copy(int user, unitgroup u, string argv) {
+	unitgroup g = u;
 	unitgroup created = UnitGroupEmpty();
 	unit source;
 	unitgroup targets;
@@ -1237,7 +1233,7 @@ bool libwyv_command_copy(bool testConds, bool runActions) {
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		source = UnitGroupLoopCurrent();
-		targets = UnitCreate(1, UnitGetType(source), c_unitCreateIgnorePlacement, UnitGetOwner(source), libwyv_player[EventPlayer()].mouse_position, UnitGetFacing(source));
+		targets = UnitCreate(1, UnitGetType(source), c_unitCreateIgnorePlacement, UnitGetOwner(source), libwyv_player[user].mouse_position, UnitGetFacing(source));
 		target = UnitGroupUnit(targets, 1);
 
 		//set the unit's id on data table
@@ -1333,7 +1329,7 @@ bool libwyv_command_copy(bool testConds, bool runActions) {
 		source_unit_id = FixedToString(UnitGetCustomValue(source, LIBWYV_UNIT_INDEX_ID), 0);
 		cache = 1;
 		while( DataTableValueExists(true, source_unit_id + "." + IntToString(cache)) ) {
-			libwyv_chat_parse(DataTableGetString(true, source_unit_id + "." + IntToString(cache)), EventPlayer(), targets);
+			libwyv_chat_parse(DataTableGetString(true, source_unit_id + "." + IntToString(cache)), user, targets);
 			cache += 1;
 		}
 
@@ -1341,60 +1337,60 @@ bool libwyv_command_copy(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	libwyv_player[EventPlayer()].context = created;
+	u = created;
 
-	return true;
+	return;
 }
 
 // libwyv_command_effect
 // ===============
 // creates an effect at target units or at a point
-bool libwyv_command_effect(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	string effect = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_effect(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	string effect = StringWord( argv, 2 );
 
 	effect = libwyv_catalog_get(c_gameCatalogEffect, effect);
 	if(effect == null) {
-		libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to create effect</c>: No such effect exists.");
-		return true;
+		libwyv_print_error(user, "<c val=\"ff0000\">Unable to create effect</c>: No such effect exists.");
+		return;
 	}
 
 	if( UnitGroupCount(g, c_unitCountAll) != 0 ) {
 		UnitGroupLoopBegin(g);
 		while(!UnitGroupLoopDone()) {
-			if( libNtve_gf_PlayerCanCreateEffectOnUnit(EventPlayer(), effect, UnitGroupLoopCurrent()) ) {
-				PlayerCreateEffectUnit(EventPlayer(), effect, UnitGroupLoopCurrent());
-				libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@effect", libwyv_player[EventPlayer()].chat_msg);
+			if( libNtve_gf_PlayerCanCreateEffectOnUnit(user, effect, UnitGroupLoopCurrent()) ) {
+				PlayerCreateEffectUnit(user, effect, UnitGroupLoopCurrent());
+				libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@effect", argv);
 			}
 			else {
-				libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to create the effect.</c>");
+				libwyv_print_error(user, "<c val=\"ff0000\">Unable to create the effect.</c>");
 			}
 			UnitGroupLoopStep();
 		}
 		UnitGroupLoopEnd();
 	}
 	else {
-		if( libNtve_gf_PlayerCanCreateEffectAtPoint(EventPlayer(), StringWord(EventChatMessage(false), 2), libwyv_player[EventPlayer()].mouse_position) ) {
-			PlayerCreateEffectPoint(EventPlayer(), effect, libwyv_player[EventPlayer()].mouse_position);
+		if( libNtve_gf_PlayerCanCreateEffectAtPoint(user, StringWord(EventChatMessage(false), 2), libwyv_player[user].mouse_position) ) {
+			PlayerCreateEffectPoint(user, effect, libwyv_player[user].mouse_position);
 		}
 		else {
-			libwyv_print_error(EventPlayer(), "<c val=\"ff0000\">Unable to create the effect.</c>");
+			libwyv_print_error(user, "<c val=\"ff0000\">Unable to create the effect.</c>");
 		}
 	}
 
-	return true;
+	return;
 }
 
 // libwyv_command_kills
 // ==============
 // sets the number of kills on a unit
 // (only useful for changing unit kill rank)
-bool libwyv_command_kills(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	fixed val = StringToFixed( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ) );
+void libwyv_command_kills(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	fixed val = StringToFixed( StringWord( argv, 2 ) );
 
 	if( val <= 0 ) { // Bad input!
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
@@ -1403,7 +1399,7 @@ bool libwyv_command_kills(bool testConds, bool runActions) {
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
-	return true;
+	return;
 }
 
 // libwyv_command_level
@@ -1411,12 +1407,12 @@ bool libwyv_command_kills(bool testConds, bool runActions) {
 // sets a unit's level (level range between 0 - 20)
 // (if a unit does not have veterancy behavior,
 // it is added before setting level)
-bool libwyv_command_level(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	int val = StringToInt( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ) );
+void libwyv_command_level(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	int val = StringToInt( StringWord( argv, 2 ) );
 
 	if( val <= 0 || val > 20 ) { // Bad input!
-		return true;
+		return;
 	}
 
 	UnitGroupLoopBegin(g);
@@ -1436,23 +1432,23 @@ bool libwyv_command_level(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_label
 // =================
 // creates and attaches a text tag to unit
 // labels are destroyed when units removed/killed
-bool libwyv_command_label(bool testConds, bool runActions) {
+void libwyv_command_label(int user, unitgroup u, string argv) {
 	int tag_id;
 	bool remove_tag = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	string label = libwyv_player[EventPlayer()].chat_msg;
+	unitgroup g = u;
+	string label = argv;
 	label = StringSub( label, StringFind(label, " ", c_stringCase) + 1, StringLength(label)); // The remainder of the chat message.
 
 	if( StringLength(label) > 512 ) {
-		libwyv_print_error(EventPlayer(), "Your label length is too long.");
-		return true;
+		libwyv_print_error(user, "Your label length is too long.");
+		return;
 	}
 
 	if( label == "" ) {
@@ -1468,7 +1464,7 @@ bool libwyv_command_label(bool testConds, bool runActions) {
 		}
 
 		if( !remove_tag ) {
-			tag_id = TextTagCreate( TextWithColor( StringToText(label), ColorFromIndex( PlayerGetColorIndex(EventPlayer(), false), c_teamColorDiffuse ) ),
+			tag_id = TextTagCreate( TextWithColor( StringToText(label), ColorFromIndex( PlayerGetColorIndex(user, false), c_teamColorDiffuse ) ),
 									40, UnitGetPosition(UnitGroupLoopCurrent()), 1.0, true, true, PlayerGroupAll() );
 			TextTagSetTextShadow(tag_id, true);
 			TextTagAttachToUnit(tag_id, UnitGroupLoopCurrent(), 1.0);
@@ -1479,19 +1475,19 @@ bool libwyv_command_label(bool testConds, bool runActions) {
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_radius
 // ====================
 // adjusts a unit's collision radius
-bool libwyv_command_radius(bool testConds, bool runActions) {
-	string val = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 );
+void libwyv_command_radius(int user, unitgroup u, string argv) {
+	string val = StringWord( argv, 2 );
 	fixed radius;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
 	if(val == "") {
-		libwyv_print_error(EventPlayer(), "Usage: @radius collision_radius[%]");
+		libwyv_print_error(user, "Usage: @radius collision_radius[%]");
 	}
 	else if(StringContains(val, "%", c_stringEnd, c_stringCase)) {
 		radius = StringToFixed(StringSub(val, 1, StringLength(val) - 1));
@@ -1520,7 +1516,7 @@ bool libwyv_command_radius(bool testConds, bool runActions) {
 		UnitGroupLoopEnd();
 	}
 
-	return true;
+	return;
 }
 
 // libwyv_command_state
@@ -1530,11 +1526,11 @@ bool libwyv_command_radius(bool testConds, bool runActions) {
 // each setting can either be on (true) or off (false).
 //        syntax: @state [state-name] [on/off]
 // for [on/off], any input that isnt "on" is parsed as "off" (false)
-bool libwyv_command_state(bool testConds, bool runActions) {
-	string param = StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 2 ), false );
+void libwyv_command_state(int user, unitgroup u, string argv) {
+	string param = StringCase( StringWord( argv, 2 ), false );
 	int state;
 	bool status = false;
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 
 	// get 1st parameter as the state option
 	if( param == "fidget" ) {
@@ -1568,25 +1564,25 @@ bool libwyv_command_state(bool testConds, bool runActions) {
 	} else if( param == "usessupply" ) {
 		state = c_unitStateUsingSupply;
 	} else {
-		libwyv_print_error(EventPlayer(), "Usage: @radius [state] [on/off]\n" +
+		libwyv_print_error(user, "Usage: @radius [state] [on/off]\n" +
 							"States: fidget, highlightable, highlighted, ignoreterrainheight, invulnerable, hidden, paused, selectable, statusbar, targetable, tooltips, cursor, movable, turnable, usessupply");
-		return false;
+		return;
 	}
 
 	// status as 2nd parameter
-	if( StringCase( StringWord( libwyv_player[EventPlayer()].chat_msg, 3 ), false ) == "on" ) {
+	if( StringCase( StringWord( argv, 3 ), false ) == "on" ) {
 		status = true;
 	}
 
-	libwyv_print(PlayerGroupSingle(EventPlayer()), "Setting state " + param + ": " + libNtve_gf_ConvertBooleanToString(status));
+	libwyv_print(PlayerGroupSingle(user), "Setting state " + param + ": " + libNtve_gf_ConvertBooleanToString(status));
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
 		UnitSetState( UnitGroupLoopCurrent(), state, status );
-		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@state", libwyv_player[EventPlayer()].chat_msg);
+		libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@state", argv);
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }

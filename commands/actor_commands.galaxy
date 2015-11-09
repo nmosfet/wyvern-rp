@@ -44,13 +44,13 @@ static bool libwyv_has_actor_ref(string ref) {
 // Certain actor commands require special casing for the actor msgs applied,
 // in which case this block is special cased in the actor command
 // function (Galaxy highly limited in dealing with generic functions)
-static void libwyv_apply_actormsg(int player, unitgroup g, string target, string cmd, string amsg) {
+static void libwyv_apply_actormsg(unitgroup g, string target, string argv, string cmd, string amsg) {
 	if( StringSub(target, 1, 2) == "->" ) {
 		target = StringSub(target, 3, StringLength(target));
 		UnitGroupLoopBegin(g);
 		while(!UnitGroupLoopDone()) {
 			ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, amsg);
-			libwyv_unit_cache_update(UnitGroupLoopCurrent(), cmd, libwyv_player[player].chat_msg);
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), cmd, argv);
 			UnitGroupLoopStep();
 		}
 		UnitGroupLoopEnd();
@@ -78,16 +78,16 @@ static void libwyv_apply_actormsg(int player, unitgroup g, string target, string
 // match user input to actual actor messages (many elseif), which is shitty
 //
 // TODO: convert to new generalized amsg target system?
-bool libwyv_command_actormessage(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
-	string target = StringWord( libwyv_player[EventPlayer()].chat_msg, 2);
+void libwyv_command_actormessage(int user, unitgroup u, string argv) {
+	unitgroup g = u;
+	string target = StringWord( argv, 2);
 	bool target_scope_global = false;
 	string amsg;
 	int amsg_start_word_index = 1;
 	int amsg_start_index;
 
 	if(target == "") {
-		return true;
+		return;
 	}
 
 	// check the actor message target:
@@ -109,12 +109,12 @@ bool libwyv_command_actormessage(bool testConds, bool runActions) {
 	}
 
 	// get the actor message string (remainder of line)
-	amsg_start_index = StringLength(StringWord( libwyv_player[EventPlayer()].chat_msg, 1)) + 2;
+	amsg_start_index = StringLength(StringWord( argv, 1)) + 2;
 	if( amsg_start_word_index == 2 ) {
-		amsg_start_index += StringLength(StringWord( libwyv_player[EventPlayer()].chat_msg, 2)) + 1;
+		amsg_start_index += StringLength(StringWord( argv, 2)) + 1;
 	}
 
-	amsg = StringSub( libwyv_player[EventPlayer()].chat_msg, amsg_start_index, StringLength(libwyv_player[EventPlayer()].chat_msg));
+	amsg = StringSub( argv, amsg_start_index, StringLength(argv));
 
 	UnitGroupLoopBegin(g);
 	while(!UnitGroupLoopDone()) {
@@ -123,13 +123,13 @@ bool libwyv_command_actormessage(bool testConds, bool runActions) {
 		}
 		else {
 			ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, amsg);
-			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@actormsg", libwyv_player[EventPlayer()].chat_msg);
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@actormsg", argv);
 		}
 		UnitGroupLoopStep();
 	}
 	UnitGroupLoopEnd();
 
-	return true;
+	return;
 }
 
 // libwyv_command_actoralias
@@ -138,35 +138,34 @@ bool libwyv_command_actormessage(bool testConds, bool runActions) {
 // These can be referenced as actor references by other actor commands
 // using ->[ref]
 // syntax: @actoralias (->[ref]) [alias]
-bool libwyv_command_actoralias(bool testConds, bool runActions) {
+void libwyv_command_actoralias(int user, unitgroup u, string argv) {
 	string actoralias;
 	int param_offset = 0;
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
 	// get actor alias
-	actoralias = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
+	actoralias = StringWord(argv, 2 + param_offset);
 	if( actoralias == "" ) {
-		libwyv_print_error(EventPlayer(), "Actor alias cannot be blank");
-		return false;
+		libwyv_print_error(user, "Actor alias cannot be blank");
+		return;
 	}
 
-	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@actoralias",
-						  "AliasAdd " + actoralias);
+	libwyv_apply_actormsg(u, target, argv, "@actoralias", "AliasAdd " + actoralias);
 
-	return true;
+	return;
 }
 
 // libwyv_command_scale
 // ====================
 // sets the scale of a unit's main actor for all units in context (modified from Cortex Engine)
 // Syntax: @scale (->[ref]) [x] [y] [z] [time-blend]
-bool libwyv_command_scale(bool testConds, bool runActions) {
+void libwyv_command_scale(int user, unitgroup u, string argv) {
 	fixed x = 0;
 	fixed y = 0;
 	fixed z  = 0;
@@ -179,16 +178,16 @@ bool libwyv_command_scale(bool testConds, bool runActions) {
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
 	// get scale params "x y z time"
-	param_x = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
-	param_y = StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset);
-	param_z = StringWord(libwyv_player[EventPlayer()].chat_msg, 4 + param_offset);
-	param_time = StringWord(libwyv_player[EventPlayer()].chat_msg, 5 + param_offset);
+	param_x = StringWord(argv, 2 + param_offset);
+	param_y = StringWord(argv, 3 + param_offset);
+	param_z = StringWord(argv, 4 + param_offset);
+	param_time = StringWord(argv, 5 + param_offset);
 
 	x = StringToFixed(param_x);
 	y = StringToFixed(param_y);
@@ -217,9 +216,9 @@ bool libwyv_command_scale(bool testConds, bool runActions) {
 		time = StringToFixed(param_time);
 	}
 
-	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@scale",
+	libwyv_apply_actormsg(u, target, argv, "@scale",
 						  "SetScale " + FixedToString(x, 4) + "," + FixedToString(y, 4)  + "," + FixedToString(z, 4) + " " + FixedToString(time, 3));
-	return true;
+	return;
 }
 
 // libwyv_command_tint
@@ -227,7 +226,7 @@ bool libwyv_command_scale(bool testConds, bool runActions) {
 // sets the tint of a unit's main actor for all units in context
 // Syntax: @tint (->[ref]) [R] [G] [B] [Opacity] [HDR] [time-blend]
 // (modified from Cortex Engine)
-bool libwyv_command_tint(bool testConds, bool runActions) {
+void libwyv_command_tint(int user, unitgroup u, string argv) {
 	string paramR;
 	string paramG;
 	string paramB;
@@ -242,22 +241,22 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 	fixed hdr = 1.0;
 	fixed duration = 0;
 
-	unitgroup g = libwyv_player[EventPlayer()].context;
+	unitgroup g = u;
 	int param_offset = 0;
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
-	paramR = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
-	paramG = StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset);
-	paramB = StringWord(libwyv_player[EventPlayer()].chat_msg, 4 + param_offset);
-	paramAlpha = StringWord(libwyv_player[EventPlayer()].chat_msg, 5 + param_offset);
-	paramHDR = StringWord(libwyv_player[EventPlayer()].chat_msg, 6 + param_offset);
-	paramT = StringWord(libwyv_player[EventPlayer()].chat_msg, 7 + param_offset);
+	paramR = StringWord(argv, 2 + param_offset);
+	paramG = StringWord(argv, 3 + param_offset);
+	paramB = StringWord(argv, 4 + param_offset);
+	paramAlpha = StringWord(argv, 5 + param_offset);
+	paramHDR = StringWord(argv, 6 + param_offset);
+	paramT = StringWord(argv, 7 + param_offset);
 
 	// get red input
 	if( paramR != "" ) {
@@ -319,7 +318,7 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 						FixedToString(hdr, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
 			ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target,
 						"SetOpacity {" + FixedToString(alpha, c_fixedPrecisionAny) + "} {" + FixedToString(duration, c_fixedPrecisionAny) + "}");
-			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@tint", libwyv_player[EventPlayer()].chat_msg);
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@tint", argv);
 			UnitGroupLoopStep();
 		}
 		UnitGroupLoopEnd();
@@ -338,14 +337,14 @@ bool libwyv_command_tint(bool testConds, bool runActions) {
 		UnitGroupLoopEnd();
 	}
 
-	return true;
+	return;
 }
 
 // libwyv_command_modelswap
 // ======================
 // Changes the model of the main actor of unit (modified from Cortex Engine)
 // Syntax: @modelswap (->[ref]) [model] [variation]
-bool libwyv_command_modelswap(bool testConds, bool runActions) {
+void libwyv_command_modelswap(int user, unitgroup u, string argv) {
 	string model;
 	string variation;
 	string amsg;
@@ -353,34 +352,34 @@ bool libwyv_command_modelswap(bool testConds, bool runActions) {
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
-	model = libwyv_catalog_get(c_gameCatalogModel, StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset));
+	model = libwyv_catalog_get(c_gameCatalogModel, StringWord(argv, 2 + param_offset));
 	if(model == null) {
-		libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to swap model</c>: No such model exists.");
-		return true;
+		libwyv_print_output(user, "<c val=\"ff0000\">Unable to swap model</c>: No such model exists.");
+		return;
 	}
 	amsg = "ModelSwap {" + model + "}";
 
-	variation = StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset);
+	variation = StringWord(argv, 3 + param_offset);
 	if( variation != "" && StringToInt(variation) >= 0 ) {
 		amsg += " {" + variation + "}";
 	}
 
-	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@modelswap", amsg);
+	libwyv_apply_actormsg(u, target, argv, "@modelswap", amsg);
 
-	return true;
+	return;
 }
 
 // libwyv_command_play
 // ================
 // makes the main actor play an animation by applying an animgroup
 // "@play reset" stops the animation
-bool libwyv_command_play(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
+void libwyv_command_play(int user, unitgroup u, string argv) {
+	unitgroup g = u;
 	string val;
 	string flags = "";
 	string animgroup;
@@ -388,21 +387,21 @@ bool libwyv_command_play(bool testConds, bool runActions) {
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
-	val = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
+	val = StringWord(argv, 2 + param_offset);
 	val = StringCase(StringSub(val, 1, 1), true) + StringSub(val, 2, StringLength(val));
 
 	// if @play [anim] [loop] , then set the flags for anim to PlayForever
-	if( StringEqual(StringWord( libwyv_player[EventPlayer()].chat_msg, 3 + param_offset), "loop", c_stringNoCase) ) {
+	if( StringEqual(StringWord( argv, 3 + param_offset), "loop", c_stringNoCase) ) {
 		flags = "PlayForever";
-		animgroup = StringWord(libwyv_player[EventPlayer()].chat_msg, 4 + param_offset);
+		animgroup = StringWord(argv, 4 + param_offset);
 	}
 	else {
-		animgroup = StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset);
+		animgroup = StringWord(argv, 3 + param_offset);
 	}
 
 	animgroup = StringCase(StringSub(animgroup, 1, 1), true) + StringSub(animgroup, 2, StringLength(animgroup));
@@ -422,7 +421,7 @@ bool libwyv_command_play(bool testConds, bool runActions) {
 					ActorSendTo(libNtve_gf_MainActorofUnit(UnitGroupLoopCurrent()), target, "AnimGroupApply {" + animgroup + "}");
 				}
 			}
-			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@play", libwyv_player[EventPlayer()].chat_msg);
+			libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@play", argv);
 			UnitGroupLoopStep();
 		}
 		UnitGroupLoopEnd();
@@ -445,27 +444,27 @@ bool libwyv_command_play(bool testConds, bool runActions) {
 		}
 		UnitGroupLoopEnd();
 	}
-	return true;
+	return;
 }
 
 // libwyv_command_animspeed
 // ===================
 // changes the animation speed of any animations
 // a unit is playing (range is set as 0-10x default, 1)
-bool libwyv_command_animspeed(bool testConds, bool runActions) {
+void libwyv_command_animspeed(int user, unitgroup u, string argv) {
 	string speed;
 	fixed anm_speed;
 	int param_offset = 0;
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
 	// get animspeed time scale. if % at end, then apply a percent scale
-	speed = StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset);
+	speed = StringWord(argv, 2 + param_offset);
 	if( StringContains( speed, "%", c_stringEnd, c_stringCase ) ) {
 		anm_speed = StringToFixed( StringSub(speed, 1, StringLength(speed)-1) ) / 100;
 	} else {
@@ -481,10 +480,10 @@ bool libwyv_command_animspeed(bool testConds, bool runActions) {
 	}
 
 	// apply the animspeed
-	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@animspeed",
+	libwyv_apply_actormsg(u, target, argv, "@animspeed",
 						  libNtve_gf_AnimSetTimeScaleGlobal(anm_speed));
 
-	return true;
+	return;
 }
 
 // libwyv_command_rotate
@@ -492,7 +491,7 @@ bool libwyv_command_animspeed(bool testConds, bool runActions) {
 // applies a rotation on a unit (modified from Cortex Engine)
 // (note: movement removes these rotations,
 // so only really useful for static props)
-bool libwyv_command_rotate(bool testConds, bool runActions) {
+void libwyv_command_rotate(int user, unitgroup u, string argv) {
 	fixed yaw;
 	fixed pitch;
 	fixed roll;
@@ -506,15 +505,15 @@ bool libwyv_command_rotate(bool testConds, bool runActions) {
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
 	// calculate rotation vector parameters
-	yaw = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset) );
-	pitch = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 3 + param_offset) );
-	roll = StringToFixed( StringWord(libwyv_player[EventPlayer()].chat_msg, 4 + param_offset) );
+	yaw = StringToFixed( StringWord(argv, 2 + param_offset) );
+	pitch = StringToFixed( StringWord(argv, 3 + param_offset) );
+	roll = StringToFixed( StringWord(argv, 4 + param_offset) );
 
 	forwardX = Sin(yaw);
 	forwardY = -Sin(pitch) * Cos(yaw);
@@ -525,9 +524,9 @@ bool libwyv_command_rotate(bool testConds, bool runActions) {
 	upZ = Cos(pitch) * Sin(yaw) * Sin(roll) + Sin(pitch) * Cos(roll);
 
 	// apply the rotation actor msgs
-	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@rotate",
+	libwyv_apply_actormsg(u, target, argv, "@rotate",
 						  libNtve_gf_SetRotation(forwardX, forwardY, forwardZ, upX, upY, upZ));
-	return true;
+	return;
 }
 
 // libwyv_command_statbars
@@ -535,26 +534,26 @@ bool libwyv_command_rotate(bool testConds, bool runActions) {
 // sets a unit's statbars
 // by default, turns statbars off.
 // turns on if user specifies by "@statbars on"
-bool libwyv_command_statbars(bool testConds, bool runActions) {
+void libwyv_command_statbars(int user, unitgroup u, string argv) {
 	string state = "";
 	int param_offset = 0;
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		param_offset = 1;
 	}
 
 	// get statbars state ("on" -> turn on, anything else turns off)
-	if(StringEqual(StringWord(libwyv_player[EventPlayer()].chat_msg, 2 + param_offset), "on", false)) {
+	if(StringEqual(StringWord(argv, 2 + param_offset), "on", false)) {
 		state = " 1"; // 1 == on
 	}
 
 	// apply the statbars actor msgs
-	libwyv_apply_actormsg(EventPlayer(), libwyv_player[EventPlayer()].context, target, "@statbars",
+	libwyv_apply_actormsg(u, target, argv, "@statbars",
 						  "SetShowStatusBar" + state);
-	return true;
+	return;
 }
 
 // libwyv_command_attach
@@ -562,8 +561,8 @@ bool libwyv_command_statbars(bool testConds, bool runActions) {
 // Attaches an actor or a model to a unit (modified @attach+ from Cortex Forge)
 // Can optionally specify coordinate offsets, rotations, and site operations
 // syntax: @attach (->[ref]) (-m) [Actor/Model] [Point_#] [offX] [offY] [offZ] (-r [rotX] [rotY] [rotZ]) [SOp1] [SOp2] [SOp3]...
-bool libwyv_command_attach(bool testConds, bool runActions) {
-	unitgroup g = libwyv_player[EventPlayer()].context;
+void libwyv_command_attach(int user, unitgroup u, string argv) {
+	unitgroup g = u;
 	int parse_offset = 0;
 	int x;
 	string actr = "{}";
@@ -580,51 +579,51 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	string target = LIBWYV_ACTOR_REF_MAIN;
 
 	// get actor reference target
-	if( libwyv_has_actor_ref(StringWord(libwyv_player[EventPlayer()].chat_msg, 2)) ) {
-		target = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+	if( libwyv_has_actor_ref(StringWord(argv, 2)) ) {
+		target = StringWord(argv, 2);
 		parse_offset = 1;
 	}
 
-	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 2 + parse_offset) == "") {
-		return true;
+	if(StringWord( argv, 2 + parse_offset) == "") {
+		return;
 	}
-	else if(StringWord( libwyv_player[EventPlayer()].chat_msg, 2 + parse_offset) == "-m") {
-		model = StringWord( libwyv_player[EventPlayer()].chat_msg, 3 + parse_offset);
+	else if(StringWord( argv, 2 + parse_offset) == "-m") {
+		model = StringWord( argv, 3 + parse_offset);
 	}
 	else {
-		actr = StringWord( libwyv_player[EventPlayer()].chat_msg, 2 + parse_offset);
+		actr = StringWord( argv, 2 + parse_offset);
 	}
 
 	if( actr == "listpoints" || model =="listpoints" ) {
-		libwyv_print(PlayerGroupSingle(EventPlayer()), "<c val=\"00ff00\">Available attach points</c>:<n/>" + attachPoints);
-		return true;
+		libwyv_print(PlayerGroupSingle(user), "<c val=\"00ff00\">Available attach points</c>:<n/>" + attachPoints);
+		return;
 	}
 
 	// check actor or model is valid
-	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 2 + parse_offset) == "-m") { //do catalog check for model
+	if(StringWord( argv, 2 + parse_offset) == "-m") { //do catalog check for model
 		model = libwyv_catalog_get(c_gameCatalogModel, model);
 		if(model == null) {
-			libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to attach actor model</c>: No such model exists.");
-			return true;
+			libwyv_print_output(user, "<c val=\"ff0000\">Unable to attach actor model</c>: No such model exists.");
+			return;
 		}
 		parse_offset += 1; // increase parse offset since model "-m" flag being used
 	}
 	else { // do catalog check for actor
 		actr = libwyv_catalog_get(c_gameCatalogActor, actr);
 		if(actr == null) {
-			libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to attach actor</c>: No such actor exists.");
-			return true;
+			libwyv_print_output(user, "<c val=\"ff0000\">Unable to attach actor</c>: No such actor exists.");
+			return;
 		}
 		scope = CatalogEntryScope( c_gameCatalogActor, actr );
 		if( scope == "CActorEventMacro" || scope == "CActorSound" ) {
-			libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Unable to attach actor</c>: Invalid actor.");
-			return true;
+			libwyv_print_output(user, "<c val=\"ff0000\">Unable to attach actor</c>: Invalid actor.");
+			return;
 		}
 	}
 
 	//MODIFY ATTACH POINT STRING:
 	//get apoint (attachment point)
-	apoint = StringWord( libwyv_player[EventPlayer()].chat_msg, 3 + parse_offset);
+	apoint = StringWord( argv, 3 + parse_offset);
 	if( apoint == "" ) {
 		apoint = "Origin";
 	}
@@ -649,21 +648,21 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 
 	if( x != -1 ) {
 		apoint = "Origin";
-		libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Warning</c>: Invalid attachment point, defaulting to Origin.<n/>You can obtain a list of attachment points by typing <c val=\"00ff00\">@attach listpoints</c>.");
+		libwyv_print_output(user, "<c val=\"ff0000\">Warning</c>: Invalid attachment point, defaulting to Origin.<n/>You can obtain a list of attachment points by typing <c val=\"00ff00\">@attach listpoints</c>.");
 	}
 
 	//remake the apoint string
 	apoint = "{" + apoint + apoint_index + "}";
 
 	//check for offset (if specified)
-	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset) != ""
-		&& !StringContains(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset), "SOp", c_stringAnywhere, c_stringNoCase)
-		&& StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset) != "-r") {
+	if(StringWord( argv, 4 + parse_offset) != ""
+		&& !StringContains(StringWord( argv, 4 + parse_offset), "SOp", c_stringAnywhere, c_stringNoCase)
+		&& StringWord( argv, 4 + parse_offset) != "-r") {
 		x = 0;
 		offset = "";
 		while(x < 3) {
-			if(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x) != "") {
-				offset += "," + FixedToString(StringToFixed(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x)), c_fixedPrecisionAny);
+			if(StringWord( argv, 4 + parse_offset + x) != "") {
+				offset += "," + FixedToString(StringToFixed(StringWord( argv, 4 + parse_offset + x)), c_fixedPrecisionAny);
 			}
 			else {
 				offset += ",0";
@@ -676,7 +675,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	}
 
 	//check for local rotation (if specified)
-	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset) == "-r") {
+	if(StringWord( argv, 4 + parse_offset) == "-r") {
 		parse_offset += 1;
 		x = 0;
 		rotation = "";
@@ -684,8 +683,8 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 			offset = "0,0,0";
 		}
 		while(x < 3) {
-			if(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x) != "") {
-				rotation += "," + FixedToString(StringToFixed(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x)), c_fixedPrecisionAny);
+			if(StringWord( argv, 4 + parse_offset + x) != "") {
+				rotation += "," + FixedToString(StringToFixed(StringWord( argv, 4 + parse_offset + x)), c_fixedPrecisionAny);
 			}
 			else {
 				rotation += ",0";
@@ -698,14 +697,14 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 	}
 
 	//keep checking for specified site ops until reached end of string
-	if(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset) != "") {
+	if(StringWord( argv, 4 + parse_offset) != "") {
 		x = 0;
-		while(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x) != "") {
-			if(StringContains(StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x), "SOp", c_stringAnywhere, c_stringNoCase)) {
-				SOp = StringWord( libwyv_player[EventPlayer()].chat_msg, 4 + parse_offset + x);
+		while(StringWord( argv, 4 + parse_offset + x) != "") {
+			if(StringContains(StringWord( argv, 4 + parse_offset + x), "SOp", c_stringAnywhere, c_stringNoCase)) {
+				SOp = StringWord( argv, 4 + parse_offset + x);
 				SOp = libwyv_catalog_get(c_gameCatalogActor, SOp);
 				if(SOp == null) {
-					libwyv_print_output(EventPlayer(), "<c val=\"ff0000\">Warning: Encounted invalid or unknown Site Op: Skipping");
+					libwyv_print_output(user, "<c val=\"ff0000\">Warning: Encounted invalid or unknown Site Op: Skipping");
 				}
 				else {
 					siteops = siteops + " " + SOp;
@@ -746,7 +745,7 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 
 			// TODO: need to generalize actors that shouldnt update cache
 			if(!StringContains(actr, "TalkIcon", c_stringAnywhere, c_stringNoCase)) {
-				libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@attach", libwyv_player[EventPlayer()].chat_msg);
+				libwyv_unit_cache_update(UnitGroupLoopCurrent(), "@attach", argv);
 			}
 			UnitGroupLoopStep();
 		}
@@ -761,5 +760,5 @@ bool libwyv_command_attach(bool testConds, bool runActions) {
 		}
 		UnitGroupLoopEnd();
 	}
-	return true;
+	return;
 }

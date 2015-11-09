@@ -10,69 +10,69 @@
 // =======================
 // Deals with redirecting the @spawn command to a proper unit create command
 // all actual unit creation is handled in engine/unit.galaxy
-bool libwyv_command_spawn(bool testConds, bool runActions) {
-	point spawn_point = libwyv_player[EventPlayer()].mouse_position;
-	int count = StringToInt( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) );
-	string type = StringWord(libwyv_player[EventPlayer()].chat_msg, 3);
+void libwyv_command_spawn(int user, unitgroup u, string argv) {
+	point spawn_point = libwyv_player[user].mouse_position;
+	int count = StringToInt( StringWord(argv, 2) );
+	string type = StringWord(argv, 3);
 	region location = null;
-	int player = EventPlayer();
+	int player = user;
 	string parameter; 	// used for parsing a location or player parameter
 
 	// if no parameters specified, check last instance and try to repeat
-	if( StringWord(libwyv_player[EventPlayer()].chat_msg, 2) == "" ) {
-		if( libwyv_player[EventPlayer()].spawn_instance_type != "" ) {
-			type = libwyv_player[EventPlayer()].spawn_instance_type;
-			count = libwyv_player[EventPlayer()].spawn_instance_count;
-			player = libwyv_player[EventPlayer()].spawn_instance_player;
-			if( libwyv_player[EventPlayer()].spawn_instance_location != null ) {
-				spawn_point = RegionGetCenter( libwyv_player[EventPlayer()].spawn_instance_location );
+	if( StringWord(argv, 2) == "" ) {
+		if( libwyv_player[user].spawn_instance_type != "" ) {
+			type = libwyv_player[user].spawn_instance_type;
+			count = libwyv_player[user].spawn_instance_count;
+			player = libwyv_player[user].spawn_instance_player;
+			if( libwyv_player[user].spawn_instance_location != null ) {
+				spawn_point = RegionGetCenter( libwyv_player[user].spawn_instance_location );
 			}
 
-			libwyv_player[EventPlayer()].context = UnitGroupEmpty();
+			libwyv_player[user].context = UnitGroupEmpty();
 			while (count > 0) {
 				libwyv_unit_create(type, player, spawn_point, 270.0);
 				count -= 1;
 			}
 
-			return true;
+			return;
 		}
 		else {
-			libwyv_print_error(EventPlayer(), "Invalid unit type, or no previous spawn instance");
-			return false;
+			libwyv_print_error(user, "Invalid unit type, or no previous spawn instance");
+			return;
 		}
 	}
 
 	// if count is 0, try checking 3rd index, swap unit type to 2nd index
 	// (this allows either @spawn # unit or @spawn unit #)
 	if( count == 0 ) {
-		count = StringToInt( StringWord(libwyv_player[EventPlayer()].chat_msg, 3) );
-		type = StringWord(libwyv_player[EventPlayer()].chat_msg, 2);
+		count = StringToInt( StringWord(argv, 3) );
+		type = StringWord(argv, 2);
 	}
 
 	// get unit type
 	if( type == "" ) {
-		libwyv_print_error(EventPlayer(), "INVALID UNIT TYPE");
-		return false;
+		libwyv_print_error(user, "INVALID UNIT TYPE");
+		return;
 	}
 	else {
 		type = UnitTypeFromString(type);
 		//type = librtpr_catalog_get( c_gameCatalogUnit, type );
 		if (type == "" || !CatalogEntryIsValid(c_gameCatalogUnit, type) || UnitTypeTestFlag(type, c_unitFlagMissile) ) {
-			libwyv_print_error(EventPlayer(), "INVALID UNIT TYPE");
-			return false;
+			libwyv_print_error(user, "INVALID UNIT TYPE");
+			return;
 		}
 	}
 
 	// if count is <= 0, then turn on mouse-click spawning
 	if( count <= 0 ) {
-		libwyv_print_output(EventPlayer(), "SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel.\n" +
+		libwyv_print_output(user, "SPAWNING: " + type + "\n(Press [Left Mouse] to place, [ESC] key to cancel.\n" +
 							"Hold: [Ctrl] to rotate, [Shift] to scale, [Alt] to change height,\n" +
 							"Hold: [Right Mouse] to lock position)");
-		libwyv_spawn_create_splat(type, EventPlayer());
-		libwyv_player[EventPlayer()].is_placing_unit = true;
-		UISetSelectionTypeEnabled(PlayerGroupSingle(EventPlayer()), c_localSelectionTypeUnknown, false);
-		UnitClearSelection(EventPlayer());	// deselect player selected units
-		return true;
+		libwyv_spawn_create_splat(type, user);
+		libwyv_player[user].is_placing_unit = true;
+		UISetSelectionTypeEnabled(PlayerGroupSingle(user), c_localSelectionTypeUnknown, false);
+		UnitClearSelection(user);	// deselect player selected units
+		return;
 	}
 
 	// otherwise spawn a number of units:
@@ -80,45 +80,45 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 	// check if a player or region is specified (4th and 5th index)
 	// -> region specified by "#[name]"
 	// -> player specified by "@[player-color]"
-	if( StringWord(libwyv_player[EventPlayer()].chat_msg, 4) != "" ) {
-		if( StringContains( StringWord(libwyv_player[EventPlayer()].chat_msg, 4), "#", c_stringBegin, c_stringNoCase) ) {
-			parameter = StringWord(libwyv_player[EventPlayer()].chat_msg, 4);
-			parameter = libwyv_region_get_name( StringSub(parameter, 2, StringLength(parameter)), EventPlayer() );
+	if( StringWord(argv, 4) != "" ) {
+		if( StringContains( StringWord(argv, 4), "#", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(argv, 4);
+			parameter = libwyv_region_get_name( StringSub(parameter, 2, StringLength(parameter)), user );
 			if( DataTableValueExists(true, parameter) ) {
 				location = DataTableGetRegion(true, parameter);
 				spawn_point = RegionGetCenter(location);
 			}
 			else {
-				libwyv_print_error(EventPlayer(), "No region by name \"" + parameter + "\" exists, defaulting to cursor");
+				libwyv_print_error(user, "No region by name \"" + parameter + "\" exists, defaulting to cursor");
 			}
 		}
-		else if( StringContains( StringWord(libwyv_player[EventPlayer()].chat_msg, 4), "@", c_stringBegin, c_stringNoCase) ) {
-			parameter = StringWord(libwyv_player[EventPlayer()].chat_msg, 4);
+		else if( StringContains( StringWord(argv, 4), "@", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(argv, 4);
 			player = libwyv_color_to_player( StringSub(parameter, 2, StringLength(parameter)) );
 			if( player == -1 ) {
-				player = EventPlayer();
-				libwyv_print_error(EventPlayer(), "Invalid player color, defaulting to self");
+				player = user;
+				libwyv_print_error(user, "Invalid player color, defaulting to self");
 			}
 		}
 	}
-	if( StringWord(libwyv_player[EventPlayer()].chat_msg, 5) != "" ) {
-		if( StringContains( StringWord(libwyv_player[EventPlayer()].chat_msg, 5), "#", c_stringBegin, c_stringNoCase) ) {
-			parameter = StringWord(libwyv_player[EventPlayer()].chat_msg, 5);
-			parameter = libwyv_region_get_name( StringSub(parameter, 2, StringLength(parameter)), EventPlayer() );
+	if( StringWord(argv, 5) != "" ) {
+		if( StringContains( StringWord(argv, 5), "#", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(argv, 5);
+			parameter = libwyv_region_get_name( StringSub(parameter, 2, StringLength(parameter)), user );
 			if( DataTableValueExists(true, parameter) ) {
 				location = DataTableGetRegion(true, parameter);
 				spawn_point = RegionGetCenter(location);
 			}
 			else {
-				libwyv_print_error(EventPlayer(), "No region by name \"" + parameter + "\" exists, defaulting to cursor");
+				libwyv_print_error(user, "No region by name \"" + parameter + "\" exists, defaulting to cursor");
 			}
 		}
-		else if( StringContains( StringWord(libwyv_player[EventPlayer()].chat_msg, 5), "@", c_stringBegin, c_stringNoCase) ) {
-			parameter = StringWord(libwyv_player[EventPlayer()].chat_msg, 5);
+		else if( StringContains( StringWord(argv, 5), "@", c_stringBegin, c_stringNoCase) ) {
+			parameter = StringWord(argv, 5);
 			player = libwyv_color_to_player( StringSub(parameter, 2, StringLength(parameter)) );
 			if( player == -1 ) {
-				player = EventPlayer();
-				libwyv_print_error(EventPlayer(), "Invalid player color, defaulting to self");
+				player = user;
+				libwyv_print_error(user, "Invalid player color, defaulting to self");
 			}
 		}
 	}
@@ -130,17 +130,17 @@ bool libwyv_command_spawn(bool testConds, bool runActions) {
 	}
 
 	// set player spawn instance (before spawning so count is preserved)
-	libwyv_player[EventPlayer()].spawn_instance_type = type;
-	libwyv_player[EventPlayer()].spawn_instance_count = count;
-	libwyv_player[EventPlayer()].spawn_instance_player = player;
-	libwyv_player[EventPlayer()].spawn_instance_location = location;
+	libwyv_player[user].spawn_instance_type = type;
+	libwyv_player[user].spawn_instance_count = count;
+	libwyv_player[user].spawn_instance_player = player;
+	libwyv_player[user].spawn_instance_location = location;
 
 	// make spawned units
-	libwyv_player[EventPlayer()].context = UnitGroupEmpty();
+	libwyv_player[user].context = UnitGroupEmpty();
 	while (count > 0) {
-		UnitGroupAddUnitGroup(libwyv_player[player].context, libwyv_unit_create(type, player, spawn_point, 270.0));
+		UnitGroupAddUnitGroup(libwyv_player[user].context, libwyv_unit_create(type, player, spawn_point, 270.0));
 		count -= 1;
 	}
 
-	return true;
+	return;
 }
