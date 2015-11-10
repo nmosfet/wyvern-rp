@@ -76,7 +76,7 @@ int libwyv_create_dialog_btn(int dialog, int width, int height, int anchor, int 
 	libNtve_gf_SetDialogItemRenderPriority(btn, 513, PlayerGroupAll());
 
 	// set background/border
-libNtve_gf_SetDialogItemImage(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
+	libNtve_gf_SetDialogItemImage(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
 	libNtve_gf_SetDialogItemImage2(btn, LIBWYV_UI_DIALOG_BUTTON_HOV, PlayerGroupAll());
 	libNtve_gf_SetDialogItemImageType(btn, c_triggerImageTypeBorder, PlayerGroupAll());
 
