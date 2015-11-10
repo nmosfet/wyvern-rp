@@ -43,7 +43,7 @@ int libwyv_create_dialog(int width, int height, int anchor, int offset_x, int of
 
 	// set frame appearance
 	DialogSetImage(frame, LIBWYV_UI_DIALOG_BACKGROUND);
-    //libNtve_gf_CreateDialogItemImage(frame, width, height, c_anchorCenter, 0, 0, StringToText(""), LIBWYV_UI_DIALOG_BORDER, c_triggerImageTypeHorizontalBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
+	//libNtve_gf_CreateDialogItemImage(frame, width, height, c_anchorCenter, 0, 0, StringToText(""), LIBWYV_UI_DIALOG_BORDER, c_triggerImageTypeHorizontalBorder, false, Color(100,100,100), c_triggerBlendModeNormal);
 
 	return frame;
 }
@@ -76,9 +76,9 @@ int libwyv_create_dialog_btn(int dialog, int width, int height, int anchor, int 
 	libNtve_gf_SetDialogItemRenderPriority(btn, 513, PlayerGroupAll());
 
 	// set background/border
-    libNtve_gf_SetDialogItemImage(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
-    libNtve_gf_SetDialogItemImage2(btn, LIBWYV_UI_DIALOG_BUTTON_HOV, PlayerGroupAll());
-    libNtve_gf_SetDialogItemImageType(btn, c_triggerImageTypeBorder, PlayerGroupAll());
+libNtve_gf_SetDialogItemImage(btn, LIBWYV_UI_DIALOG_BUTTON, PlayerGroupAll());
+	libNtve_gf_SetDialogItemImage2(btn, LIBWYV_UI_DIALOG_BUTTON_HOV, PlayerGroupAll());
+	libNtve_gf_SetDialogItemImageType(btn, c_triggerImageTypeBorder, PlayerGroupAll());
 
 	return btn;
 }
@@ -92,10 +92,10 @@ int libwyv_create_dialog_btn(int dialog, int width, int height, int anchor, int 
 int libwyv_create_dialog_portrait(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
 	int item = DialogControlCreate(dialog, c_triggerControlTypePortrait);
 	DialogControlSetSize(item, PlayerGroupAll(), width, height);
-    DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
-    libNtve_gf_SetDialogItemRenderType(item, c_triggerRenderTypeLDR, PlayerGroupAll());
-    libNtve_gf_SetDialogItemBorderImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
-    libNtve_gf_SetDialogItemBackgroundVisible(item, false, PlayerGroupAll());
+	DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
+	libNtve_gf_SetDialogItemRenderType(item, c_triggerRenderTypeLDR, PlayerGroupAll());
+	libNtve_gf_SetDialogItemBorderImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
+	libNtve_gf_SetDialogItemBackgroundVisible(item, false, PlayerGroupAll());
 
 	return item;
 }
@@ -106,7 +106,7 @@ int libwyv_create_dialog_portrait(int dialog, int width, int height, int anchor,
 int libwyv_create_dialog_list(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
 	int item = DialogControlCreate(dialog, c_triggerControlTypeListBox);
 	DialogControlSetSize(item, PlayerGroupAll(), width, height);
-    DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
+	DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
 	libNtve_gf_SetDialogItemImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	return item;
 }
@@ -117,7 +117,7 @@ int libwyv_create_dialog_list(int dialog, int width, int height, int anchor, int
 int libwyv_create_dialog_editbox(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
 	int item = DialogControlCreate(dialog, c_triggerControlTypeEditBox);
 	DialogControlSetSize(item, PlayerGroupAll(), width, height);
-    DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
+	DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
 	libNtve_gf_SetDialogItemBorderImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	libNtve_gf_SetDialogItemImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	return item;
@@ -129,7 +129,7 @@ int libwyv_create_dialog_editbox(int dialog, int width, int height, int anchor, 
 int libwyv_create_dialog_checkbox(int dialog, int width, int height, int anchor, int offset_x, int offset_y) {
 	int item = DialogControlCreate(dialog, c_triggerControlTypeCheckBox);
 	DialogControlSetSize(item, PlayerGroupAll(), width, height);
-    DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
+	DialogControlSetPosition(item, PlayerGroupAll(), anchor, offset_x, offset_y);
 	libNtve_gf_SetDialogItemBorderImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	//libNtve_gf_SetDialogItemImage(item, LIBWYV_UI_SUBPANEL_BACKGROUND, PlayerGroupAll());
 	return item;
