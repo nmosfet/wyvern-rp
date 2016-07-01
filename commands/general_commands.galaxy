@@ -21,6 +21,14 @@ void libwyv_command_list_commands(int user, unitgroup u, string argv) {
 	libwyv_print_output(user, "LISTING GAME COMMANDS:\n" + libwyv_settings.commands);
 }
 
+// libwyv_command_wait
+// ===============
+// creates a delay
+void libwyv_command_wait(int user, unitgroup u, string argv) {
+	fixed time = StringToFixed(StringWord(argv, 2));
+	Wait(time, c_timeGame);
+}
+
 // libwyv_command_players
 // ===============
 // prints player info (name + color + permissions level)

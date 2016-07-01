@@ -24,6 +24,7 @@ void libwyv_commands_initialize() {
 	// general commands
 	libwyv_chat_command_create(">info", libwyv_command_info);
 	libwyv_chat_command_create(">commands", libwyv_command_list_commands);
+	libwyv_chat_command_create(">wait", libwyv_command_wait);
 	libwyv_chat_command_create(">players", libwyv_command_players);
 	libwyv_chat_command_create(">gamesetup", libwyv_command_gamesetup);
 	libwyv_chat_command_create(">control", libwyv_command_control);
