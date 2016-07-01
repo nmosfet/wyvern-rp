@@ -869,3 +869,79 @@ void libwyv_command_doodads(int user, unitgroup u, string argv) {
 
 	return;
 }
+
+// libwyv_command_event
+// ===================
+// Prototype trigger event creation proof of concept:
+// Create a trigger event that runs wyvern script.
+//
+// The trigger functions used to create custom events are located in
+// engine/events/custom.galaxy.
+//
+// TODO: need to abstract event creation to different types of events.
+//      -> currently only support a hardcoded unit enter region event
+void libwyv_command_event(int user, unitgroup u, string argv) {
+	string cmds = libwyv_string_trim(libwyv_player[user].chat_msg);
+	string type = StringWord(argv, 2);
+	int event_id;
+	string rgn_name;
+	region rgn;
+	trigger trig;
+	int run_count;
+	int cmds_index_start;
+
+	// print help info
+	if( type == "" ) {
+		libwyv_print_output(user, "\">event list\" to show events, \">event remove [ID]\" to remove an event based on its ID, \">event #[region] [times-to-run] cmd1; cmd2; ...\" to create UnitEntersRegion event.");
+		return;
+	}
+	// print event types
+	else if( type == "list" ) {
+		libwyv_events_list(user);
+		return;
+	}
+	// remove event
+	else if( type == "remove" ) {
+		event_id = StringToInt(StringWord(argv, 3));
+		if( event_id == 0 ) {
+			libwyv_print_error(user, "Invalid Event ID");
+		} else {
+			libwyv_event_trigger_remove(user, event_id);
+		}
+		return;
+	}
+
+	// assume this is a UnitEntersRegion event.
+	// -> check if 2nd param is a region
+	rgn_name = StringWord(argv, 2);
+	if( StringContains(rgn_name, "#", c_stringBegin, c_stringNoCase) ) {
+		rgn_name = libwyv_region_get_name(StringSub(rgn_name, 2, StringLength(rgn_name)), user);
+		if( DataTableValueExists(true, rgn_name) ) {
+			rgn = DataTableGetRegion(true, rgn_name);
+		}
+		else {
+			libwyv_print_error(user, "Invalid region \"" + rgn_name + "\".");
+			return;
+		}
+	} else {
+		libwyv_print_error(user, "Must specify a region as 2nd parameter in format #[name]");
+		return;
+	}
+
+	// get number of times to run the event
+	run_count = StringToInt(StringWord(argv, 3));
+
+	// get commands
+	// -> harcoded remove 1, 2, and 3 words to get cmds
+	cmds_index_start = StringFind(cmds, StringWord(cmds, 3), c_stringNoCase);
+	cmds = StringReplace(cmds, "", 0, cmds_index_start + StringLength(StringWord(cmds, 3)));
+
+	// create trigger and add trigger and its cmds binding to data table
+	trig = libwyv_event_trigger_create("libwyv_event_unit", "UnitEntersRegion", run_count, user, cmds);
+
+	// add trigger event (hardcoded unit enter region event as proof of concept)
+	TriggerAddEventUnitRegion(trig, null, rgn, true);
+
+	// stop player from further chat parsing
+	libwyv_player[user].done_parsing = true;
+}

@@ -78,7 +78,15 @@ void libwyv_chat_parse(string msg, int player, unitgroup target) {
 
 	libwyv_player[player].context = target;
 
+	// manual interrupt flag to stop parsing, intialize as false
+	libwyv_player[player].done_parsing = false;
+
 	while ( msg != "" && count < LIBWYV_PARSE_LIMIT) {
+		// if player done parsing flag set to true, interrupt and stop parsing
+		if ( libwyv_player[player].done_parsing == true ) {
+			return;
+		}
+
 		// update player's chat_msg current cache
 		libwyv_player[player].chat_msg = msg;
 

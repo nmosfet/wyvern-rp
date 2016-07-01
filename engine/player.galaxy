@@ -43,6 +43,12 @@ struct libwyv_player_properties {
 	// when running a command, chat_msg is set to the command being run
 	string chat_msg;
 
+	// done_parsing
+	// =================
+	// flag to manually interrupt and stop the parser for the player
+	// can be used by commands to stop parsing early
+	bool done_parsing;
+
 	// permission_level
 	// =================
 	// Permission level of a player (default - 0, mod - 1, admin - 2)

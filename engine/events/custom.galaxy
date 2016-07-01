@@ -1,0 +1,151 @@
+//=========================================================
+//		Wyvern Roleplaying Engine
+//		Copyright (c) 2014 , Xethyr.407 [NA] / @nmosfet
+//=========================================================
+// This software is distributed under the MIT License:
+// <http://opensource.org/licenses/MIT>
+//=========================================================
+
+// data table identitifiers
+const string LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER = "event ";
+const string LIBWYV_EVENT_TYPE_DATA_TABLE_IDENTIFIER = "event_type ";
+const string LIBWYV_EVENT_COMMANDS_DATA_TABLE_IDENTIFIER = "event_cmds ";
+const string LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER = "event_owner ";
+const string LIBWYV_EVENT_COUNTER_DATA_TABLE_IDENTIFIER = "event_count ";
+
+// global counter for current trigger event number
+int libwyv_event_count = 1;
+
+// libwyv_events_list
+// ====================
+// prints out all the events created in the game
+void libwyv_events_list(int player) {
+	int i;
+	int creator;
+	string type;
+	text txt;
+
+	libwyv_print_output(player, "Events:");
+	libwyv_print(PlayerGroupSingle(player), "[ID]   [Creator]                   [Type]");
+
+	for(i = 1; i < libwyv_event_count; i += 1) {
+		// skip deleted event entries
+		if( DataTableValueExists(true, LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER + IntToString(i)) != true ) {
+			continue;
+		}
+
+		creator = DataTableGetInt(true, LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER + IntToString(i));
+		type = DataTableGetString(true, LIBWYV_EVENT_TYPE_DATA_TABLE_IDENTIFIER + IntToString(i));
+
+		// create output text
+		txt = StringToText("[" + IntToString(i) + "]   ")
+		      + libwyv_player_name_colored(creator)
+			  + StringToText("           " + type);
+
+		libwyv_print_text(PlayerGroupSingle(player), txt);
+	}
+}
+
+// libwyv_event_trigger_create
+// ====================
+// creates a custom event
+trigger libwyv_event_trigger_create(string trig, string type, int times, int player, string cmds) {
+	trigger t = TriggerCreate(trig);
+	DataTableSetTrigger(true, LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER + IntToString(libwyv_event_count), t);
+	DataTableSetString(true, LIBWYV_EVENT_TYPE_DATA_TABLE_IDENTIFIER + IntToString(libwyv_event_count), type);
+	DataTableSetString(true, LIBWYV_EVENT_COMMANDS_DATA_TABLE_IDENTIFIER + IntToString(libwyv_event_count), cmds);
+	DataTableSetInt(true, LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER + IntToString(libwyv_event_count), player);
+	DataTableSetInt(true, LIBWYV_EVENT_COUNTER_DATA_TABLE_IDENTIFIER + IntToString(libwyv_event_count), times);
+	libwyv_event_count += 1;
+
+	return t;
+}
+
+// libwyv_event_trigger_create
+// ======================
+// removes an event trigger for a player,
+// with permissions checking and printing output messages
+// -> only event creator, mods, and hosts can remove events
+void libwyv_event_trigger_remove(int player, int id) {
+	trigger t;
+	int owner = DataTableGetInt(true, LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER + IntToString(id));
+
+	if( player != owner && libwyv_player[player].permission_level < LIBWYV_PERMISSIONS_LEVEL_MOD ) {
+		libwyv_print_error(player, "You do not have permission to remove this event.");
+	} else {
+		t = DataTableGetTrigger(true, LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER + IntToString(id));
+		TriggerDestroy(t);
+
+		// clean up data table
+		DataTableValueRemove(true, LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER + IntToString(id));
+		DataTableValueRemove(true, LIBWYV_EVENT_TYPE_DATA_TABLE_IDENTIFIER + IntToString(id));
+		DataTableValueRemove(true, LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER + IntToString(id));
+		DataTableValueRemove(true, LIBWYV_EVENT_COMMANDS_DATA_TABLE_IDENTIFIER + IntToString(id));
+		DataTableValueRemove(true, LIBWYV_EVENT_COUNTER_DATA_TABLE_IDENTIFIER + IntToString(id));
+
+		libwyv_print_success(player, "Event deleted!");
+	}
+
+}
+
+// libwyv_event_trigger_remove_id
+// =======================
+// removes an event trigger (no permissions checking)
+void libwyv_event_trigger_remove_id(int id) {
+	trigger t = DataTableGetTrigger(true, LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER + IntToString(id));
+	TriggerDestroy(t);
+
+	// clean up data table
+	DataTableValueRemove(true, LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER + IntToString(id));
+	DataTableValueRemove(true, LIBWYV_EVENT_TYPE_DATA_TABLE_IDENTIFIER + IntToString(id));
+	DataTableValueRemove(true, LIBWYV_EVENT_OWNER_DATA_TABLE_IDENTIFIER + IntToString(id));
+	DataTableValueRemove(true, LIBWYV_EVENT_COMMANDS_DATA_TABLE_IDENTIFIER + IntToString(id));
+	DataTableValueRemove(true, LIBWYV_EVENT_COUNTER_DATA_TABLE_IDENTIFIER + IntToString(id));
+}
+
+// libwyv_event_trigger_get_commands
+// ========================
+// get the commands string bound to a trigger
+int libwyv_event_trigger_get_id(trigger t1) {
+	int i;
+	trigger t2;
+
+	// get bound cmds
+	for(i = 1; i < libwyv_event_count; i += 1) {
+		t2 = DataTableGetTrigger(true, LIBWYV_EVENT_TRIGGER_DATA_TABLE_IDENTIFIER + IntToString(i));
+		if( t1 == t2 ) {
+			break;
+		}
+	}
+
+	return i;
+}
+
+
+// libwyv_event_unit
+// =======================
+// generic trigger to apply commands on a unit
+bool libwyv_event_unit(bool testConds, bool runActions) {
+	int id = libwyv_event_trigger_get_id(TriggerGetCurrent());
+	string cmds = DataTableGetString(true, LIBWYV_EVENT_COMMANDS_DATA_TABLE_IDENTIFIER + IntToString(id));
+	int count = DataTableGetInt(true, LIBWYV_EVENT_COUNTER_DATA_TABLE_IDENTIFIER + IntToString(id));
+	unitgroup u = UnitGroupEmpty();
+	UnitGroupAdd(u, EventUnit());
+
+	// debug: print event commands
+	//libwyv_print_output(EventPlayer(), "UNIT EVENT COMMANDS: " + cmds);
+
+	// decrement counter (if event is to run a finite number of times)
+	if( count >= 0 ) {
+		if( count == 1 ) { // last time event runs, so remove event
+			libwyv_event_trigger_remove_id(id);
+		} else {
+			DataTableSetInt(true, LIBWYV_EVENT_COUNTER_DATA_TABLE_IDENTIFIER + IntToString(id), count - 1);
+		}
+	}
+
+	// parse commands on the unit for the unit's owner
+	libwyv_chat_parse(cmds, UnitGetOwner(EventUnit()), u);
+
+	return true;
+}

@@ -12,7 +12,9 @@ include "wyvern/engine/events/chat.galaxy"
 include "wyvern/engine/events/player_leaves.galaxy"
 include "wyvern/engine/events/region_waygates.galaxy"
 include "wyvern/engine/events/unit_events.galaxy"
+include "wyvern/engine/events/custom.galaxy"
 
+// create the default wyvern events
 void libwyv_events_initialize() {
 	// player leaves event
 	TriggerAddEventPlayerLeft(TriggerCreate("libwyv_player_leaves"), c_playerAny, c_gameResultUndecided);
