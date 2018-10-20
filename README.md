@@ -103,7 +103,7 @@ Now test the map and see if the Wyvern engine works!
 
 # Contact
 **Github repo:** https://github.com/phonon/wyvern-rp  
-**Lead developer:** @phonon / Xethyr
+**Lead developer:** @phonon / Xethyr  
 **SC2 Handle:** Xethyr (407)  
 
 
