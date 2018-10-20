@@ -102,8 +102,8 @@ Now test the map and see if the Wyvern engine works!
 
 
 # Contact
-**Github repo:** https://github.com/nmosfet/wyvern-rp  
-**Lead developer:** @nmosfet / Xethyr (xethyriousyu@gmail.com)  
+**Github repo:** https://github.com/phonon/wyvern-rp  
+**Lead developer:** @phonon / Xethyr
 **SC2 Handle:** Xethyr (407)  
 
 
